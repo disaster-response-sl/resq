@@ -8,7 +8,91 @@ The National Disaster Response Platform is a dual-platform solution consisting o
 - **Mobile App**: Citizen-facing React Native application for emergency reporting and real-time alerts
 - **Web Dashboard**: Government administrative interface for disaster management and resource allocation
 
-### 🎯 Problem Statement
+## 🧑‍🤝‍🧑 Role Types
+
+This platform supports three official user groups in line with Sri Lanka’s real disaster-response structure:
+
+### 👨‍💼 Admin Users
+
+High-level decision-makers who manage national or district disaster operations.
+
+Admins include:
+
+Disaster Management Centre (DMC) Headquarters Officers
+
+District Secretaries (GA)
+
+District Disaster Management Officers
+
+Divisional Secretaries (DS Officers)
+
+Ministry of Digital Economy / ICTA senior system officers
+
+Admin Capabilities:
+
+Create & update disasters
+
+Publish alerts to the public
+
+Assign responders to incidents
+
+Manage resources and supply distribution
+
+Access full analytics dashboard
+
+Monitor nationwide SOS feed
+
+### 🚑 Responder Users
+
+On-ground emergency teams responsible for handling SOS calls, verifying reports, and conducting rescue operations.
+
+Responders include:
+
+Sri Lanka Army Disaster Response Units
+
+Navy Flood Rescue Teams
+
+Air Force Medical / Airlift Response
+
+Sri Lanka Police Emergency Units
+
+Fire & Rescue Department
+
+Civil Security Department (CSD)
+
+Grama Niladhari (GN) officers
+
+Certified Red Cross / CERT-approved responders
+
+Responder Capabilities:
+
+View and prioritize SOS signals
+
+Update response status
+
+Access assigned tasks
+
+Verify on-site incident reports
+
+Report rescued individuals, cleared areas, and resource needs
+
+### 🧍 Citizen Users
+
+General public users.
+
+Citizen Capabilities:
+
+Submit SOS signals
+
+Report incidents (food, shelter, medical, danger)
+
+Upload photos & location
+
+Receive real-time alerts
+
+Access AI safety assistant
+
+## 🎯 Problem Statement
 
 Sri Lanka faces critical gaps in disaster response:
 - ❌ Outdated communication systems
@@ -17,7 +101,7 @@ Sri Lanka faces critical gaps in disaster response:
 - ❌ Lack of citizen agency in reporting
 - ❌ Fragmented data across systems
 
-### ✅ Solution Features
+## ✅ Solution Features
 
 #### Mobile App (Citizen Interface)
 - 🔐 **SLUDI Authentication**: Secure login using Sri Lanka's Digital Public Infrastructure
@@ -55,7 +139,14 @@ Sri Lanka faces critical gaps in disaster response:
 - **NDX**: Mock JSON APIs for disaster data
 - **SLUDI**: OAuth2 mock for authentication
 - **PayDPI**: Optional payment simulation
-```
+
+## DPI Integration (Government-Ready Architecture)
+
+This platform is architected to integrate with Sri Lanka's Digital Public Infrastructure (SLUDI, NDX, PayDPI).
+
+For the hackathon, mock/sandbox endpoints were used.
+
+Upon approval and access from the Ministry/ICTA, the platform can immediately connect to the production-grade DPI services without any code restructuring.
 
 ## 🚀 Quick Start
 

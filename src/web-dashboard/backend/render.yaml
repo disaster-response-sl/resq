@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: ndp-backend
+    runtime: node
+    region: singapore
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MERCHANT_ID
+        value: TESTITCALANKALKR
+      - key: API_USERNAME
+        value: merchant.TESTITCALANKALKR
+      - key: API_PASSWORD
+        sync: false
+      - key: MPGS_MOCK_MODE
+        value: "false"
+      - key: FRONTEND_URL
+        sync: false
+      - key: USE_MOCK_SLUDI
+        value: "true"
+      - key: ESIGNET_SERVICE_URL
+        value: https://sludiauth.icta.gov.lk/service
+      - key: ESIGNET_AUD_URL
+        value: https://sludiauth.icta.gov.lk/service/oauth/v2/token
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_ASSERTION_TYPE
+        value: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+      - key: USERINFO_RESPONSE_TYPE
+        value: jwk
+    healthCheckPath: /health
+    autoDeploy: true
