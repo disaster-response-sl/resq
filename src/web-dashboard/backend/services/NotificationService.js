@@ -142,7 +142,7 @@ IMMEDIATE ACTIONS REQUIRED:
 3. Coordinate with other emergency services if needed
 4. Provide status updates throughout the response
 
-Access the full details at: http://localhost:3000/dashboard
+Access the full details at: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard
 
 This is an automated message from the National Disaster Exchange (NDX) Platform.
     `;
@@ -168,7 +168,7 @@ ID: ${sosSignal._id}
 Priority: ${sosSignal.priority.toUpperCase()}
 Location: ${sosSignal.location.address || 'See dashboard for coordinates'}
 Message: ${sosSignal.message}
-Check NDX dashboard immediately: http://localhost:3000/dashboard`;
+Check NDX dashboard immediately: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`;
 
     console.log('📱 [SMS] Sending to:', responder.phone);
     console.log('📱 [SMS] Content:', smsContent);

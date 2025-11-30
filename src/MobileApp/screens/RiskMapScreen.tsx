@@ -82,14 +82,12 @@ const RiskMapScreen: React.FC<RiskMapScreenProps> = ({ navigation }) => {
 
   const fetchDisasters = async () => {
     try {
-      let token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('authToken');
 
-      // TEMPORARY FIX: Use test token if no token is stored
+      // Require proper authentication
       if (!token) {
-        console.warn('No auth token found, using test token for debugging');
-        token =
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJ0ZXN0LXVzZXItMTIzIiwiaW5kaXZpZHVhbElkIjoidGVzdC11c2VyLTEyMyIsInJvbGUiOiJDaXRpemVuIiwibmFtZSI6IlRlc3QgVXNlciIsImlhdCI6MTc1NTk0NzExNSwiZXhwIjoxNzU2MDMzNTE1fQ.KvJrjN-i0lDKIHf8GnQLMMRWb1cFjxpVfcnkdI8lXPI';
-        await AsyncStorage.setItem('authToken', token);
+        Alert.alert('Authentication Required', 'Please log in to view disaster information.');
+        return;
       }
 
       // NDX service disabled for performance
@@ -382,16 +380,18 @@ const RiskMapScreen: React.FC<RiskMapScreenProps> = ({ navigation }) => {
               />
             </View>
 
-            {/* Debug Controls */}
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity style={styles.debugButton} onPress={clearCache}>
-                <Text style={styles.debugButtonText}>{t('debug.clearCache')}</Text>
-              </TouchableOpacity>
+            {/* Debug Controls - Remove in production */}
+            {__DEV__ && (
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity style={styles.debugButton} onPress={clearCache}>
+                  <Text style={styles.debugButtonText}>{t('debug.clearCache')}</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity style={styles.debugButton} onPress={testAPIConnection}>
-                <Text style={styles.debugButtonText}>{t('debug.testApi')}</Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity style={styles.debugButton} onPress={testAPIConnection}>
+                  <Text style={styles.debugButtonText}>{t('debug.testApi')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* Filter Buttons */}

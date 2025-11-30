@@ -4,10 +4,16 @@ const getBaseURL = () => {
   const envUrl = process.env.REACT_NATIVE_API_BASE_URL;
   if (envUrl) return envUrl;
 
-  // Development fallback - update this with your backend URL
-  // For local development: 'http://localhost:5000/api'
-  // For production: your production API URL
-  return 'https://shaggy-clowns-rush.loca.lt/api'; 
+  // Check if we're in development or production
+  if (__DEV__) {
+    // Development: Use localhost or your dev tunnel
+    return 'http://localhost:5000/api';
+  }
+
+  // Production: This should be set via environment variable
+  // If not set, this will fail intentionally to alert you to configure it
+  console.error('REACT_NATIVE_API_BASE_URL not set! Please configure production API URL.');
+  return 'https://YOUR_RENDER_APP.onrender.com/api'; // Replace with actual production URL
 };
 
 // Commercial Bank PayDPI Configuration

@@ -2,13 +2,18 @@
 // Handles environment-specific API base URLs
 
 const getApiBaseUrl = (): string => {
+  // Check Vite environment variable first (VITE_ prefix required for Vite)
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) return envUrl;
+  
   // In development, use relative URLs to leverage Vite proxy
   if (import.meta.env.DEV) {
     return '/api';
   }
   
-  // In production, use absolute URL
-  return process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // Production fallback - if env var not set, this will fail intentionally
+  console.error('VITE_API_BASE_URL not set! Please configure production API URL.');
+  return 'https://YOUR_RENDER_APP.onrender.com/api'; // Replace with actual production URL
 };
 
 export const API_BASE_URL = getApiBaseUrl();

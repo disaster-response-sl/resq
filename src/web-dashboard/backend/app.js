@@ -2,15 +2,62 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Initialize app
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+// Security Middlewares
+// Helmet helps secure Express apps by setting various HTTP headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}));
+
+// Rate limiting to prevent brute force attacks
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiter to all routes
+app.use('/api/', limiter);
+
+// Stricter rate limiting for authentication routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login attempts per windowMs
+  message: 'Too many login attempts, please try again later.',
+  skipSuccessfulRequests: true,
+});
+
+// Configure CORS
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
+// Body parsing middlewares
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Sanitize data to prevent NoSQL injection
+app.use(mongoSanitize());
 
 // Import user & mobile routes
 const authRoutes = require('./routes/auth');
@@ -38,9 +85,9 @@ const responderNotificationsRoutes = require('./routes/responder/notifications.r
 // Import services
 const SosEscalationService = require('./services/sos-escalation.service');
 
-// Use user & mobile routes
-app.use('/api/auth', authRoutes);
-app.use('/api/mobile', mobileAuthRoutes);
+// Use user & mobile routes (with rate limiting for auth)
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/mobile', authLimiter, mobileAuthRoutes);
 app.use('/api/map', mapRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/ndx', ndxRoutes);

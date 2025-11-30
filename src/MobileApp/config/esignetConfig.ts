@@ -3,7 +3,7 @@
 
 export const ESIGNET_ENV_CONFIG = {
   ESIGNET_UI_BASE_URL: "https://sludiauth.icta.gov.lk",
-  MOCK_RELYING_PARTY_SERVER_URL: "https://ndp-backend.loca.lt", // Updated backend tunnel
+  MOCK_RELYING_PARTY_SERVER_URL: process.env.REACT_NATIVE_API_BASE_URL?.replace('/api', '') || "https://YOUR_RENDER_APP.onrender.com", // Use same backend URL
   REDIRECT_URI_USER_PROFILE: "ndp://dashboard",
   REDIRECT_URI_REGISTRATION: "ndp://dashboard",
   REDIRECT_URI: "ndp://dashboard",

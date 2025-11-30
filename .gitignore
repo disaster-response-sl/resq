@@ -5,6 +5,14 @@
 .env.test.local
 .env.production.local
 *.env
+!.env.example
+!.env.production.example
+src/web-dashboard/backend/.env*
+!src/web-dashboard/backend/.env.example
+!src/web-dashboard/backend/.env.production.example
+src/web-dashboard/frontend/.env*
+!src/web-dashboard/frontend/.env.example
+!src/web-dashboard/frontend/.env.production.example
 
 # Dependencies
 node_modules/
