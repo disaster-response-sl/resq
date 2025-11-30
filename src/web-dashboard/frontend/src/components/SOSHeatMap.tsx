@@ -149,68 +149,103 @@ const SOSHeatMap: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="p-6 h-full">
+      <div className="p-3 sm:p-4 md:p-6 h-full">
         <div className="max-w-7xl mx-auto h-full">
-          {/* Page Header */}
-          <div className="mb-6">
+          {/* Page Header - Mobile Responsive */}
+          <div className="mb-3 sm:mb-4 md:mb-6">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">SOS Alerts Heat Map</h1>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">SOS Alerts Heat Map</h1>
               {sosLoading && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Loading SOS signals...
+                <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                  Loading...
                 </div>
               )}
             </div>
           </div>
 
-          {/* Map */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[calc(100vh-200px)] relative">
-            {/* SOS Statistics Panel */}
-            <div className="absolute top-4 left-4 z-[1000] bg-white p-4 rounded-lg shadow-lg w-64">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2 text-red-500" />
+          {/* Mobile Layout: Stack stats below map | Desktop: Stats overlay map */}
+          <div className="flex flex-col lg:block h-auto lg:h-[calc(100vh-140px)]">
+            {/* Statistics - Mobile: Below header | Desktop: Hidden (shown as overlay) */}
+            <div className="mb-3 lg:hidden bg-white p-3 rounded-lg shadow-lg">
+              <h3 className="text-sm font-semibold mb-2 flex items-center">
+                <AlertTriangle className="w-4 h-4 mr-1.5 text-red-500" />
                 SOS Statistics
               </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Total Signals:</span>
-                  <span className="font-medium">{sosSignals.length}</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col text-xs">
+                  <span className="text-gray-600">Total Signals</span>
+                  <span className="font-medium text-lg">{sosSignals.length}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Critical:</span>
-                  <span className="font-medium text-red-600">
+                <div className="flex flex-col text-xs">
+                  <span className="text-gray-600">Critical</span>
+                  <span className="font-medium text-lg text-red-600">
                     {sosSignals.filter(s => s.priority === 'critical').length}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>High Priority:</span>
-                  <span className="font-medium text-orange-600">
+                <div className="flex flex-col text-xs">
+                  <span className="text-gray-600">High Priority</span>
+                  <span className="font-medium text-lg text-orange-600">
                     {sosSignals.filter(s => s.priority === 'high').length}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Pending:</span>
-                  <span className="font-medium text-gray-600">
+                <div className="flex flex-col text-xs">
+                  <span className="text-gray-600">Pending</span>
+                  <span className="font-medium text-lg text-gray-600">
                     {sosSignals.filter(s => s.status === 'pending').length}
                   </span>
                 </div>
               </div>
             </div>
 
-            <MapContainer
-              center={SRI_LANKA_CENTER}
-              zoom={DEFAULT_ZOOM}
-              style={{ height: '100%', width: '100%' }}
-              className="z-0 rounded-lg"
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
+            {/* Map Container */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[500px] lg:h-full relative">
+              {/* Desktop Only: Overlay statistics */}
+              <div className="hidden lg:block absolute top-4 left-4 z-[1000] bg-white p-4 rounded-lg shadow-lg w-64">
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <AlertTriangle className="w-5 h-5 mr-2 text-red-500" />
+                  SOS Statistics
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Total Signals:</span>
+                    <span className="font-medium">{sosSignals.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Critical:</span>
+                    <span className="font-medium text-red-600">
+                      {sosSignals.filter(s => s.priority === 'critical').length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>High Priority:</span>
+                    <span className="font-medium text-orange-600">
+                      {sosSignals.filter(s => s.priority === 'high').length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Pending:</span>
+                    <span className="font-medium text-gray-600">
+                      {sosSignals.filter(s => s.status === 'pending').length}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-              <SosSignalsLayer sosSignals={sosSignals} loading={sosLoading} />
-            </MapContainer>
+              <MapContainer
+                center={SRI_LANKA_CENTER}
+                zoom={DEFAULT_ZOOM}
+                style={{ height: '100%', width: '100%' }}
+                className="z-0 rounded-lg"
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+
+                <SosSignalsLayer sosSignals={sosSignals} loading={sosLoading} />
+              </MapContainer>
+            </div>
           </div>
         </div>
       </div>

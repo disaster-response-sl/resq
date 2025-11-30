@@ -1,7 +1,8 @@
 // Resource Management API Service
 // Implements all 16 endpoints from the Resource API documentation
 
-const API_BASE = '/api/resources';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = `${API_BASE_URL}/api/resources`;
 
 // Helper function to get auth headers
 const getAuthHeaders = (token: string) => ({

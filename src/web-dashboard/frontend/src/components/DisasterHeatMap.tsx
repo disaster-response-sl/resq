@@ -298,23 +298,31 @@ const DisasterHeatMap: React.FC = () => {
       const queryString = params.toString();
 
       // HYBRID: Fetch both MongoDB reports and external DMC flood data
-      const [reportsRes, heatmapRes, resourceRes, disastersRes, floodsRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_REPORTS}${queryString ? `?${queryString}` : ''}`),
-        axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_HEATMAP}${queryString ? `?${queryString}` : ''}`),
-        axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_RESOURCE_ANALYSIS}${queryString ? `?${queryString}` : ''}`),
-        axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_DISASTERS}`),
+      const [disastersRes, floodsRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/public/disasters`),
         axios.get(`${API_BASE_URL}/api/public/flood-alerts`).catch(() => ({ data: { success: false, data: [] } }))
       ]);
 
-      const mongoReports = reportsRes.data.data || [];
-      const mongoDisasters = disastersRes.data.data || [];
+      const mongoDisasters = disastersRes.data.success ? disastersRes.data.data.filter((d: any) => d.status === 'active') : [];
       const dmcFloods = floodsRes.data.success ? floodsRes.data.data : [];
+
+      // Convert disasters to reports format for backward compatibility
+      const mongoReports = mongoDisasters.map((d: any) => ({
+        id: d._id,
+        location: d.location,
+        type: d.type,
+        status: d.status,
+        priority: d.severity,
+        description: d.description,
+        timestamp: d.created_at,
+        affected_people: d.affected_population
+      }));
 
       // Merge reports from MongoDB and DMC floods (convert floods to report format)
       const mergedReports = [
         ...mongoReports,
         ...dmcFloods.map((flood: any) => ({
-          id: flood.id,
+          id: flood.id || flood._id,
           location: { lat: flood.lat, lng: flood.lng },
           type: 'flood',
           status: flood.alert_status || flood.severity,
@@ -361,38 +369,111 @@ const DisasterHeatMap: React.FC = () => {
             </div>
           </div>
 
-          {/* Map - Mobile Responsive Height */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[calc(100vh-140px)] sm:h-[calc(100vh-170px)] md:h-[calc(100vh-200px)] relative">
-            {error && (
-              <div className="absolute top-4 right-4 z-[1000] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
+          {/* Mobile Layout: Stack cards below map | Desktop: Cards overlay map */}
+          <div className="flex flex-col lg:block h-auto lg:h-[calc(100vh-140px)]">
+            {/* Statistics and Filters - Stacked on mobile, positioned below header */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-3 lg:hidden">
+              <div className="flex-1 bg-white p-3 rounded-lg shadow-lg">
+                <h3 className="text-sm font-semibold mb-2 flex items-center">
+                  <AlertTriangle className="w-4 h-4 mr-1.5 text-orange-500" />
+                  Statistics
+                </h3>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span>Total Reports:</span>
+                    <span className="font-medium">{reports.length}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span>Active:</span>
+                    <span className="font-medium text-orange-600">{reports.filter(r => r.status === 'active').length}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span>High Priority:</span>
+                    <span className="font-medium text-red-600">{reports.filter(r => r.priority === 'high').length}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span>Affected:</span>
+                    <span className="font-medium text-blue-600">{reports.reduce((sum, r) => sum + (r.affected_people || 0), 0).toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
-            )}
+              
+              <div className="flex-1 bg-white p-3 rounded-lg shadow-lg">
+                <h3 className="text-sm font-semibold mb-2 flex items-center">
+                  <Filter className="w-4 h-4 mr-1.5 text-blue-600" />
+                  Filters
+                </h3>
+                <div className="space-y-2">
+                  <select
+                    value={filters.type || ''}
+                    onChange={(e) => setFilters({ ...filters, type: e.target.value || undefined })}
+                    className="w-full p-1.5 border border-gray-300 rounded-md text-xs"
+                    disabled={loading}
+                  >
+                    <option value="">All Types</option>
+                    {disasterTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                  </select>
+                  <select
+                    value={filters.status || ''}
+                    onChange={(e) => setFilters({ ...filters, status: e.target.value || undefined })}
+                    className="w-full p-1.5 border border-gray-300 rounded-md text-xs"
+                    disabled={loading}
+                  >
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                  <select
+                    value={filters.priority || ''}
+                    onChange={(e) => setFilters({ ...filters, priority: e.target.value || undefined })}
+                    className="w-full p-1.5 border border-gray-300 rounded-md text-xs"
+                    disabled={loading}
+                  >
+                    <option value="">All Priorities</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-            <DisasterStatisticsPanel reports={reports} loading={loading} />
+            {/* Map Container */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[500px] lg:h-full relative">
+              {error && (
+                <div className="absolute top-4 right-4 z-[1000] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
 
-            <FilterPanel
-              filters={filters}
-              onFiltersChange={setFilters}
-              disasterTypes={disasterTypes}
-              loading={loading}
-            />
+              {/* Desktop Only: Overlay statistics and filters */}
+              <div className="hidden lg:block">
+                <DisasterStatisticsPanel reports={reports} loading={loading} />
+                <FilterPanel
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  disasterTypes={disasterTypes}
+                  loading={loading}
+                />
+              </div>
 
-            <MapContainer
-              center={SRI_LANKA_CENTER}
-              zoom={DEFAULT_ZOOM}
-              style={{ height: '100%', width: '100%' }}
-              className="z-0 rounded-lg"
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
+              <MapContainer
+                center={SRI_LANKA_CENTER}
+                zoom={DEFAULT_ZOOM}
+                style={{ height: '100%', width: '100%' }}
+                className="z-0 rounded-lg"
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
 
-              <ReportsLayer reports={reports} loading={loading} />
-              <HeatmapLayer heatmapData={heatmapData} loading={loading} />
-              <ResourceAnalysisLayer resourceData={resourceData} loading={loading} />
-            </MapContainer>
+                <ReportsLayer reports={reports} loading={loading} />
+                <HeatmapLayer heatmapData={heatmapData} loading={loading} />
+                <ResourceAnalysisLayer resourceData={resourceData} loading={loading} />
+              </MapContainer>
+            </div>
           </div>
         </div>
       </div>
