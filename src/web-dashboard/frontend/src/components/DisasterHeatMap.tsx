@@ -284,7 +284,7 @@ const DisasterHeatMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data function
+  // Fetch data function - HYBRID DATA MODEL: Merge MongoDB + DMC floods
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -297,17 +297,40 @@ const DisasterHeatMap: React.FC = () => {
 
       const queryString = params.toString();
 
-      const [reportsRes, heatmapRes, resourceRes, disastersRes] = await Promise.all([
+      // HYBRID: Fetch both MongoDB reports and external DMC flood data
+      const [reportsRes, heatmapRes, resourceRes, disastersRes, floodsRes] = await Promise.all([
         axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_REPORTS}${queryString ? `?${queryString}` : ''}`),
         axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_HEATMAP}${queryString ? `?${queryString}` : ''}`),
         axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_RESOURCE_ANALYSIS}${queryString ? `?${queryString}` : ''}`),
-        axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_DISASTERS}`)
+        axios.get(`${API_BASE_URL}${API_ENDPOINTS.MAP_DISASTERS}`),
+        axios.get(`${API_BASE_URL}/api/public/flood-alerts`).catch(() => ({ data: { success: false, data: [] } }))
       ]);
 
-      setReports(reportsRes.data.data || []);
+      const mongoReports = reportsRes.data.data || [];
+      const mongoDisasters = disastersRes.data.data || [];
+      const dmcFloods = floodsRes.data.success ? floodsRes.data.data : [];
+
+      // Merge reports from MongoDB and DMC floods (convert floods to report format)
+      const mergedReports = [
+        ...mongoReports,
+        ...dmcFloods.map((flood: any) => ({
+          id: flood.id,
+          location: { lat: flood.lat, lng: flood.lng },
+          type: 'flood',
+          status: flood.alert_status || flood.severity,
+          priority: flood.severity === 'critical' ? 'high' : flood.severity === 'high' ? 'medium' : 'low',
+          description: `${flood.location} - Water level: ${flood.water_level}m`,
+          timestamp: flood.timestamp,
+          source: 'dmc_api'
+        }))
+      ];
+
+      console.log(`✅ HYBRID Heat Map: ${mongoReports.length} MongoDB reports + ${dmcFloods.length} DMC floods = ${mergedReports.length} total`);
+
+      setReports(mergedReports);
       setHeatmapData(heatmapRes.data.data || []);
       setResourceData(resourceRes.data.data || []);
-      setDisasterTypes(disastersRes.data.data ? [...new Set((disastersRes.data.data as Disaster[]).map((d: Disaster) => d.type))] : []);
+      setDisasterTypes(mongoDisasters ? [...new Set((mongoDisasters as Disaster[]).map((d: Disaster) => d.type))] : []);
     } catch (err) {
       console.error('Error fetching map data:', err);
       setError('Failed to load map data. Please try again.');

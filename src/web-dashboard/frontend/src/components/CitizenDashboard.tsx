@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Cloud, AlertTriangle, Package, MessageSquare, Map, Phone, Shield } from 'lucide-react';
+import { MapPin, Cloud, AlertTriangle, Package, Phone } from 'lucide-react';
 import axios from 'axios';
+import CitizenNavbar from './CitizenNavbar';
 
 interface Location {
   lat: number;
@@ -36,7 +37,7 @@ const CitizenDashboard: React.FC = () => {
   useEffect(() => {
     getCurrentLocation();
     fetchRecentAlerts();
-  }, []);
+  }, []); // Only run once on mount
 
   useEffect(() => {
     if (location) {
@@ -44,7 +45,7 @@ const CitizenDashboard: React.FC = () => {
       fetchRiskStatus();
       reverseGeocode();
     }
-  }, [location]);
+  }, [location]); // Run when location changes
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -167,41 +168,30 @@ const CitizenDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="/favicon.png" 
-                alt="ResQ Hub Logo" 
-                className="h-10 w-10"
-              />
-              <div>
-                <h1 className="text-2xl font-bold">ResQ Hub</h1>
-                <p className="text-blue-100 text-sm">Sri Lanka Emergency Response System</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/login')}
-              className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              Admin/Responder Login
-            </button>
-          </div>
-        </div>
-      </header>
+      <CitizenNavbar />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Quick Actions - Emergency First */}
+        {/* Quick Actions - Most Essential Only */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Emergency Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              onClick={() => navigate('/citizen/emergency-contacts')}
+              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
+            >
+              <div className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                NEW
+              </div>
+              <Phone className="h-12 w-12 mx-auto mb-3" />
+              <h3 className="text-xl font-bold">Emergency Contacts</h3>
+              <p className="text-sm text-red-100 mt-1">117, 119, 110, 108 & DDMCU</p>
+            </button>
+
             <button
               onClick={() => navigate('/citizen/sos')}
-              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
             >
-              <Phone className="h-12 w-12 mx-auto mb-3" />
+              <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">SOS Emergency</h3>
               <p className="text-sm text-red-100 mt-1">Send distress signal</p>
             </button>
@@ -222,24 +212,6 @@ const CitizenDashboard: React.FC = () => {
               <Package className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">Relief Tracker</h3>
               <p className="text-sm text-purple-100 mt-1">Find help or volunteer</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/citizen/map')}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
-            >
-              <Map className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">Risk Map</h3>
-              <p className="text-sm text-blue-100 mt-1">View disaster zones</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/citizen/chat')}
-              className="bg-green-600 hover:bg-green-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
-            >
-              <MessageSquare className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">AI Assistant</h3>
-              <p className="text-sm text-green-100 mt-1">Safety guidance</p>
             </button>
           </div>
         </div>

@@ -74,6 +74,18 @@ interface SOSSignal {
   timestamp: string;
 }
 
+interface UserReport {
+  _id: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  type: string;
+  description: string;
+  status: string;
+  timestamp: string;
+}
+
 // Component to update map view
 const ChangeView: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
   const map = useMap();
@@ -88,11 +100,13 @@ const CitizenMapPage: React.FC = () => {
   const [floodData, setFloodData] = useState<FloodData[]>([]);
   const [reliefCamps, setReliefCamps] = useState<ReliefCamp[]>([]);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
+  const [userReports, setUserReports] = useState<UserReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFloods, setShowFloods] = useState(true);
   const [showDisasters, setShowDisasters] = useState(true);
   const [showReliefCamps, setShowReliefCamps] = useState(true);
   const [showSOSSignals, setShowSOSSignals] = useState(true);
+  const [showUserReports, setShowUserReports] = useState(true);
 
   useEffect(() => {
     getCurrentLocation();
@@ -100,6 +114,7 @@ const CitizenMapPage: React.FC = () => {
     fetchFloodData();
     fetchReliefCamps();
     fetchSOSSignals();
+    fetchUserReports();
   }, []);
 
   const getCurrentLocation = () => {
@@ -182,6 +197,21 @@ const CitizenMapPage: React.FC = () => {
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);
+    }
+  };
+
+  const fetchUserReports = async () => {
+    try {
+      // HYBRID DATA MODEL: Fetch MongoDB user incident reports
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?limit=100`
+      );
+      if (response.data.success) {
+        setUserReports(response.data.data);
+        console.log(`✅ Loaded ${response.data.data.length} user reports from MongoDB`);
+      }
+    } catch (error) {
+      console.error('User reports fetch error:', error);
     }
   };
 
@@ -350,6 +380,15 @@ const CitizenMapPage: React.FC = () => {
                 className="w-4 h-4 text-blue-600"
               />
               <span className="text-sm font-medium text-gray-700">SOS Signals</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showUserReports}
+                onChange={(e) => setShowUserReports(e.target.checked)}
+                className="w-4 h-4 text-blue-600"
+              />
+              <span className="text-sm font-medium text-gray-700">User Reports</span>
             </label>
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -549,6 +588,55 @@ const CitizenMapPage: React.FC = () => {
                         </p>
                         <p className="text-xs text-gray-500 mt-2">
                           {new Date(sos.timestamp).toLocaleString()}
+                        </p>
+                        <div className="mt-2 pt-2 border-t border-gray-200">
+                          <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+
+            {/* User Reports - HYBRID DATA MODEL: MongoDB incident reports */}
+            {showUserReports &&
+              userReports.map((report) => (
+                <Marker
+                  key={report._id}
+                  position={[report.location.lat, report.location.lng]}
+                  icon={createCustomIcon('#f59e0b', '📝')}
+                >
+                  <Popup>
+                    <div className="min-w-[200px]">
+                      <h3 className="font-bold text-amber-600 mb-2 flex items-center">
+                        📝 User Report
+                      </h3>
+                      <div className="space-y-1 text-sm">
+                        <p>
+                          <span className="font-semibold">Type:</span>{' '}
+                          <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800">
+                            {report.type}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="font-semibold">Status:</span>{' '}
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-bold ${
+                              report.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : report.status === 'investigating'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-green-100 text-green-800'
+                            }`}
+                          >
+                            {report.status}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="font-semibold">Description:</span> {report.description}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(report.timestamp).toLocaleString()}
                         </p>
                         <div className="mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
