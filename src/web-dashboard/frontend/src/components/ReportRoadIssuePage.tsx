@@ -59,10 +59,7 @@ const ReportRoadIssuePage: React.FC = () => {
             const response = await axios.get(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
               { 
-                signal: controller.signal,
-                headers: {
-                  'User-Agent': 'ResQ-Hub-Disaster-Platform'
-                }
+                signal: controller.signal
               }
             );
             clearTimeout(timeoutId);

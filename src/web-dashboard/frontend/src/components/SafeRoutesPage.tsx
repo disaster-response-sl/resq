@@ -74,27 +74,34 @@ const SafeRoutesPage: React.FC = () => {
     }
 
     setLoading(true);
+    setSearched(true);
+    
     try {
-      const params = new URLSearchParams({
-        from_district: fromDistrict,
-        to_district: toDistrict,
-        avoid_conditions: avoidConditions.join(',')
+      // Get all road reports to identify problem areas
+      const response = await axios.get(`${API_BASE_URL}/api/public/road-reports?limit=1000`);
+      const allReports = Array.isArray(response.data) ? response.data : [];
+      
+      // Filter reports that affect the route between districts
+      const relevantReports = allReports.filter((report: any) => {
+        // Check if report is in or between selected districts
+        const districts = [fromDistrict, toDistrict];
+        return districts.includes(report.district) && 
+               avoidConditions.includes(report.condition) &&
+               (report.status === 'pending' || report.status === 'verified');
       });
 
-      const response = await axios.get(`${API_BASE_URL}/api/public/safe-routes?${params}`);
-      setSafeRoutes(response.data.routes || []);
-      setSearched(true);
-      
-      if (response.data.routes?.length === 0) {
-        toast.error('No safe routes found with current filters');
+      if (relevantReports.length === 0) {
+        toast.success(`✅ No reported ${avoidConditions.join(', ')} conditions between ${fromDistrict} and ${toDistrict}`);
       } else {
-        toast.success(`Found ${response.data.routes?.length || 0} safe route(s)`);
+        toast(`⚠️ Found ${relevantReports.length} reported issue(s) to avoid on this route`, { icon: '⚠️' });
       }
-    } catch (error) {
-      console.error('Error fetching safe routes:', error);
-      toast.error('Failed to fetch safe routes');
+      
+      // For now, we'll show a message about crowdsourced data
       setSafeRoutes([]);
-      setSearched(true);
+    } catch (error) {
+      console.error('Error checking road conditions:', error);
+      toast.error('Failed to check road conditions');
+      setSafeRoutes([]);
     } finally {
       setLoading(false);
     }
@@ -139,8 +146,8 @@ const SafeRoutesPage: React.FC = () => {
           <div className="flex items-center">
             <Navigation className="h-8 w-8 mr-3" />
             <div>
-              <h1 className="text-3xl font-bold">Find Safe Routes</h1>
-              <p className="text-green-100 mt-1">Get route recommendations avoiding affected areas</p>
+              <h1 className="text-3xl font-bold">Check Road Conditions</h1>
+              <p className="text-green-100 mt-1">View crowdsourced reports between districts</p>
             </div>
           </div>
         </div>
