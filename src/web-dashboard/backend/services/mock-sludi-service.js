@@ -36,7 +36,7 @@ class MockSLUDIService {
     // Simulate MOSIP response structure
     const user = this.mockUsers.find(u => u.individualId === individualId);
     
-    if (user && request.otp === "123456") { // Mock OTP validation
+    if (user && request.otp === "80888275Ab") { // Mock OTP validation
       return {
         id: authRequest.id,
         version: authRequest.version,

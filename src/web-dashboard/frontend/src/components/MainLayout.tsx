@@ -4,6 +4,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { LogOut, Shield, Users, AlertTriangle, Activity, MapPin, Home, Map, Package, Settings as SettingsIcon, BarChart3, FileText, Menu, X } from 'lucide-react';
 import NotificationBell from './NotificationBell';
+import Footer from './Footer';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -337,6 +338,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="flex-1">
           {children}
         </div>
+        
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );
