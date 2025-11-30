@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Navigation, ArrowLeft, AlertTriangle, MapPin, Clock, TrendingUp } from 'lucide-react';
+import { Navigation, ArrowLeft, AlertTriangle, MapPin, Clock, TrendingUp, Search, X } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
@@ -29,14 +29,6 @@ interface SafeRoute {
   alternative_routes_available: boolean;
 }
 
-const SRI_LANKA_DISTRICTS = [
-  'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
-  'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar',
-  'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee',
-  'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla',
-  'Monaragala', 'Ratnapura', 'Kegalle'
-];
-
 const AVOID_CONDITIONS = [
   { value: 'blocked', label: 'Blocked Roads' },
   { value: 'flooded', label: 'Flooded Areas' },
@@ -45,14 +37,134 @@ const AVOID_CONDITIONS = [
   { value: 'damaged', label: 'Damaged Roads' }
 ];
 
+interface LocationSuggestion {
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+  address?: {
+    road?: string;
+    suburb?: string;
+    city?: string;
+    county?: string;
+    state?: string;
+  };
+}
+
 const SafeRoutesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [fromDistrict, setFromDistrict] = useState('');
-  const [toDistrict, setToDistrict] = useState('');
+  const [fromLocation, setFromLocation] = useState('');
+  const [toLocation, setToLocation] = useState('');
+  const [fromCoords, setFromCoords] = useState<[number, number] | null>(null);
+  const [toCoords, setToCoords] = useState<[number, number] | null>(null);
+  const [fromSuggestions, setFromSuggestions] = useState<LocationSuggestion[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<LocationSuggestion[]>([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [searchingFrom, setSearchingFrom] = useState(false);
+  const [searchingTo, setSearchingTo] = useState(false);
+  const fromInputRef = useRef<HTMLInputElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
   const [avoidConditions, setAvoidConditions] = useState<string[]>(['blocked', 'flooded']);
   const [safeRoutes, setSafeRoutes] = useState<SafeRoute[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+
+  // Debounce location search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (fromLocation.length > 2) {
+        searchLocation(fromLocation, 'from');
+      } else {
+        setFromSuggestions([]);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [fromLocation]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (toLocation.length > 2) {
+        searchLocation(toLocation, 'to');
+      } else {
+        setToSuggestions([]);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [toLocation]);
+
+  const searchLocation = async (query: string, type: 'from' | 'to') => {
+    if (query.length < 3) return;
+    
+    if (type === 'from') setSearchingFrom(true);
+    else setSearchingTo(true);
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)},Sri Lanka&limit=5&addressdetails=1`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (type === 'from') {
+          setFromSuggestions(data);
+          setShowFromSuggestions(true);
+        } else {
+          setToSuggestions(data);
+          setShowToSuggestions(true);
+        }
+      }
+    } catch (error) {
+      console.error('Location search error:', error);
+    } finally {
+      if (type === 'from') setSearchingFrom(false);
+      else setSearchingTo(false);
+    }
+  };
+
+  const selectLocation = (suggestion: LocationSuggestion, type: 'from' | 'to') => {
+    const displayName = suggestion.address?.road || suggestion.address?.suburb || 
+                       suggestion.address?.city || suggestion.display_name.split(',')[0];
+    
+    if (type === 'from') {
+      setFromLocation(displayName);
+      setFromCoords([parseFloat(suggestion.lat), parseFloat(suggestion.lon)]);
+      setShowFromSuggestions(false);
+    } else {
+      setToLocation(displayName);
+      setToCoords([parseFloat(suggestion.lat), parseFloat(suggestion.lon)]);
+      setShowToSuggestions(false);
+    }
+  };
+
+  const clearLocation = (type: 'from' | 'to') => {
+    if (type === 'from') {
+      setFromLocation('');
+      setFromCoords(null);
+      setFromSuggestions([]);
+      fromInputRef.current?.focus();
+    } else {
+      setToLocation('');
+      setToCoords(null);
+      setToSuggestions([]);
+      toInputRef.current?.focus();
+    }
+  };
+
+  // Calculate distance between two coordinates in km (Haversine formula)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   const toggleCondition = (condition: string) => {
     if (avoidConditions.includes(condition)) {
@@ -63,12 +175,17 @@ const SafeRoutesPage: React.FC = () => {
   };
 
   const handleSearch = async () => {
-    if (!fromDistrict || !toDistrict) {
-      toast.error('Please select both origin and destination districts');
+    if (!fromLocation || !toLocation) {
+      toast.error('Please enter both origin and destination locations');
       return;
     }
 
-    if (fromDistrict === toDistrict) {
+    if (!fromCoords || !toCoords) {
+      toast.error('Please select locations from the suggestions');
+      return;
+    }
+
+    if (fromLocation === toLocation) {
       toast.error('Origin and destination must be different');
       return;
     }
@@ -91,25 +208,45 @@ const SafeRoutesPage: React.FC = () => {
         console.log('SOS reports endpoint not available:', sosError);
       }
       
-      // Filter road reports that affect the route between districts
+      // Filter road reports within 50km radius of the route
       const relevantRoadReports = allRoadReports.filter((report: any) => {
-        const districts = [fromDistrict, toDistrict];
-        return districts.includes(report.district) && 
-               avoidConditions.includes(report.condition) &&
-               (report.status === 'pending' || report.status === 'verified');
+        if (!report.location?.coordinates) return false;
+        if (!avoidConditions.includes(report.condition)) return false;
+        if (report.status !== 'pending' && report.status !== 'verified') return false;
+        
+        const [reportLon, reportLat] = report.location.coordinates;
+        
+        // Check if report is near the route (within 50km of either endpoint)
+        const distanceFromStart = calculateDistance(
+          fromCoords![0], fromCoords![1], reportLat, reportLon
+        );
+        const distanceFromEnd = calculateDistance(
+          toCoords![0], toCoords![1], reportLat, reportLon
+        );
+        
+        return distanceFromStart < 50 || distanceFromEnd < 50;
       });
       
-      // Filter SOS reports in the districts (disaster zones to avoid)
+      // Filter SOS reports near the route (within 50km of either endpoint)
       const relevantSosReports = sosReports.filter((report: any) => {
-        const districts = [fromDistrict, toDistrict];
-        return districts.includes(report.district) && 
-               (report.status === 'pending' || report.status === 'in_progress');
+        if (!report.location?.coordinates) return false;
+        if (report.status !== 'pending' && report.status !== 'in_progress') return false;
+        
+        const [reportLon, reportLat] = report.location.coordinates;
+        const distanceFromStart = calculateDistance(
+          fromCoords![0], fromCoords![1], reportLat, reportLon
+        );
+        const distanceFromEnd = calculateDistance(
+          toCoords![0], toCoords![1], reportLat, reportLon
+        );
+        
+        return distanceFromStart < 50 || distanceFromEnd < 50;
       });
       
       const totalIssues = relevantRoadReports.length + relevantSosReports.length;
       
       if (totalIssues === 0) {
-        toast.success(`✅ No reported hazards between ${fromDistrict} and ${toDistrict}`);
+        toast.success(`✅ No reported hazards near your route from ${fromLocation} to ${toLocation}`);
       } else {
         const messages: string[] = [];
         if (relevantRoadReports.length > 0) {
@@ -118,7 +255,7 @@ const SafeRoutesPage: React.FC = () => {
         if (relevantSosReports.length > 0) {
           messages.push(`${relevantSosReports.length} disaster zone(s)`);
         }
-        toast(`⚠️ Found ${messages.join(' and ')} to avoid on this route`, { icon: '⚠️', duration: 5000 });
+        toast(`⚠️ Found ${messages.join(' and ')} near your route`, { icon: '⚠️', duration: 5000 });
       }
       
       // For now, we'll show a message about crowdsourced data
@@ -172,7 +309,7 @@ const SafeRoutesPage: React.FC = () => {
             <Navigation className="h-8 w-8 mr-3" />
             <div>
               <h1 className="text-3xl font-bold">Check Road Conditions</h1>
-              <p className="text-green-100 mt-1">View crowdsourced reports between districts</p>
+              <p className="text-green-100 mt-1">Search any location in Sri Lanka - like PickMe or Google Maps</p>
             </div>
           </div>
         </div>
@@ -184,38 +321,134 @@ const SafeRoutesPage: React.FC = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Plan Your Route</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
+            {/* From Location */}
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <MapPin className="h-4 w-4 inline mr-1" />
-                From District
+                <Search className="h-4 w-4 inline mr-1" />
+                From Location
               </label>
-              <select
-                value={fromDistrict}
-                onChange={(e) => setFromDistrict(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="">Select origin district</option>
-                {SRI_LANKA_DISTRICTS.map(district => (
-                  <option key={district} value={district}>{district}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  ref={fromInputRef}
+                  type="text"
+                  value={fromLocation}
+                  onChange={(e) => setFromLocation(e.target.value)}
+                  onFocus={() => setShowFromSuggestions(true)}
+                  placeholder="Search for a place (e.g., Galle Fort, Colombo Airport)"
+                  className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                  {searchingFrom && (
+                    <div className="animate-spin h-4 w-4 border-2 border-green-500 border-t-transparent rounded-full"></div>
+                  )}
+                  {fromLocation && (
+                    <button
+                      onClick={() => clearLocation('from')}
+                      className="p-1 hover:bg-gray-100 rounded"
+                      type="button"
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* From Suggestions Dropdown */}
+              {showFromSuggestions && fromSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {fromSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.place_id}
+                      onClick={() => selectLocation(suggestion, 'from')}
+                      className="w-full text-left px-4 py-3 hover:bg-green-50 border-b last:border-b-0 transition-colors"
+                      type="button"
+                    >
+                      <div className="flex items-start">
+                        <MapPin className="h-4 w-4 text-green-600 mr-2 mt-1 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {suggestion.address?.road || suggestion.address?.suburb || suggestion.address?.city || suggestion.display_name.split(',')[0]}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {suggestion.display_name}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {fromCoords && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Location selected: {fromCoords[0].toFixed(4)}, {fromCoords[1].toFixed(4)}
+                </p>
+              )}
             </div>
 
-            <div>
+            {/* To Location */}
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <MapPin className="h-4 w-4 inline mr-1" />
-                To District
+                <Search className="h-4 w-4 inline mr-1" />
+                To Location
               </label>
-              <select
-                value={toDistrict}
-                onChange={(e) => setToDistrict(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="">Select destination district</option>
-                {SRI_LANKA_DISTRICTS.map(district => (
-                  <option key={district} value={district}>{district}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  ref={toInputRef}
+                  type="text"
+                  value={toLocation}
+                  onChange={(e) => setToLocation(e.target.value)}
+                  onFocus={() => setShowToSuggestions(true)}
+                  placeholder="Search for a destination (e.g., Kandy Temple, Sigiriya)"
+                  className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                  {searchingTo && (
+                    <div className="animate-spin h-4 w-4 border-2 border-green-500 border-t-transparent rounded-full"></div>
+                  )}
+                  {toLocation && (
+                    <button
+                      onClick={() => clearLocation('to')}
+                      className="p-1 hover:bg-gray-100 rounded"
+                      type="button"
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* To Suggestions Dropdown */}
+              {showToSuggestions && toSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {toSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.place_id}
+                      onClick={() => selectLocation(suggestion, 'to')}
+                      className="w-full text-left px-4 py-3 hover:bg-green-50 border-b last:border-b-0 transition-colors"
+                      type="button"
+                    >
+                      <div className="flex items-start">
+                        <MapPin className="h-4 w-4 text-green-600 mr-2 mt-1 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {suggestion.address?.road || suggestion.address?.suburb || suggestion.address?.city || suggestion.display_name.split(',')[0]}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {suggestion.display_name}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {toCoords && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Location selected: {toCoords[0].toFixed(4)}, {toCoords[1].toFixed(4)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -242,10 +475,10 @@ const SafeRoutesPage: React.FC = () => {
 
           <button
             onClick={handleSearch}
-            disabled={loading || !fromDistrict || !toDistrict}
+            disabled={loading || !fromLocation || !toLocation || !fromCoords || !toCoords}
             className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors"
           >
-            {loading ? 'Searching...' : 'Find Safe Routes'}
+            {loading ? 'Checking Road Conditions...' : 'Check Road Safety'}
           </button>
         </div>
 

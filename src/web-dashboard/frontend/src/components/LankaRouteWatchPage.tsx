@@ -86,8 +86,8 @@ const LankaRouteWatchPage: React.FC = () => {
                      Array.isArray(reportsRes.data) ? reportsRes.data : [];
       setRoadReports(reports);
 
-      // Set statistics from aggregated crowdsourced data
-      const statsData = statsRes.data || {
+      // Set statistics from aggregated crowdsourced data - API returns stats in response.data.data
+      const statsData = statsRes.data?.data || statsRes.data || {
         total_reports: 0,
         active_reports: 0,
         resolved_reports: 0,
@@ -95,6 +95,9 @@ const LankaRouteWatchPage: React.FC = () => {
         by_condition: {},
         affected_districts: 0
       };
+      
+      console.log('📊 Stats API Response:', statsRes.data);
+      console.log('📊 Stats Data:', statsData);
       
       setStats({
         total_reports: statsData.total_reports || 0,
