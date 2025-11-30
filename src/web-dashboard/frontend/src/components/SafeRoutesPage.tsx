@@ -102,11 +102,23 @@ const SafeRoutesPage: React.FC = () => {
     if (type === 'from') setSearchingFrom(true);
     else setSearchingTo(true);
 
+    // Create abort controller with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)},Sri Lanka&limit=5&addressdetails=1`,
-        { headers: { 'Accept': 'application/json' } }
+        { 
+          signal: controller.signal,
+          headers: { 
+            'Accept': 'application/json',
+            'User-Agent': 'ResQ-Disaster-Platform/1.0'
+          } 
+        }
       );
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();
@@ -118,8 +130,10 @@ const SafeRoutesPage: React.FC = () => {
           setShowToSuggestions(true);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Location search error:', error);
+      // Don't show error to user, just log it
     } finally {
       if (type === 'from') setSearchingFrom(false);
       else setSearchingTo(false);

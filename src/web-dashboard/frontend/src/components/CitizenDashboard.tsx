@@ -78,17 +78,41 @@ const CitizenDashboard: React.FC = () => {
 
   const reverseGeocode = async () => {
     if (!location) return;
+    
+    // Create abort controller with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     try {
-      const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}`
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}`,
+        {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'ResQ-Disaster-Platform/1.0'
+          }
+        }
       );
-      if (response.data && response.data.display_name) {
-        const parts = response.data.display_name.split(',');
-        setLocationName(parts.slice(0, 3).join(','));
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.display_name) {
+          const parts = data.display_name.split(',');
+          setLocationName(parts.slice(0, 3).join(','));
+          return;
+        }
       }
-    } catch (error) {
+      
+      // Fallback to coordinates if geocoding fails
+      setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Reverse geocoding error:', error);
-      setLocationName('Location Unknown');
+      // Fallback to coordinates display
+      setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
     }
   };
 
@@ -149,17 +173,6 @@ const CitizenDashboard: React.FC = () => {
     }
   };
 
-  const getRiskColor = (risk: string) => {
-    switch (risk.toLowerCase()) {
-      case 'high':
-        return 'bg-red-500';
-      case 'medium':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-green-500';
-    }
-  };
-
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
       case 'critical':
@@ -178,102 +191,99 @@ const CitizenDashboard: React.FC = () => {
       <CitizenNavbar />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Quick Actions - Most Essential Only */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Emergency Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Quick Actions - Mobile Optimized */}
+        <div className="mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3">Emergency Actions</h2>
+          <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
             <button
               onClick={() => navigate('/citizen/emergency-contacts')}
-              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
+              className="bg-red-600 hover:bg-red-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
             >
-              <Phone className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">Emergency Contacts</h3>
-              <p className="text-sm text-red-100 mt-1">117, 119, 110, 108 & DDMCU</p>
+              <Phone className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
+              <h3 className="text-xs md:text-xl font-bold">Emergency Contacts</h3>
+              <p className="text-[10px] md:text-sm text-red-100 mt-0.5 md:mt-1 hidden md:block">117, 119, 110, 108 & DDMCU</p>
             </button>
 
             <button
               onClick={() => navigate('/citizen/route-watch')}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
+              className="bg-blue-600 hover:bg-blue-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
             >
-              <div className="absolute -top-2 -right-2 bg-yellow-400 text-blue-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+              <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-yellow-400 text-blue-900 text-[8px] md:text-xs font-bold px-1.5 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg animate-pulse">
                 NEW
               </div>
-              <Navigation className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">LankaRouteWatch</h3>
-              <p className="text-sm text-blue-100 mt-1">Road conditions & safe routes</p>
+              <Navigation className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
+              <h3 className="text-xs md:text-xl font-bold leading-tight">LankaRoute<br className="md:hidden" />Watch</h3>
+              <p className="text-[10px] md:text-sm text-blue-100 mt-0.5 md:mt-1 hidden md:block">Road conditions & safe routes</p>
             </button>
 
             <button
               onClick={() => navigate('/citizen/sos')}
-              className="bg-red-500 hover:bg-red-600 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
             >
-              <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">SOS Emergency</h3>
-              <p className="text-sm text-red-100 mt-1">Send distress signal</p>
+              <AlertTriangle className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
+              <h3 className="text-xs md:text-xl font-bold">SOS Emergency</h3>
+              <p className="text-[10px] md:text-sm text-red-100 mt-0.5 md:mt-1 hidden md:block">Send distress signal</p>
             </button>
 
             <button
               onClick={() => navigate('/citizen/relief-tracker')}
-              className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-purple-600 hover:bg-purple-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
             >
-              <Package className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">Relief Tracker</h3>
-              <p className="text-sm text-purple-100 mt-1">Find help or volunteer</p>
+              <Package className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
+              <h3 className="text-xs md:text-xl font-bold">Relief Tracker</h3>
+              <p className="text-[10px] md:text-sm text-purple-100 mt-0.5 md:mt-1 hidden md:block">Find help or volunteer</p>
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Current Location */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <MapPin className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Your Location</h3>
-            </div>
-            {location ? (
-              <div>
-                <p className="text-gray-600 mb-2">{locationName}</p>
-                <div className="text-sm text-gray-500 space-y-1">
-                  <p>Latitude: {location.lat.toFixed(6)}</p>
-                  <p>Longitude: {location.lng.toFixed(6)}</p>
-                </div>
+        {/* Risk Assessment Card - Full Width Main Card */}
+        <div className="relative mb-6">
+          <div className={`rounded-2xl shadow-lg p-8 border relative overflow-hidden ${
+            riskStatus.toLowerCase() === 'high' 
+              ? 'bg-gradient-to-br from-red-50 via-red-50 to-red-100 border-red-100' 
+              : riskStatus.toLowerCase() === 'medium'
+              ? 'bg-gradient-to-br from-orange-50 via-orange-50 to-orange-100 border-orange-100'
+              : 'bg-gradient-to-br from-green-50 via-green-50 to-green-100 border-green-100'
+          }`}>
+            {/* Decorative Pattern */}
+            <div className={`absolute top-0 right-0 w-40 h-40 rounded-full opacity-20 -mr-20 -mt-20 ${
+              riskStatus.toLowerCase() === 'high' ? 'bg-red-200' :
+              riskStatus.toLowerCase() === 'medium' ? 'bg-orange-200' : 'bg-green-200'
+            }`}></div>
+            <div className={`absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-20 -ml-16 -mb-16 ${
+              riskStatus.toLowerCase() === 'high' ? 'bg-red-200' :
+              riskStatus.toLowerCase() === 'medium' ? 'bg-orange-200' : 'bg-green-200'
+            }`}></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-xs text-gray-500">Update • {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                <button className={`px-5 py-2 rounded-full text-sm font-medium shadow-sm ${
+                  riskStatus.toLowerCase() === 'high' 
+                    ? 'bg-red-500 text-white' 
+                    : riskStatus.toLowerCase() === 'medium'
+                    ? 'bg-orange-400 text-white'
+                    : 'bg-green-500 text-white'
+                }`}>
+                  {riskStatus.toLowerCase() === 'high' ? 'High Risk ⚠️' :
+                   riskStatus.toLowerCase() === 'medium' ? 'Medium Risk ⚡' :
+                   'Normal 😊'}
+                </button>
               </div>
-            ) : (
-              <p className="text-gray-500">Getting location...</p>
-            )}
-          </div>
 
-          {/* Weather */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Cloud className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Weather</h3>
-            </div>
-            {weather ? (
-              <div>
-                <p className="text-3xl font-bold text-gray-800 mb-2">{weather.temperature}</p>
-                <p className="text-gray-600 mb-3">{weather.condition}</p>
-                <div className="text-sm text-gray-500 space-y-1">
-                  <p>💧 Humidity: {weather.humidity}</p>
-                  <p>🌬️ Wind: {weather.windSpeed}</p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-500">Loading weather...</p>
-            )}
-          </div>
-
-          {/* Risk Status with Visual */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <AlertTriangle className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Risk Assessment</h3>
-            </div>
-            {loading ? (
-              <p className="text-gray-500">Calculating risk...</p>
-            ) : (
-              <div>
-                <div className="flex flex-col items-center mb-4">
+              {loading ? (
+                <p className="text-sm text-gray-500">Calculating risk...</p>
+              ) : (
+                <div className="flex items-center justify-between gap-6 pb-20">
+                  <div className="flex-1">
+                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
+                      {riskStatus.toLowerCase() === 'high' 
+                        ? 'High risk detected. Please take necessary precautions!' 
+                        : riskStatus.toLowerCase() === 'medium'
+                        ? 'Some conditions need attention. Stay cautious!'
+                        : 'Everything looks normal. Have a great day!'}
+                    </h3>
+                  </div>
                   <img 
                     src={`/images/${
                       riskStatus.toLowerCase() === 'high' ? 'highRisk' :
@@ -281,24 +291,64 @@ const CitizenDashboard: React.FC = () => {
                       'lowRisk'
                     }.png`}
                     alt={`${riskStatus} Risk`}
-                    className="w-full max-w-xs h-auto rounded-lg shadow-lg mb-3"
+                    className="w-40 md:w-48 h-auto rounded-lg flex-shrink-0"
                     onError={(e) => {
-                      // Fallback if image doesn't load
                       e.currentTarget.style.display = 'none';
                     }}
                   />
-                  <div className="flex items-center space-x-3">
-                    <div className={`h-4 w-4 rounded-full ${getRiskColor(riskStatus)}`}></div>
-                    <span className="text-2xl font-bold text-gray-800">{riskStatus} Risk</span>
-                  </div>
                 </div>
-                <p className="text-sm text-gray-600 text-center">
-                  {riskStatus === 'High' && 'Stay alert and follow safety guidelines'}
-                  {riskStatus === 'Medium' && 'Be prepared for possible emergencies'}
-                  {riskStatus === 'Low' && 'No immediate threats detected'}
-                </p>
+              )}
+            </div>
+
+            {/* Overlapping Small Cards at Bottom */}
+            <div className="absolute bottom-4 left-4 right-4 flex gap-3 z-20">
+              {/* Location Card - Small Overlay */}
+              <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 border border-gray-200 flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <MapPin className="h-3 w-3 text-purple-600" />
+                  <span className="text-[10px] text-gray-500 font-medium">Your Location</span>
+                </div>
+                {location ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-900 truncate">
+                        {locationName || 'Location Unknown'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={getCurrentLocation}
+                      className="ml-2 px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full text-[10px] font-medium transition-colors flex-shrink-0"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-gray-400">Getting location...</p>
+                )}
               </div>
-            )}
+
+              {/* Weather Card - Small Overlay */}
+              <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 border border-gray-200 flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Cloud className="h-3 w-3 text-blue-600" />
+                  <span className="text-[10px] text-gray-500 font-medium">Weather</span>
+                </div>
+                {weather ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-bold text-gray-900 leading-none">{weather.temperature}</p>
+                      <p className="text-[10px] text-gray-600">{weather.condition}</p>
+                    </div>
+                    <div className="text-[10px] text-gray-500 text-right">
+                      <p>💧 {weather.humidity}</p>
+                      <p>🌬️ {weather.windSpeed}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-gray-400">Loading...</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

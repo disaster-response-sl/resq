@@ -62,7 +62,8 @@ const ReportRoadIssuePage: React.FC = () => {
               { 
                 signal: controller.signal,
                 headers: {
-                  'Accept': 'application/json'
+                  'Accept': 'application/json',
+                  'User-Agent': 'ResQ-Disaster-Platform/1.0'
                 }
               }
             );
