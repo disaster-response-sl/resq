@@ -56,8 +56,13 @@ const EmergencyContactsPage: React.FC = () => {
 
   useEffect(() => {
     fetchEmergencyStats();
-    fetchDistrictContact();
-  }, [selectedDistrict]);
+  }, []); // Only fetch stats once on mount
+
+  useEffect(() => {
+    if (selectedDistrict) {
+      fetchDistrictContact();
+    }
+  }, [selectedDistrict]); // Only fetch district contact when district changes
 
   const fetchEmergencyStats = async () => {
     try {

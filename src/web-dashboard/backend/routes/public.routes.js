@@ -663,36 +663,7 @@ router.get('/ddmcu-contacts', async (req, res) => {
     
     console.log(`📞 Fetching DDMCU contacts${district ? ` for district: ${district}` : ' (all districts)'}`);
 
-    // Try to fetch from Supabase API - it may have DDMCU data in a separate table
-    // If not available via public API, we'll need to query Supabase directly
-    const supabaseUrl = 'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api';
-    const params = new URLSearchParams();
-    
-    // Try fetching with type=ddmcu or similar parameter
-    if (district) {
-      params.append('district', district);
-    }
-    
-    try {
-      // First attempt: try the public API with district filter
-      const response = await axios.get(`${supabaseUrl}?${params.toString()}`, {
-        timeout: 5000
-      });
-      
-      // Check if response contains DDMCU data
-      if (response.data && response.data.ddmcu_contacts) {
-        console.log(`✅ Found DDMCU contacts from Supabase API`);
-        return res.json({
-          success: true,
-          data: response.data.ddmcu_contacts,
-          source: 'supabase'
-        });
-      }
-    } catch (apiError) {
-      console.log('⚠️ Supabase public API does not contain DDMCU data, using local data');
-    }
-
-    // Official DDMCU contact data for all 25 districts of Sri Lanka
+    // Official DDMCU contact data for all 25 districts of Sri Lanka (from DMC)
     const ddmcuContacts = {
       'Ampara': {
         district: 'Ampara',

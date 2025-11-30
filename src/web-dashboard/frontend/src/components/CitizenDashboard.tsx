@@ -52,7 +52,7 @@ const CitizenDashboard: React.FC = () => {
     getCurrentLocation();
     fetchRecentAlerts();
     fetchEmergencyStats();
-  }, [location]);
+  }, []); // Only run once on mount
 
   useEffect(() => {
     if (location) {
@@ -60,7 +60,7 @@ const CitizenDashboard: React.FC = () => {
       fetchRiskStatus();
       reverseGeocode();
     }
-  }, [location]);
+  }, [location]); // Run when location changes
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
