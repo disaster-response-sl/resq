@@ -27,6 +27,7 @@ interface Alert {
 
 const CitizenDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const [location, setLocation] = useState<Location | null>(null);
   const [locationName, setLocationName] = useState<string>('Getting location...');
   const [weather, setWeather] = useState<Weather | null>(null);
@@ -297,18 +298,10 @@ const CitizenDashboard: React.FC = () => {
                   <span className="text-[10px] text-gray-500 font-medium">Your Location</span>
                 </div>
                 {location ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 truncate">
-                        {locationName || 'Location Unknown'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={getCurrentLocation}
-                      className="ml-2 px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full text-[10px] font-medium transition-colors flex-shrink-0"
-                    >
-                      Change
-                    </button>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-900 truncate">
+                      {locationName || 'Location Unknown'}
+                    </p>
                   </div>
                 ) : (
                   <p className="text-[10px] text-gray-400">Getting location...</p>
