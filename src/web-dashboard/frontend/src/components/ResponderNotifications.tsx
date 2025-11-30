@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 import toast from 'react-hot-toast';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 interface Notification {
   id: string;
   type: string;
@@ -48,7 +50,7 @@ const ResponderNotifications: React.FC<NotificationPanelProps> = ({ isOpen, onCl
     
     try {
       const token = authService.getToken();
-      const response = await fetch('/api/responder/notifications', {
+      const response = await fetch(`${API_BASE_URL}/api/responder/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -78,7 +80,7 @@ const ResponderNotifications: React.FC<NotificationPanelProps> = ({ isOpen, onCl
   const markAsRead = async (notificationId: string) => {
     try {
       const token = authService.getToken();
-      const response = await fetch(`/api/responder/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/api/responder/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -101,7 +103,7 @@ const ResponderNotifications: React.FC<NotificationPanelProps> = ({ isOpen, onCl
   const markAllAsRead = async () => {
     try {
       const token = authService.getToken();
-      const response = await fetch('/api/responder/notifications/read-all', {
+      const response = await fetch(`${API_BASE_URL}/api/responder/notifications/read-all`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -124,7 +126,7 @@ const ResponderNotifications: React.FC<NotificationPanelProps> = ({ isOpen, onCl
   const deleteNotification = async (notificationId: string) => {
     try {
       const token = authService.getToken();
-      const response = await fetch(`/api/responder/notifications/${notificationId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/responder/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

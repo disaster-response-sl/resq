@@ -47,15 +47,15 @@ export const API_ENDPOINTS = {
   // Locations
   LOCATIONS: '/resources/locations',
   
-  // Map endpoints
-  MAP_REPORTS: '/map/reports',
-  MAP_HEATMAP: '/map/heatmap',
-  MAP_RESOURCE_ANALYSIS: '/map/resource-analysis',
-  MAP_DISASTERS: '/map/disasters',
+  // Map endpoints (admin/backend - need /api prefix)
+  MAP_REPORTS: '/api/map/reports',
+  MAP_HEATMAP: '/api/map/heatmap',
+  MAP_RESOURCE_ANALYSIS: '/api/map/resource-analysis',
+  MAP_DISASTERS: '/api/map/disasters',
   
-  // SOS endpoints
-  SOS_SIGNALS: '/mobile/sos-signals',
-  SOS_ANALYTICS: '/admin/sos/analytics',
+  // SOS endpoints (admin/backend - need /api prefix)
+  SOS_SIGNALS: '/api/mobile/sos-signals',
+  SOS_ANALYTICS: '/api/admin/sos/analytics',
 } as const;
 
 export default {

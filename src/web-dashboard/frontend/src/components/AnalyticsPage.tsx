@@ -21,6 +21,8 @@ import {
 import MainLayout from './MainLayout';
 import toast from 'react-hot-toast';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 interface DisasterStats {
   overview: {
     total_disasters: number;
@@ -103,7 +105,7 @@ const AnalyticsPage: React.FC = () => {
       setAnalyticsData(prev => ({ ...prev, loading: true }));
 
       // Fetch disaster analytics
-      const disasterResponse = await fetch(`/api/admin/analytics/statistics?startDate=${getStartDate()}`, {
+      const disasterResponse = await fetch(`${API_BASE_URL}/api/admin/analytics/statistics?startDate=${getStartDate()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -111,7 +113,7 @@ const AnalyticsPage: React.FC = () => {
       const disasterData = await disasterResponse.json();
 
       // Fetch SOS analytics
-      const sosResponse = await fetch(`/api/admin/sos/analytics?timeRange=${timeRange}`, {
+      const sosResponse = await fetch(`${API_BASE_URL}/api/admin/sos/analytics?timeRange=${timeRange}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
