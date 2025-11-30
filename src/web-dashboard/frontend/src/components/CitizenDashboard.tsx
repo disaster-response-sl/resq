@@ -196,7 +196,7 @@ const CitizenDashboard: React.FC = () => {
         {/* Quick Actions - Emergency First */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Emergency Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <button
               onClick={() => navigate('/citizen/sos')}
               className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
@@ -213,6 +213,15 @@ const CitizenDashboard: React.FC = () => {
               <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">Report Incident</h3>
               <p className="text-sm text-orange-100 mt-1">Food, shelter, medical</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/citizen/relief-tracker')}
+              className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+            >
+              <Package className="h-12 w-12 mx-auto mb-3" />
+              <h3 className="text-xl font-bold">Relief Tracker</h3>
+              <p className="text-sm text-purple-100 mt-1">Find help or volunteer</p>
             </button>
 
             <button

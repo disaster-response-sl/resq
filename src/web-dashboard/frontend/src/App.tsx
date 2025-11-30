@@ -22,6 +22,7 @@ import CitizenSOSPage from './components/CitizenSOSPage';
 import CitizenReportPage from './components/CitizenReportPage';
 import CitizenChatPage from './components/CitizenChatPage';
 import CitizenMapPage from './components/CitizenMapPage';
+import ReliefTrackerPage from './components/ReliefTrackerPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -135,6 +136,7 @@ function App() {
               <Route path="/citizen/report" element={<CitizenReportPage />} />
               <Route path="/citizen/chat" element={<CitizenChatPage />} />
               <Route path="/citizen/map" element={<CitizenMapPage />} />
+              <Route path="/citizen/relief-tracker" element={<ReliefTrackerPage />} />
               
               {/* Redirect root to citizen dashboard */}
               <Route path="/" element={<Navigate to="/citizen" replace />} />
