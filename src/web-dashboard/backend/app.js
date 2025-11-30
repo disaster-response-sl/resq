@@ -4,7 +4,6 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
@@ -56,12 +55,31 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Sanitize data to prevent NoSQL injection
-app.use(mongoSanitize());
+// Manual sanitization for NoSQL injection (Express 5 compatible)
+app.use((req, res, next) => {
+  const sanitize = (obj) => {
+    if (obj && typeof obj === 'object') {
+      Object.keys(obj).forEach(key => {
+        if (key.startsWith('$') || key.includes('.')) {
+          delete obj[key];
+        } else if (typeof obj[key] === 'object') {
+          sanitize(obj[key]);
+        }
+      });
+    }
+    return obj;
+  };
+  
+  if (req.body) sanitize(req.body);
+  if (req.params) sanitize(req.params);
+  
+  next();
+});
 
 // Import user & mobile routes
 const authRoutes = require('./routes/auth');
 const mobileAuthRoutes = require('./routes/mobileAuth.routes');
+const publicRoutes = require('./routes/public.routes');
 const mapRoutes = require('./routes/map.routes');
 const resourceRoutes = require('./routes/resources.routes');
 const ndxRoutes = require('./routes/ndx.routes');
@@ -91,6 +109,7 @@ const SosEscalationService = require('./services/sos-escalation.service');
 // Use user & mobile routes (with rate limiting for auth)
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/mobile', authLimiter, mobileAuthRoutes);
+app.use('/api/public', publicRoutes); // Public citizen routes - no auth required
 app.use('/api/map', mapRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/ndx', ndxRoutes);

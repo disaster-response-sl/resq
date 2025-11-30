@@ -15,6 +15,11 @@ import PaymentStatistics from './components/PaymentStatistics';
 import MissingPersonsDashboard from './components/MissingPersonsDashboard';
 import ReliefDataDashboard from './components/ReliefDataDashboard';
 import ReportsDashboard from './components/ReportsDashboard';
+import CitizenDashboard from './components/CitizenDashboard';
+import CitizenSOSPage from './components/CitizenSOSPage';
+import CitizenReportPage from './components/CitizenReportPage';
+import CitizenChatPage from './components/CitizenChatPage';
+import CitizenMapPage from './components/CitizenMapPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -134,8 +139,16 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              {/* Public Citizen Routes - No Authentication Required */}
+              <Route path="/citizen" element={<CitizenDashboard />} />
+              <Route path="/citizen/sos" element={<CitizenSOSPage />} />
+              <Route path="/citizen/report" element={<CitizenReportPage />} />
+              <Route path="/citizen/chat" element={<CitizenChatPage />} />
+              <Route path="/citizen/map" element={<CitizenMapPage />} />
+              
+              {/* Redirect root to citizen dashboard */}
+              <Route path="/" element={<Navigate to="/citizen" replace />} />
+              <Route path="*" element={<Navigate to="/citizen" replace />} />
             </Routes>
             <Toaster 
               position="top-right"
