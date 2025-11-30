@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { LogOut, Shield, Users, AlertTriangle, Activity, MapPin, Home, Map, Package, Settings as SettingsIcon, Layers, BarChart3, DollarSign, FileText } from 'lucide-react';
+import { LogOut, Shield, Users, AlertTriangle, Activity, MapPin, Home, Map, Package, Settings as SettingsIcon, BarChart3, FileText, Menu, X } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
 interface MainLayoutProps {
@@ -14,10 +14,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { hasPermission, canRead, isAdmin } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+  
+  // Close sidebar on mobile when navigating
+  const handleLinkClick = () => {
+    if (window.innerWidth < 1024) { // lg breakpoint
+      setSidebarOpen(false);
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -41,30 +49,38 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
+          <div className="flex justify-between items-center h-16 lg:h-20">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100"
+              >
+                {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+              
               <div className="flex-shrink-0">
                 <img
                   src="/logo.png"
                   alt="ResQ Hub Logo"
-                  className="w-12 h-12 rounded-lg"
+                  className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg"
                 />
               </div>
               <div className="text-gray-900">
-                <h1 className="text-2xl font-bold tracking-tight">
+                <h1 className="text-lg lg:text-2xl font-bold tracking-tight">
                   ResQ Hub
                 </h1>
-                <p className="text-sm text-gray-600 font-medium">
+                <p className="text-xs lg:text-sm text-gray-600 font-medium hidden sm:block">
                   National Disaster Management Platform
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <NotificationBell />
-              <div className="flex items-center space-x-3">
+              <div className="hidden md:flex items-center space-x-3">
                 <div className="text-right">
                   <div className="text-sm font-medium text-gray-900">
                     {user?.name || user?.individualId}
@@ -82,19 +98,43 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   Logout
                 </button>
               </div>
+              
+              {/* Mobile Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="md:hidden inline-flex items-center p-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Layout with Sidebar */}
-      <div className="flex">
+      <div className="flex relative">
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
         {/* Sidebar */}
-        <div className="w-64 bg-white shadow-sm border-r border-gray-200 min-h-screen">
-          <nav className="mt-8 px-4">
+        <div className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          w-64 bg-white shadow-sm border-r border-gray-200 
+          transform transition-transform duration-300 ease-in-out
+          lg:transform-none
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          overflow-y-auto
+        `}>
+          <nav className="mt-8 px-4 pb-8">
             <div className="space-y-2">
               <Link
                 to="/dashboard"
+                onClick={handleLinkClick}
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   location.pathname === '/dashboard'
                     ? 'bg-blue-100 text-blue-700'
@@ -122,7 +162,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
               {/* Payment Management removed - focusing on disaster response features */}
               {/* {isAdmin() && (
-                <Link to="/payments" className="..."><DollarSign className="w-5 h-5 mr-3" />Payment Management</Link>
+                <Link onClick={handleLinkClick} to="/payments" className="..."><DollarSign className="w-5 h-5 mr-3" />Payment Management</Link>
               )} */}
 
               {/* SOS Monitor - Admin only */}
@@ -272,7 +312,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
               {/* NDX removed - mock DPI integration not needed for production */}
               {/* {isAdmin() && (
-                <Link to="/ndx" className="..."><Layers className="w-5 h-5 mr-3" />NDX</Link>
+                <Link onClick={handleLinkClick} to="/ndx" className="..."><Layers className="w-5 h-5 mr-3" />NDX</Link>
               )} */}
 
               {/* Settings - Admin only */}

@@ -374,8 +374,8 @@ const CitizenDashboard: React.FC = () => {
               )}
             </div>
 
-            {/* Overlapping Small Cards at Bottom */}
-            <div className="absolute bottom-4 left-4 right-4 flex gap-3 z-20">
+            {/* Overlapping Small Cards at Bottom - Desktop only, separate on mobile */}
+            <div className="hidden md:flex absolute bottom-4 left-4 right-4 gap-3 z-20">
               {/* Location Card - Small Overlay */}
               <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 border border-gray-200 flex-1">
                 <div className="flex items-center space-x-2 mb-1">
@@ -415,6 +415,46 @@ const CitizenDashboard: React.FC = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+        
+        {/* Mobile Only: Separate Cards for Location and Weather */}
+        <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* Location Card */}
+          <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+            <div className="flex items-center space-x-2 mb-2">
+              <MapPin className="h-5 w-5 text-purple-600" />
+              <span className="text-sm text-gray-500 font-medium">Your Location</span>
+            </div>
+            {location ? (
+              <p className="text-sm font-semibold text-gray-900">
+                {locationName || 'Location Unknown'}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-400">Getting location...</p>
+            )}
+          </div>
+
+          {/* Weather Card */}
+          <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+            <div className="flex items-center space-x-2 mb-2">
+              <Cloud className="h-5 w-5 text-blue-600" />
+              <span className="text-sm text-gray-500 font-medium">Weather</span>
+            </div>
+            {weather ? (
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-bold text-gray-900">{weather.temperature}</p>
+                  <p className="text-sm text-gray-600">{weather.condition}</p>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  <p>Humidity: {weather.humidity}</p>
+                  <p>Wind: {weather.windSpeed}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">Loading...</p>
+            )}
           </div>
         </div>
 

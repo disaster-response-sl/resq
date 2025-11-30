@@ -219,31 +219,31 @@ const ResponderDashboard: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
         {/* Header with Notifications */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Responder Dashboard</h1>
-            <p className="text-gray-600">Manage your emergency response assignments</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Responder Dashboard</h1>
+            <p className="text-sm sm:text-base text-gray-600">Manage your emergency response assignments</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => {
                 fetchAssignedSignals();
                 fetchNotificationCount();
                 toast.success('Dashboard refreshed');
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
             >
               <RotateCw className="w-4 h-4" />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </button>
             <button
               onClick={() => setShowNotifications(true)}
-              className="relative flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="relative flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
-              <Bell className="w-5 h-5" />
-              Notifications
+              <Bell className="w-4 sm:w-5 h-4 sm:h-5" />
+              <span className="hidden sm:inline">Notifications</span>
               {unreadNotifications > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {unreadNotifications}
@@ -276,25 +276,25 @@ const ResponderDashboard: React.FC = () => {
             )}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white rounded-lg shadow p-3 sm:p-6">
             <div>
-              <p className="text-sm font-medium text-gray-600">Assigned Signals</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.assignedSignals}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Assigned Signals</p>
+              <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.assignedSignals}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-3 sm:p-6">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Assignments</p>
-              <p className="text-2xl font-bold text-orange-600">{stats.activeSignals}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Active Assignments</p>
+              <p className="text-xl sm:text-2xl font-bold text-orange-600">{stats.activeSignals}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-3 sm:p-6">
             <div>
-              <p className="text-sm font-medium text-gray-600">Resolved Today</p>
-              <p className="text-2xl font-bold text-green-600">{stats.resolvedToday}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Resolved Today</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.resolvedToday}</p>
             </div>
           </div>
 
