@@ -262,20 +262,27 @@ const CitizenMapPage: React.FC = () => {
       {/* Header */}
       <header className="bg-blue-600 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/citizen')}
-              className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </button>
-            <div className="flex items-center space-x-3">
-              <MapIcon className="h-8 w-8" />
-              <div>
-                <h1 className="text-2xl font-bold">Risk Map</h1>
-                <p className="text-blue-100 text-sm">Real-time disaster zones and flood alerts</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/citizen')}
+                className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+              <div className="flex items-center space-x-3">
+                <MapIcon className="h-8 w-8" />
+                <div>
+                  <h1 className="text-2xl font-bold">Risk Map</h1>
+                  <p className="text-blue-100 text-sm">Real-time disaster zones and flood alerts</p>
+                </div>
               </div>
             </div>
+            <img 
+              src="/favicon.png" 
+              alt="ResQ Hub Logo" 
+              className="h-10 w-10"
+            />
           </div>
         </div>
       </header>

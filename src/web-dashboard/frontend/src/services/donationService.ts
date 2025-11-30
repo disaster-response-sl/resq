@@ -4,24 +4,21 @@
 import { DonationStatsResponse, DonationListResponse, DonationQueryParams } from '../types/donation';
 
 export async function getDonationStats(token: string, startDate?: string, endDate?: string): Promise<DonationStatsResponse> {
-  const params = new URLSearchParams();
-  if (startDate) params.append('startDate', startDate);
-  if (endDate) params.append('endDate', endDate);
-
-  const url = `/api/donations/stats${params.toString() ? '?' + params.toString() : ''}`;
-
-  const res = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+  // Donation API disabled - return empty stats
+  // Payment/donation features removed to focus on disaster response
+  return {
+    success: true,
+    data: {
+      total_donations: 0,
+      total_amount: 0,
+      average_donation: 0,
+      total_donors: 0,
+      recent_donations: 0,
+      by_currency: {},
+      by_payment_method: {},
+      monthly_trend: []
     }
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch donation statistics: ${res.statusText}`);
-  }
-
-  return res.json();
+  };
 }
 
 export async function getDonations(

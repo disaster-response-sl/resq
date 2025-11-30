@@ -124,20 +124,27 @@ const CitizenChatPage: React.FC = () => {
       {/* Header */}
       <header className="bg-green-600 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/citizen')}
-              className="p-2 hover:bg-green-700 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </button>
-            <div className="flex items-center space-x-3">
-              <Bot className="h-8 w-8" />
-              <div>
-                <h1 className="text-2xl font-bold">AI Safety Assistant</h1>
-                <p className="text-green-100 text-sm">Ask me anything about disaster safety</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/citizen')}
+                className="p-2 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+              <div className="flex items-center space-x-3">
+                <Bot className="h-8 w-8" />
+                <div>
+                  <h1 className="text-2xl font-bold">AI Safety Assistant</h1>
+                  <p className="text-green-100 text-sm">Ask me anything about disaster safety</p>
+                </div>
               </div>
             </div>
+            <img 
+              src="/favicon.png" 
+              alt="ResQ Hub Logo" 
+              className="h-10 w-10"
+            />
           </div>
         </div>
       </header>

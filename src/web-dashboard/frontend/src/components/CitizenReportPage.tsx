@@ -146,19 +146,26 @@ const CitizenReportPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50">
       {/* Header */}
-      <header className="bg-orange-600 text-white shadow-lg">
+      <header className="bg-green-600 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/citizen')}
-              className="p-2 hover:bg-orange-700 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold">Report Incident</h1>
-              <p className="text-orange-100 text-sm">Report food, shelter, medical, or danger</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/citizen')}
+                className="p-2 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold">Report Incident</h1>
+                <p className="text-green-100 text-sm">Help us track disasters in your area</p>
+              </div>
             </div>
+            <img 
+              src="/favicon.png" 
+              alt="ResQ Hub Logo" 
+              className="h-10 w-10"
+            />
           </div>
         </div>
       </header>
