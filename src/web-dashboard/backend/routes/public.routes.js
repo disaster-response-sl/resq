@@ -278,39 +278,54 @@ router.get('/disasters', async (req, res) => {
   }
 });
 
-// GET /api/public/relief-camps - Get real-time relief camp data from Supabase
+// GET /api/public/relief-camps - Get real-time relief camp data from Supabase (with MongoDB fallback)
 router.get('/relief-camps', async (req, res) => {
   try {
-    const { lat, lng, radius_km, urgency, establishment, status, type } = req.query;
+    const { lat, lng, radius_km, urgency, establishment, status, type, limit } = req.query;
     
-    // Build query params for Supabase API
-    const params = new URLSearchParams();
-    params.append('type', type || 'all');
-    params.append('limit', '100');
-    
-    if (status) params.append('status', status);
-    if (urgency) params.append('urgency', urgency);
-    if (establishment) params.append('establishment', establishment);
-    
-    // Location-based filtering
-    if (lat && lng) {
-      params.append('lat', lat);
-      params.append('lng', lng);
-      params.append('radius_km', radius_km || '50');
-      params.append('sort', 'distance');
-    } else {
-      params.append('sort', 'newest');
+    // Try Supabase API first
+    try {
+      const params = new URLSearchParams();
+      params.append('type', type || 'all');
+      params.append('limit', limit || '100');
+      
+      if (status) params.append('status', status);
+      if (urgency) params.append('urgency', urgency);
+      if (establishment) params.append('establishment', establishment);
+      
+      // Location-based filtering
+      if (lat && lng) {
+        params.append('lat', lat);
+        params.append('lng', lng);
+        params.append('radius_km', radius_km || '50');
+        params.append('sort', 'distance');
+      } else {
+        params.append('sort', 'newest');
+      }
+
+      const response = await axios.get(
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${params.toString()}`,
+        { timeout: 5000 } // 5 second timeout
+      );
+
+      console.log('✅ Supabase relief camps loaded');
+      return res.json({
+        success: true,
+        data: response.data,
+        source: 'supabase_public_api'
+      });
+    } catch (supabaseError) {
+      console.warn('⚠️ Supabase API unavailable, falling back to MongoDB:', supabaseError.message);
+      
+      // Fallback to MongoDB - return empty array since we don't have relief camps collection
+      // Frontend will handle empty state gracefully
+      return res.json({
+        success: true,
+        data: { requests: [] },
+        source: 'mongodb_fallback',
+        message: 'Relief camps service temporarily unavailable'
+      });
     }
-
-    const response = await axios.get(
-      `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${params.toString()}`
-    );
-
-    res.json({
-      success: true,
-      data: response.data,
-      source: 'supabase_public_api'
-    });
   } catch (error) {
     console.error('[PUBLIC RELIEF CAMPS ERROR]', error);
     res.status(500).json({

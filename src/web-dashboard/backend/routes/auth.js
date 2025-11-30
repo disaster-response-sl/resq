@@ -19,11 +19,30 @@ const sludiService = USE_MOCK_SLUDI
 // TODO: Update this endpoint to use real eSignet API when available
 router.post('/login', async (req, res) => {
   try {
-    console.log('Login attempt started for:', req.body.individualId);
+    console.log('🔐 Login attempt started for:', req.body.individualId);
     const { individualId, otp } = req.body;
+    
+    // Check critical environment variables
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ CRITICAL: JWT_SECRET not set in environment variables!');
+      return res.status(500).json({
+        success: false,
+        message: "Server configuration error. Please contact administrator.",
+        error: "JWT_SECRET_MISSING"
+      });
+    }
     
     console.log('Using mock SLUDI:', USE_MOCK_SLUDI);
     console.log('SLUDI service initialized:', !!sludiService);
+    
+    if (!sludiService) {
+      console.error('❌ CRITICAL: SLUDI service not initialized!');
+      return res.status(500).json({
+        success: false,
+        message: "Authentication service unavailable. Please contact administrator.",
+        error: "SLUDI_SERVICE_NOT_INITIALIZED"
+      });
+    }
     
     const authRequest = {
       id: "mosip.identity.auth",
@@ -41,7 +60,7 @@ router.post('/login', async (req, res) => {
 
     console.log('Calling sludiService.authenticate...');
     const authResponse = await sludiService.authenticate(authRequest);
-    console.log('Auth response received:', authResponse);
+    console.log('✅ Auth response received:', authResponse.response.authStatus);
     
     if (authResponse.response.authStatus) {
       // Get user data for JWT payload

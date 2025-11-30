@@ -1,9 +1,13 @@
 # ResQ Platform - Quick Deployment Reference
 
 ## ✅ Current Status
-- **Frontend:** Deployed on Vercel ✅
-- **Backend:** Ready to deploy ⏳
-- **Database:** Ready to configure ⏳
+- **Frontend:** Deployed on Vercel ✅ (https://resq-five.vercel.app)
+- **Backend:** Deployed on Render ✅ (https://resq-backend-3efi.onrender.com)
+- **Database:** MongoDB Atlas ✅
+
+## ⚠️ CRITICAL: Production Issues?
+
+**If login or relief camps are failing**, see **[RENDER_ENV_SETUP.md](./RENDER_ENV_SETUP.md)** for environment variable fix.
 
 ---
 
@@ -27,15 +31,23 @@
    Start Command: npm start
    ```
 
-4. **Environment Variables:**
+4. **Environment Variables (CRITICAL):**
    ```
+   JWT_SECRET=generate-random-32-char-string  ⚠️ REQUIRED - Login will fail without this!
+   USE_MOCK_SLUDI=true                        ⚠️ REQUIRED - Enables authentication
+   MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/resq
    NODE_ENV=production
    PORT=5000
-   MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/resq
-   JWT_SECRET=generate-random-64-char-string
-   OPENWEATHER_API_KEY=your-key
-   GOOGLE_GEMINI_API_KEY=your-key
+   JWT_EXPIRES_IN=24h
+   FRONTEND_URL=https://resq-five.vercel.app
    ```
+   
+   **Generate JWT_SECRET:**
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+   
+   See **[RENDER_ENV_SETUP.md](./RENDER_ENV_SETUP.md)** for detailed setup.
 
 5. **Deploy!**
    - Click "Create Web Service"
