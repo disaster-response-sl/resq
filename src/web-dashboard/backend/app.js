@@ -43,12 +43,16 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
-// Configure CORS - Allow multiple origins for development
+// Configure CORS - Allow multiple origins for development and production
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
-  process.env.FRONTEND_URL
+  'http://localhost:5175',
+  'https://resq-five.vercel.app',
+  'https://resq.vercel.app',
+  process.env.FRONTEND_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
 ].filter(Boolean);
 
 const corsOptions = {
@@ -56,9 +60,11 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Check if origin is in allowed list or matches Vercel preview deployments
+    if (allowedOrigins.indexOf(origin) !== -1 || (origin && origin.includes('.vercel.app'))) {
       callback(null, true);
     } else {
+      console.log('❌ CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
