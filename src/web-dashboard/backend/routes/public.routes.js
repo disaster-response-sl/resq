@@ -147,6 +147,79 @@ router.post('/volunteer', async (req, res) => {
   }
 });
 
+// GET /api/public/sos-signals - Get user-submitted SOS signals from MongoDB
+router.get('/sos-signals', async (req, res) => {
+  try {
+    const { status, limit = 100 } = req.query;
+
+    console.log('📡 FETCHING MongoDB SOS signals...');
+
+    let query = {};
+    if (status) {
+      query.status = status;
+    }
+
+    const sosSignals = await SosSignal.find(query)
+      .sort({ timestamp: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB`);
+
+    res.json({
+      success: true,
+      data: sosSignals,
+      source: 'mongodb',
+      count: sosSignals.length
+    });
+  } catch (error) {
+    console.error('❌ ERROR fetching MongoDB SOS signals:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching SOS signals",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/public/user-reports - Get user-submitted incident reports from MongoDB
+router.get('/user-reports', async (req, res) => {
+  try {
+    const { type, status, limit = 100 } = req.query;
+
+    console.log('📡 FETCHING MongoDB user reports...');
+
+    let query = {};
+    if (type) {
+      query.type = type;
+    }
+    if (status) {
+      query.status = status;
+    }
+
+    const reports = await Report.find(query)
+      .sort({ timestamp: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    console.log(`✅ Found ${reports.length} user reports in MongoDB`);
+
+    res.json({
+      success: true,
+      data: reports,
+      source: 'mongodb',
+      count: reports.length
+    });
+  } catch (error) {
+    console.error('❌ ERROR fetching MongoDB reports:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user reports",
+      error: error.message
+    });
+  }
+});
+
 // GET /api/public/disasters - Get active disasters (public access)
 router.get('/disasters', async (req, res) => {
   try {

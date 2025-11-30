@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Map as MapIcon, ArrowLeft, AlertTriangle, Droplets, Zap } from 'lucide-react';
+import { Map as MapIcon, ArrowLeft, AlertTriangle, Droplets, Zap, AlertCircle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -62,6 +62,18 @@ interface ReliefCamp {
   distance_km?: number;
 }
 
+interface SOSSignal {
+  _id: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  message: string;
+  priority: string;
+  status: string;
+  timestamp: string;
+}
+
 // Component to update map view
 const ChangeView: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
   const map = useMap();
@@ -75,16 +87,19 @@ const CitizenMapPage: React.FC = () => {
   const [disasters, setDisasters] = useState<Disaster[]>([]);
   const [floodData, setFloodData] = useState<FloodData[]>([]);
   const [reliefCamps, setReliefCamps] = useState<ReliefCamp[]>([]);
+  const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFloods, setShowFloods] = useState(true);
   const [showDisasters, setShowDisasters] = useState(true);
   const [showReliefCamps, setShowReliefCamps] = useState(true);
+  const [showSOSSignals, setShowSOSSignals] = useState(true);
 
   useEffect(() => {
     getCurrentLocation();
     fetchDisasters();
     fetchFloodData();
     fetchReliefCamps();
+    fetchSOSSignals();
   }, []);
 
   const getCurrentLocation = () => {
@@ -108,12 +123,15 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchDisasters = async () => {
     try {
+      // HYBRID DATA MODEL: Fetch from MongoDB disasters
       const response = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/disasters`
       );
 
       if (response.data.success) {
-        setDisasters(response.data.data.filter((d: Disaster) => d.status === 'active'));
+        const mongoDisasters = response.data.data.filter((d: Disaster) => d.status === 'active');
+        setDisasters(mongoDisasters);
+        console.log(`✅ Loaded ${mongoDisasters.length} disasters from MongoDB`);
       }
     } catch (error) {
       console.error('Disasters fetch error:', error);
@@ -149,6 +167,21 @@ const CitizenMapPage: React.FC = () => {
     } catch (error) {
       console.error('Flood data fetch error:', error);
       toast.error('Unable to fetch real-time flood data');
+    }
+  };
+
+  const fetchSOSSignals = async () => {
+    try {
+      // HYBRID DATA MODEL: Fetch MongoDB SOS signals from user submissions
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?status=pending&limit=100`
+      );
+      if (response.data.success) {
+        setSOSSignals(response.data.data);
+        console.log(`✅ Loaded ${response.data.data.length} SOS signals from MongoDB`);
+      }
+    } catch (error) {
+      console.error('SOS signals fetch error:', error);
     }
   };
 
@@ -312,6 +345,15 @@ const CitizenMapPage: React.FC = () => {
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
+                checked={showSOSSignals}
+                onChange={(e) => setShowSOSSignals(e.target.checked)}
+                className="w-4 h-4 text-blue-600"
+              />
+              <span className="text-sm font-medium text-gray-700">SOS Signals</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
                 checked={showReliefCamps}
                 onChange={(e) => setShowReliefCamps(e.target.checked)}
                 className="w-4 h-4 text-blue-600"
@@ -461,6 +503,56 @@ const CitizenMapPage: React.FC = () => {
                         <p className="text-xs text-gray-500 mt-2">
                           {new Date(flood.timestamp).toLocaleString()}
                         </p>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+
+            {/* SOS Signals - HYBRID DATA MODEL: MongoDB user submissions */}
+            {showSOSSignals &&
+              sosSignals.map((sos) => (
+                <Marker
+                  key={sos._id}
+                  position={[sos.location.lat, sos.location.lng]}
+                  icon={createCustomIcon('#ef4444', '🚨')}
+                >
+                  <Popup>
+                    <div className="min-w-[200px]">
+                      <h3 className="font-bold text-red-600 mb-2 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        SOS Signal
+                      </h3>
+                      <div className="space-y-1 text-sm">
+                        <p>
+                          <span className="font-semibold">Priority:</span>{' '}
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-bold ${
+                              sos.priority === 'critical'
+                                ? 'bg-red-100 text-red-800'
+                                : sos.priority === 'high'
+                                ? 'bg-orange-100 text-orange-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
+                            {sos.priority}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="font-semibold">Status:</span>{' '}
+                          <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                            {sos.status}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="font-semibold">Message:</span> {sos.message}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(sos.timestamp).toLocaleString()}
+                        </p>
+                        <div className="mt-2 pt-2 border-t border-gray-200">
+                          <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
+                        </div>
                       </div>
                     </div>
                   </Popup>
