@@ -81,12 +81,12 @@ export default function ReliefDataDashboard() {
 
   return (
     <MainLayout>
-      <div className=\"p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen\">
-        <div className=\"max-w-7xl mx-auto\">
+      <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
           {/* Header - Mobile Responsive */}
-          <div className=\"mb-4 sm:mb-6\">
-            <h1 className=\"text-xl sm:text-2xl md:text-3xl font-bold text-gray-900\">Relief Operations Dashboard</h1>
-            <p className=\"text-xs sm:text-sm md:text-base text-gray-600 mt-1\">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Relief Operations Dashboard</h1>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1">
               Access public relief data, camps, and volunteer contributions
             </p>
           </div>
