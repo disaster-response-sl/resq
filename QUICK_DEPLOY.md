@@ -150,13 +150,15 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 ```
 
 ### Issue: CORS errors in production
-**Fix:** Check backend `app.js` has your Vercel URL:
-```javascript
-const allowedOrigins = [
-  'https://your-frontend.vercel.app',
-  'https://resq.lk'
-];
-```
+**Fix:** Already fixed! Backend now allows:
+- `https://resq-five.vercel.app` (your production URL)
+- All Vercel preview deployments (*.vercel.app)
+- Custom domains via `FRONTEND_URL` environment variable
+
+**If you deployed before this fix:**
+1. Go to Render dashboard → Your service
+2. Click "Manual Deploy" → "Deploy latest commit"
+3. Or merge to main branch for auto-deploy
 
 ### Issue: Location shows coordinates instead of name
 **Expected:** This is the fallback! Nominatim proxy working.

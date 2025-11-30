@@ -26,16 +26,25 @@ const ReliefTrackerPage: React.FC = () => {
   const [reliefCamps, setReliefCamps] = useState<ReliefCamp[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchRadius, setSearchRadius] = useState('50');
+  const [debouncedRadius, setDebouncedRadius] = useState('50');
 
   useEffect(() => {
     getCurrentLocation();
   }, []);
 
+  // Debounce search radius to prevent notification spam while adjusting slider
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRadius(searchRadius);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [searchRadius]);
+
   useEffect(() => {
     if (userLocation) {
       fetchReliefCamps();
     }
-  }, [userLocation, searchRadius]);
+  }, [userLocation, debouncedRadius]);
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -71,7 +80,7 @@ const ReliefTrackerPage: React.FC = () => {
       params.append('limit', '200');
       params.append('lat', userLocation.lat.toString());
       params.append('lng', userLocation.lng.toString());
-      params.append('radius_km', searchRadius);
+      params.append('radius_km', debouncedRadius);
       params.append('sort', 'distance');
 
       // Fetch Supabase relief camps
