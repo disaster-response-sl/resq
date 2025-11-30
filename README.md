@@ -566,9 +566,7 @@ npm run dev
 
 **Admin/Responder Login:**
 - Click "Admin Login" or "Responder Login"
-- Test credentials:
-  - **Admin:** Individual ID: `admin001`, Password: `80888275Ab`
-  - **Responder:** Individual ID: `responder001`, Password: `80888275Ab`
+- Use your assigned credentials to access the system
 
 ### Mobile App Setup
 
@@ -612,17 +610,15 @@ npm run dev
 
 ## 🧪 Testing
 
-### Test Credentials
+### Access Levels
 
 **Admin Access:**
-- Individual ID: `admin001`
-- Password: `80888275Ab`
 - Role: Administrator (full access)
+- Requires authorized credentials
 
 **Responder Access:**
-- Individual ID: `responder001`
-- Password: `80888275Ab`
 - Role: Responder (field operations)
+- Requires authorized credentials
 
 **Citizen Access:**
 - No login required for public portal
@@ -927,7 +923,7 @@ npx react-native log-ios
 After deployment, verify these features:
 
 - [ ] Backend health check responds: `/api/health`
-- [ ] Admin login works (admin001 / 80888275Ab)
+- [ ] Admin login works with authorized credentials
 - [ ] Statistics display correctly (reports, disasters, SOS)
 - [ ] Location shows accurate address
 - [ ] Road reports display on LankaRouteWatch
