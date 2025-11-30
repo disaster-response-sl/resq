@@ -311,6 +311,7 @@ export default function ReliefDataDashboard() {
           </div>
         </div>
       </div>
+      </div>
     </MainLayout>
   );
 };
