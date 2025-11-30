@@ -129,41 +129,6 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Demo Credentials - Mobile Responsive */}
-        <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-gray-100 rounded-lg border border-gray-300 opacity-75">
-          <h3 className="text-xs font-medium text-gray-600 mb-1.5 sm:mb-2">Demo Credentials (Click to use):</h3>
-          <div className="space-y-1">
-            <button
-              type="button"
-              onClick={() => {
-                setIndividualId('responder001');
-                setOtp('123456');
-              }}
-              className="w-full text-left p-1 sm:p-1.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 transition-colors opacity-90 hover:opacity-100"
-              disabled={isLoading}
-            >
-              <div className="font-medium text-gray-700 text-xs">Responder Account</div>
-              <div className="text-gray-600 text-xs">responder001 / OTP: 123456</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIndividualId('admin001');
-                setOtp('123456');
-              }}
-              className="w-full text-left p-1 sm:p-1.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 transition-colors opacity-90 hover:opacity-100"
-              disabled={isLoading}
-            >
-              <div className="font-medium text-gray-700 text-xs">Admin Account</div>
-              <div className="text-gray-600 text-xs">admin001 / OTP: 123456</div>
-            </button>
-          </div>
-          <div className="mt-1.5 sm:mt-2 text-xs text-gray-600">
-            Click any credential above to auto-fill the form
-          </div>
-        </div>
-
         {/* Footer - Mobile Responsive */}
         <div className="text-center mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500">
           <p>ResQ Hub - National Disaster Management Platform © 2025</p>

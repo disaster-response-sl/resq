@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation } from 'lucide-react';
 import axios from 'axios';
 import CitizenNavbar from './CitizenNavbar';
+import Footer from './Footer';
 
 interface Location {
   lat: number;
@@ -545,6 +546,8 @@ const CitizenDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

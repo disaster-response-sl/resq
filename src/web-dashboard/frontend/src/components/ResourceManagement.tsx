@@ -53,33 +53,33 @@ const ResourceManagement: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="p-6">
+      <div className="p-3 sm:p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
-      {/* Tabs */}
+      {/* Tabs - Mobile Responsive */}
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex flex-wrap space-x-4 sm:space-x-8 px-4 sm:px-6 pt-4">
+        <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 md:gap-8 px-2 sm:px-4 md:px-6 pt-2 sm:pt-3 md:pt-4">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center space-x-1 sm:space-x-2 ${
+                className={`py-1.5 sm:py-2 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap flex items-center gap-1 sm:gap-2 ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span>{tab.label}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
           })}
         </nav>
       </div>
 
-      {/* Tab Content */}
-      <div className="p-4 sm:p-6">
+      {/* Tab Content - Mobile Responsive */}
+      <div className="p-2 sm:p-4 md:p-6">
         {renderTabContent()}
       </div>
         </div>

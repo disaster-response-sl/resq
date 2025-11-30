@@ -89,62 +89,62 @@ const ResourceOverview: React.FC = () => {
   const breakdown = metrics?.breakdown;
 
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Resource Management</h1>
-          <p className="text-gray-600 mt-1">Monitor and manage disaster response resources</p>
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 truncate">Resource Management</h1>
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-0.5 sm:mt-1">Monitor and manage resources</p>
         </div>
         <button
           onClick={handleRefresh}
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex-shrink-0"
           title="Refresh data"
         >
-          <RefreshCw className="w-5 h-5" />
+          <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow">
+      {/* Key Metrics - Mobile Responsive */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+        <div className="bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Resources</p>
-              <p className="text-3xl font-semibold text-gray-900 mt-1">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mt-0.5 sm:mt-1">
                 {overview?.total_resources || 0}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow">
+        <div className="bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Available</p>
-              <p className="text-3xl font-semibold text-gray-900 mt-1">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Available</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mt-0.5 sm:mt-1">
                 {overview?.available_resources || 0}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow">
+        <div className="bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Allocated</p>
-              <p className="text-3xl font-semibold text-gray-900 mt-1">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Allocated</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mt-0.5 sm:mt-1">
                 {overview?.allocated_resources || 0}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow">
+        <div className="bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Utilization</p>
-              <p className="text-3xl font-semibold text-gray-900 mt-1">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Utilization</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mt-0.5 sm:mt-1">
                 {overview?.utilization_rate ? `${Math.round(overview.utilization_rate)}%` : '0%'}
               </p>
             </div>

@@ -566,9 +566,7 @@ npm run dev
 
 **Admin/Responder Login:**
 - Click "Admin Login" or "Responder Login"
-- Test credentials:
-  - **Admin:** Individual ID: `1234567890`, OTP: `123456`
-  - **Responder:** Individual ID: `0987654321`, OTP: `123456`
+- Use your assigned credentials to access the system
 
 ### Mobile App Setup
 
@@ -612,17 +610,15 @@ npm run dev
 
 ## 🧪 Testing
 
-### Test Credentials
+### Access Levels
 
 **Admin Access:**
-- Individual ID: `1234567890`
-- OTP: `123456`
 - Role: Administrator (full access)
+- Requires authorized credentials
 
 **Responder Access:**
-- Individual ID: `0987654321`
-- OTP: `123456`
 - Role: Responder (field operations)
+- Requires authorized credentials
 
 **Citizen Access:**
 - No login required for public portal
@@ -678,8 +674,7 @@ npm run dev
   - Responsive design implementation
 
 ### Recent Contributions
-- **Shalon**: Production deployment, UI/UX redesign, LankaRouteWatch implementation, location services, debouncing, CORS fixes, environment setup guides
-- **All Members**: Testing, documentation, and quality assurance
+- **Shalon**: Production deployment, UI/UX redesign, LankaRouteWatch implementation, location services, debouncing, CORS fixes, environment setup guides, real time api integration.
 
 ## 📅 Development Timeline
 
@@ -928,7 +923,7 @@ npx react-native log-ios
 After deployment, verify these features:
 
 - [ ] Backend health check responds: `/api/health`
-- [ ] Admin login works (1234567890 / 123456)
+- [ ] Admin login works with authorized credentials
 - [ ] Statistics display correctly (reports, disasters, SOS)
 - [ ] Location shows accurate address
 - [ ] Road reports display on LankaRouteWatch
