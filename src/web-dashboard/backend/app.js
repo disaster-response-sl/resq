@@ -80,7 +80,10 @@ const adminImportExportRoutes = require('./routes/admin/import-export.routes');
 // Import responder routes
 const responderNotificationsRoutes = require('./routes/responder/notifications.routes');
 
-
+// Import new feature routes
+const missingPersonsRoutes = require('./routes/missing-persons.routes');
+const externalDataRoutes = require('./routes/external-data.routes');
+const reportsRoutes = require('./routes/reports.routes');
 
 // Import services
 const SosEscalationService = require('./services/sos-escalation.service');
@@ -109,6 +112,11 @@ app.use('/api/responder/notifications', responderNotificationsRoutes);
 
 // Use donation routes
 app.use('/api', donationRoutes);
+
+// Use new feature routes
+app.use('/api/missing-persons', missingPersonsRoutes);
+app.use('/api/external', externalDataRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // Health check routes
 app.get('/api/health', (req, res) => {
