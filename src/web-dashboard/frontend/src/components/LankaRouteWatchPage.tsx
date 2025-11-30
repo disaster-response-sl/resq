@@ -69,6 +69,8 @@ const LankaRouteWatchPage: React.FC = () => {
   const [view, setView] = useState<'reports' | 'routes' | 'stats'>('stats');
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const FLOOD_API = 'https://lk-flood-api.vercel.app';
+  const RELIEF_API = 'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api';
 
   const SRI_LANKA_DISTRICTS = [
     'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -85,32 +87,116 @@ const LankaRouteWatchPage: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [reportsRes, routesRes, statsRes] = await Promise.all([
+      // Fetch from multiple sources in parallel
+      const [internalReports, internalRoutes, floodAlerts, reliefRequests] = await Promise.all([
+        // Internal MongoDB data
         axios.get(`${API_BASE_URL}/api/public/road-reports`, {
           params: {
             district: selectedDistrict || undefined,
             condition: selectedCondition || undefined,
             limit: 50
           }
-        }),
+        }).catch(() => ({ data: [] })),
+        
         axios.get(`${API_BASE_URL}/api/public/route-status`, {
           params: {
             district: selectedDistrict || undefined,
             limit: 30
           }
-        }),
-        axios.get(`${API_BASE_URL}/api/public/route-stats`)
+        }).catch(() => ({ data: [] })),
+
+        // External Flood API - Get flood alerts
+        axios.get(`${FLOOD_API}/alerts`).catch(() => ({ data: [] })),
+
+        // External Relief API - Get emergency requests
+        axios.get(`${RELIEF_API}?type=requests&urgency=emergency&status=pending&limit=100`)
+          .catch(() => ({ data: { requests: [] } }))
       ]);
 
-      if (reportsRes.data.success) {
-        setRoadReports(reportsRes.data.data);
-      }
-      if (routesRes.data.success) {
-        setRouteStatuses(routesRes.data.data);
-      }
-      if (statsRes.data.success) {
-        setStats(statsRes.data.data);
-      }
+      // Process internal road reports
+      const reports = Array.isArray(internalReports.data) ? internalReports.data : [];
+      
+      // Process internal route statuses
+      const routes = Array.isArray(internalRoutes.data) ? internalRoutes.data : [];
+
+      // Convert flood alerts to road reports
+      const floodReports = (Array.isArray(floodAlerts.data) ? floodAlerts.data : []).map((alert: any) => ({
+        _id: `flood-${alert.station_name}`,
+        road_name: `Near ${alert.river_name}`,
+        location_name: alert.station_name,
+        district: 'Multiple', // Flood stations don't map directly to districts
+        condition: alert.alert_status === 'MAJOR' || alert.alert_status === 'MINOR' ? 'flooded' : 'hazardous',
+        severity: alert.alert_status === 'MAJOR' ? 'critical' : alert.alert_status === 'MINOR' ? 'high' : 'medium',
+        description: `${alert.river_name} at ${alert.water_level}m (${alert.rising_or_falling}). ${alert.remarks || ''}`,
+        traffic_status: alert.alert_status === 'MAJOR' ? 'completely_blocked' : 'slow_moving',
+        emergency_vehicles_accessible: alert.alert_status !== 'MAJOR',
+        createdAt: alert.timestamp,
+        status: 'verified'
+      }));
+
+      // Convert relief emergency requests to road reports (implies blocked roads)
+      const reliefReports = (reliefRequests.data?.requests || [])
+        .filter((req: any) => req.latitude && req.longitude)
+        .map((req: any) => ({
+          _id: `relief-${req.id}`,
+          road_name: `Access to ${req.establishment_type}`,
+          location_name: req.address,
+          district: req.address.split(',').pop()?.trim() || 'Unknown',
+          condition: 'blocked',
+          severity: req.urgency,
+          description: `Relief needed: ${req.assistance_types?.join(', ')}. ${req.num_men + req.num_women + req.num_children} people affected. ${req.additional_notes || ''}`,
+          traffic_status: 'detour_available',
+          emergency_vehicles_accessible: false,
+          createdAt: req.created_at,
+          status: 'pending'
+        }));
+
+      // Merge all reports
+      const allReports = [...reports, ...floodReports, ...reliefReports];
+      setRoadReports(allReports);
+      setRouteStatuses(routes);
+
+      // Calculate hybrid statistics
+      const totalReports = allReports.length;
+      const activeReports = allReports.filter((r: any) => r.status === 'pending' || r.status === 'verified').length;
+      const resolvedReports = allReports.filter((r: any) => r.status === 'resolved').length;
+      
+      const affectedRoutes = routes.filter((r: any) => 
+        r.status === 'blocked' || r.status === 'partially_blocked' || r.status === 'hazardous'
+      ).length;
+      
+      const safeRoutes = routes.filter((r: any) => r.status === 'open').length;
+
+      const byCondition = {
+        blocked: allReports.filter((r: any) => r.condition === 'blocked').length,
+        flooded: allReports.filter((r: any) => r.condition === 'flooded').length,
+        damaged: allReports.filter((r: any) => r.condition === 'damaged').length,
+        landslide: allReports.filter((r: any) => r.condition === 'landslide').length,
+        hazardous: allReports.filter((r: any) => r.condition === 'hazardous').length,
+      };
+
+      const bySeverity = {
+        critical: allReports.filter((r: any) => r.severity === 'critical').length,
+        high: allReports.filter((r: any) => r.severity === 'high').length,
+        medium: allReports.filter((r: any) => r.severity === 'medium').length,
+        low: allReports.filter((r: any) => r.severity === 'low').length,
+      };
+
+      const affectedDistricts = new Set(allReports.map((r: any) => r.district)).size;
+
+      setStats({
+        total_reports: totalReports,
+        active_reports: activeReports,
+        resolved_reports: resolvedReports,
+        total_routes_monitored: routes.length,
+        affected_routes: affectedRoutes,
+        safe_routes: safeRoutes,
+        affected_districts: affectedDistricts,
+        by_severity: bySeverity,
+        by_condition: byCondition
+      });
+
+      toast.success(`Loaded ${totalReports} reports from ${affectedDistricts} districts`);
     } catch (error) {
       console.error('Error fetching route data:', error);
       toast.error('Failed to load route information');

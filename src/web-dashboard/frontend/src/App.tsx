@@ -28,6 +28,8 @@ import EmergencyContactsPage from './components/EmergencyContactsPage';
 import VolunteerFormPage from './components/VolunteerFormPage';
 import LankaRouteWatchPage from './components/LankaRouteWatchPage';
 import ReportRoadIssuePage from './components/ReportRoadIssuePage';
+import SafeRoutesPage from './components/SafeRoutesPage';
+import RouteMapPage from './components/RouteMapPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -152,10 +154,10 @@ function App() {
               <Route path="/citizen/relief-tracker" element={<ReliefTrackerPage />} />
               <Route path="/citizen/emergency-contacts" element={<EmergencyContactsPage />} />
               <Route path="/citizen/volunteer" element={<VolunteerFormPage />} />
-              <Route path="/citizen/route-watch" element={<LankaRouteWatchPage />} />
-              <Route path="/citizen/report-road" element={<ReportRoadIssuePage />} />
-              
-              {/* Redirect root to citizen dashboard */}
+          <Route path="/citizen/route-watch" element={<LankaRouteWatchPage />} />
+          <Route path="/citizen/report-road" element={<ReportRoadIssuePage />} />
+          <Route path="/citizen/safe-routes" element={<SafeRoutesPage />} />
+          <Route path="/citizen/route-map" element={<RouteMapPage />} />              {/* Redirect root to citizen dashboard */}
               <Route path="/" element={<Navigate to="/citizen" replace />} />
               <Route path="*" element={<Navigate to="/citizen" replace />} />
             </Routes>

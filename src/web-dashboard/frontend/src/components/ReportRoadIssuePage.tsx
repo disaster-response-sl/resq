@@ -49,14 +49,26 @@ const ReportRoadIssuePage: React.FC = () => {
         async (position) => {
           const { latitude, longitude } = position.coords;
           setLocation({ latitude, longitude });
+          setLocationName(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           
-          // Reverse geocode to get location name
+          // Try reverse geocoding with timeout - fallback to coordinates if fails
           try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+            
             const response = await axios.get(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+              { 
+                signal: controller.signal,
+                headers: {
+                  'User-Agent': 'ResQ-Hub-Disaster-Platform'
+                }
+              }
             );
+            clearTimeout(timeoutId);
+            
             const data = response.data;
-            const name = data.display_name || 'Current Location';
+            const name = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
             setLocationName(name);
             
             setFormData(prev => ({
@@ -66,8 +78,8 @@ const ReportRoadIssuePage: React.FC = () => {
               district: data.address?.state_district || data.address?.county || ''
             }));
           } catch (error) {
-            console.error('Reverse geocoding error:', error);
-            setLocationName('Current Location');
+            // Silently fail and use coordinates
+            console.log('Using coordinates for location (geocoding unavailable)');
           }
         },
         (error) => {
