@@ -63,6 +63,8 @@ const ReliefTrackerPage: React.FC = () => {
 
     try {
       setLoading(true);
+      
+      // HYBRID DATA MODEL: Fetch both Supabase relief camps AND MongoDB help requests
       const params = new URLSearchParams();
       params.append('type', 'requests');
       params.append('status', 'pending');
@@ -72,15 +74,40 @@ const ReliefTrackerPage: React.FC = () => {
       params.append('radius_km', searchRadius);
       params.append('sort', 'distance');
 
-      const response = await axios.get(
+      // Fetch Supabase relief camps
+      const supabaseResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${params.toString()}`
       );
 
-      if (response.data.success && response.data.data) {
-        const camps = response.data.data.requests || [];
-        setReliefCamps(camps);
-        toast.success(`Found ${camps.length} relief camps within ${searchRadius}km`);
-      }
+      // Fetch MongoDB help requests (reports with type 'help_needed')
+      const mongoResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?type=help_needed&status=pending&limit=100`
+      ).catch(() => ({ data: { success: false, data: [] } }));
+
+      const supabaseCamps = supabaseResponse.data.success ? (supabaseResponse.data.data.requests || []) : [];
+      const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
+
+      // Merge both sources - convert MongoDB help requests to relief camp format
+      const mergedCamps = [
+        ...supabaseCamps,
+        ...mongoHelp.map((help: any) => ({
+          id: help._id,
+          full_name: 'Local Help Request',
+          address: help.description || 'No description',
+          latitude: help.location.lat,
+          longitude: help.location.lng,
+          establishment_type: 'Help Needed',
+          urgency: 'high',
+          status: help.status,
+          assistance_types: [help.type],
+          source: 'mongodb'
+        }))
+      ];
+
+      console.log(`✅ HYBRID Relief: ${supabaseCamps.length} Supabase camps + ${mongoHelp.length} MongoDB help = ${mergedCamps.length} total`);
+
+      setReliefCamps(mergedCamps);
+      toast.success(`Found ${mergedCamps.length} relief locations (${supabaseCamps.length} camps + ${mongoHelp.length} help requests)`);
     } catch (error) {
       console.error('Relief camps fetch error:', error);
       toast.error('Failed to fetch relief camps');

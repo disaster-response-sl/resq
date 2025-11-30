@@ -220,6 +220,44 @@ router.get('/user-reports', async (req, res) => {
   }
 });
 
+// GET /api/public/reports - Get all incident reports from MongoDB (for backward compatibility)
+router.get('/reports', async (req, res) => {
+  try {
+    const { type, status, limit = 100 } = req.query;
+
+    console.log('📡 FETCHING MongoDB incident reports via /reports endpoint...');
+
+    let query = {};
+    if (type) {
+      query.type = type;
+    }
+    if (status) {
+      query.status = status;
+    }
+
+    const reports = await Report.find(query)
+      .sort({ timestamp: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    console.log(`✅ Found ${reports.length} incident reports in MongoDB`);
+
+    res.json({
+      success: true,
+      data: reports,
+      source: 'mongodb',
+      count: reports.length
+    });
+  } catch (error) {
+    console.error('❌ ERROR fetching MongoDB reports:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching incident reports",
+      error: error.message
+    });
+  }
+});
+
 // GET /api/public/disasters - Get active disasters (public access)
 router.get('/disasters', async (req, res) => {
   try {
