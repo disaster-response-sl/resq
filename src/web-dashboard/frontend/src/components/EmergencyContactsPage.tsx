@@ -197,18 +197,18 @@ const EmergencyContactsPage: React.FC = () => {
             <span className="text-sm text-gray-600">🇱🇰 Sri Lanka</span>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {EMERGENCY_NUMBERS.map((emergency) => (
               <button
                 key={emergency.number}
                 onClick={() => handleCall(emergency.number)}
-                className={`${emergency.color} text-white rounded-xl p-6 hover:opacity-90 transition-all transform hover:scale-105 shadow-lg`}
+                className={`${emergency.color} text-white rounded-xl p-4 md:p-6 hover:opacity-90 transition-all transform hover:scale-105 shadow-lg`}
               >
                 <div className="text-center">
-                  <div className="text-4xl mb-2">{emergency.icon}</div>
-                  <div className="text-4xl font-bold mb-2">{emergency.number}</div>
-                  <div className="text-lg font-semibold">{emergency.label}</div>
-                  <div className="text-sm mt-2 opacity-90">Tap to call</div>
+                  <div className="text-3xl md:text-4xl mb-2">{emergency.icon}</div>
+                  <div className="text-3xl md:text-4xl font-bold mb-2">{emergency.number}</div>
+                  <div className="text-base md:text-lg font-semibold">{emergency.label}</div>
+                  <div className="text-xs md:text-sm mt-2 opacity-90">Tap to call</div>
                 </div>
               </button>
             ))}

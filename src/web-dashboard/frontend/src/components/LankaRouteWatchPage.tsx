@@ -190,30 +190,30 @@ const LankaRouteWatchPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900">National Road Network Status</h2>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="bg-blue-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600 mb-1">📊 Total Reports</p>
-                <p className="text-3xl font-bold text-blue-600">{stats.total_reports}</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+              <div className="bg-blue-50 rounded-lg p-3 md:p-4 text-center">
+                <p className="text-xs md:text-sm text-gray-600 mb-1">📊 Total Reports</p>
+                <p className="text-2xl md:text-3xl font-bold text-blue-600">{stats.total_reports}</p>
                 <p className="text-xs text-gray-500 mt-1">Crowdsourced</p>
               </div>
-              <div className="bg-orange-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600 mb-1">⚠️ Active Issues</p>
-                <p className="text-3xl font-bold text-orange-600">{stats.active_reports}</p>
+              <div className="bg-orange-50 rounded-lg p-3 md:p-4 text-center">
+                <p className="text-xs md:text-sm text-gray-600 mb-1">⚠️ Active Issues</p>
+                <p className="text-2xl md:text-3xl font-bold text-orange-600">{stats.active_reports}</p>
                 <p className="text-xs text-gray-500 mt-1">Needs attention</p>
               </div>
-              <div className="bg-purple-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600 mb-1">📍 Districts Affected</p>
-                <p className="text-3xl font-bold text-purple-600">{stats.affected_districts}</p>
+              <div className="bg-purple-50 rounded-lg p-3 md:p-4 text-center">
+                <p className="text-xs md:text-sm text-gray-600 mb-1">📍 Districts Affected</p>
+                <p className="text-2xl md:text-3xl font-bold text-purple-600">{stats.affected_districts}</p>
                 <p className="text-xs text-gray-500 mt-1">Nationwide</p>
               </div>
-              <div className="bg-green-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600 mb-1">✔️ Resolved</p>
-                <p className="text-3xl font-bold text-green-600">{stats.resolved_reports}</p>
+              <div className="bg-green-50 rounded-lg p-3 md:p-4 text-center">
+                <p className="text-xs md:text-sm text-gray-600 mb-1">✔️ Resolved</p>
+                <p className="text-2xl md:text-3xl font-bold text-green-600">{stats.resolved_reports}</p>
                 <p className="text-xs text-gray-500 mt-1">Fixed issues</p>
               </div>
-              <div className="bg-indigo-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600 mb-1">👥 Contributors</p>
-                <p className="text-3xl font-bold text-indigo-600">{stats.total_reports}</p>
+              <div className="bg-indigo-50 rounded-lg p-3 md:p-4 text-center">
+                <p className="text-xs md:text-sm text-gray-600 mb-1">👥 Contributors</p>
+                <p className="text-2xl md:text-3xl font-bold text-indigo-600">{stats.total_reports}</p>
                 <p className="text-xs text-gray-500 mt-1">Community driven</p>
               </div>
             </div>

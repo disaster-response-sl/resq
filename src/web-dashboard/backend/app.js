@@ -155,6 +155,58 @@ app.use('/api/external', externalDataRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/public', routesRoutes); // LankaRouteWatch routes
 
+// Geocoding proxy to avoid CORS issues with Nominatim
+app.get('/api/geocode/reverse', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    
+    if (!lat || !lon) {
+      console.log('❌ Geocoding error: Missing lat/lon parameters');
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Latitude and longitude are required' 
+      });
+    }
+
+    console.log(`🌍 Geocoding request: lat=${lat}, lon=${lon}`);
+
+    const axios = require('axios');
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`,
+      {
+        timeout: 8000,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'ResQ-Disaster-Platform/1.0'
+        }
+      }
+    );
+
+    if (response.data && response.data.display_name) {
+      console.log(`✅ Geocoding success: ${response.data.display_name.substring(0, 50)}...`);
+      return res.json({ success: true, data: response.data });
+    } else {
+      console.log('⚠️ Geocoding returned empty data');
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Location not found' 
+      });
+    }
+  } catch (error) {
+    console.error('❌ Geocoding proxy error:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch location data',
+      fallback: true,
+      details: error.message
+    });
+  }
+});
+
 // Health check routes
 app.get('/api/health', (req, res) => {
   res.json({ 

@@ -27,6 +27,7 @@ interface Alert {
 
 const CitizenDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const [location, setLocation] = useState<Location | null>(null);
   const [locationName, setLocationName] = useState<string>('Getting location...');
   const [weather, setWeather] = useState<Weather | null>(null);
@@ -79,13 +80,13 @@ const CitizenDashboard: React.FC = () => {
   const reverseGeocode = async () => {
     if (!location) return;
     
-    // Create abort controller with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
+    // Try direct fetch first (often faster and avoids double-hop)
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}`,
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const directResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&addressdetails=1`,
         {
           signal: controller.signal,
           headers: {
@@ -97,23 +98,96 @@ const CitizenDashboard: React.FC = () => {
       
       clearTimeout(timeoutId);
       
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.display_name) {
-          const parts = data.display_name.split(',');
-          setLocationName(parts.slice(0, 3).join(','));
+      if (directResponse.ok) {
+        const data = await directResponse.json();
+        if (data.display_name) {
+          const address = data.address;
+          let locationParts = [];
+          
+          // Build clean address from structured data
+          if (address) {
+            if (address.road) locationParts.push(address.road);
+            else if (address.suburb) locationParts.push(address.suburb);
+            else if (address.neighbourhood) locationParts.push(address.neighbourhood);
+            
+            if (address.city) locationParts.push(address.city);
+            else if (address.town) locationParts.push(address.town);
+            else if (address.village) locationParts.push(address.village);
+            
+            if (address.state_district) locationParts.push(address.state_district);
+            else if (address.county) locationParts.push(address.county);
+          }
+          
+          let finalLocation = '';
+          if (locationParts.length > 0) {
+            finalLocation = locationParts.slice(0, 3).join(', ');
+          } else {
+            // Parse display_name
+            const parts = data.display_name.split(',').map((p: string) => p.trim());
+            const meaningfulParts = parts.filter((p: string) => 
+              p && !p.match(/^\d+$/) && p !== 'Sri Lanka'
+            ).slice(0, 3);
+            finalLocation = meaningfulParts.join(', ');
+          }
+          
+          setLocationName(finalLocation);
+          console.log('✅ Location found:', finalLocation);
           return;
         }
       }
-      
-      // Fallback to coordinates if geocoding fails
-      setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
-    } catch (error: any) {
-      clearTimeout(timeoutId);
-      console.error('Reverse geocoding error:', error);
-      // Fallback to coordinates display
-      setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+    } catch (directError) {
+      console.log('Direct geocoding failed, trying backend proxy...', directError);
     }
+    
+    // Fallback to backend proxy
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/geocode/reverse`, {
+        params: {
+          lat: location.lat,
+          lon: location.lng
+        },
+        timeout: 12000
+      });
+      
+      if (response.data.success && response.data.data?.display_name) {
+        const address = response.data.data.address;
+        let locationParts = [];
+        
+        if (address) {
+          if (address.road) locationParts.push(address.road);
+          else if (address.suburb) locationParts.push(address.suburb);
+          else if (address.neighbourhood) locationParts.push(address.neighbourhood);
+          
+          if (address.city) locationParts.push(address.city);
+          else if (address.town) locationParts.push(address.town);
+          else if (address.village) locationParts.push(address.village);
+          
+          if (address.state_district) locationParts.push(address.state_district);
+          else if (address.county) locationParts.push(address.county);
+        }
+        
+        let finalLocation = '';
+        if (locationParts.length > 0) {
+          finalLocation = locationParts.slice(0, 3).join(', ');
+        } else {
+          const parts = response.data.data.display_name.split(',').map((p: string) => p.trim());
+          const meaningfulParts = parts.filter((p: string) => 
+            p && !p.match(/^\d+$/) && p !== 'Sri Lanka'
+          ).slice(0, 3);
+          finalLocation = meaningfulParts.join(', ');
+        }
+        
+        setLocationName(finalLocation);
+        console.log('✅ Location found via proxy:', finalLocation);
+        return;
+      }
+    } catch (error: any) {
+      console.error('Backend proxy also failed:', error.message || error);
+    }
+    
+    // Show coordinates if all geocoding fails
+    console.warn('⚠️ All geocoding methods failed, showing coordinates');
+    setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
   };
 
   const fetchWeather = async () => {
@@ -309,18 +383,10 @@ const CitizenDashboard: React.FC = () => {
                   <span className="text-[10px] text-gray-500 font-medium">Your Location</span>
                 </div>
                 {location ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 truncate">
-                        {locationName || 'Location Unknown'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={getCurrentLocation}
-                      className="ml-2 px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full text-[10px] font-medium transition-colors flex-shrink-0"
-                    >
-                      Change
-                    </button>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-900 truncate">
+                      {locationName || 'Location Unknown'}
+                    </p>
                   </div>
                 ) : (
                   <p className="text-[10px] text-gray-400">Getting location...</p>
