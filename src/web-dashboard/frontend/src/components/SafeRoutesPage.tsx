@@ -68,6 +68,8 @@ const SafeRoutesPage: React.FC = () => {
   const toInputRef = useRef<HTMLInputElement>(null);
   const [avoidConditions, setAvoidConditions] = useState<string[]>(['blocked', 'flooded']);
   const [safeRoutes, setSafeRoutes] = useState<SafeRoute[]>([]);
+  const [roadIssues, setRoadIssues] = useState<any[]>([]);
+  const [disasterZones, setDisasterZones] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -244,6 +246,10 @@ const SafeRoutesPage: React.FC = () => {
       });
       
       const totalIssues = relevantRoadReports.length + relevantSosReports.length;
+      
+      // Store the issues for display
+      setRoadIssues(relevantRoadReports);
+      setDisasterZones(relevantSosReports);
       
       if (totalIssues === 0) {
         toast.success(`✅ No reported hazards near your route from ${fromLocation} to ${toLocation}`);
@@ -490,13 +496,181 @@ const SafeRoutesPage: React.FC = () => {
             </h2>
 
             {safeRoutes.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                <AlertTriangle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Safe Routes Available</h3>
-                <p className="text-gray-600">
-                  We couldn't find any safe routes between these districts with your current filters.
-                  Try adjusting your avoid conditions or check back later.
-                </p>
+              <div className="space-y-6">
+                {/* Warning Summary */}
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-lg p-6 text-white">
+                  <div className="flex items-start">
+                    <AlertTriangle className="h-8 w-8 mr-4 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">⚠️ Travel Not Recommended</h3>
+                      <p className="text-orange-50 text-lg">
+                        Found {roadIssues.length + disasterZones.length} hazard(s) near your route from <strong>{fromLocation}</strong> to <strong>{toLocation}</strong>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Road Issues */}
+                {roadIssues.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div className="bg-red-50 px-6 py-4 border-b border-red-100">
+                      <h4 className="text-lg font-bold text-red-900 flex items-center">
+                        🚧 Road Issues ({roadIssues.length})
+                      </h4>
+                    </div>
+                    <div className="divide-y divide-gray-200">
+                      {roadIssues.map((issue, index) => {
+                        const [reportLon, reportLat] = issue.location.coordinates;
+                        const distanceFromStart = calculateDistance(
+                          fromCoords![0], fromCoords![1], reportLat, reportLon
+                        );
+                        const distanceFromEnd = calculateDistance(
+                          toCoords![0], toCoords![1], reportLat, reportLon
+                        );
+                        const nearestPoint = distanceFromStart < distanceFromEnd ? fromLocation : toLocation;
+                        const distance = Math.min(distanceFromStart, distanceFromEnd).toFixed(1);
+                        
+                        return (
+                          <div key={issue._id || index} className="p-6 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                    issue.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                                    issue.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                                    issue.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {issue.severity?.toUpperCase() || 'MEDIUM'}
+                                  </span>
+                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                    issue.condition === 'blocked' ? 'bg-red-100 text-red-800' :
+                                    issue.condition === 'flooded' ? 'bg-blue-100 text-blue-800' :
+                                    issue.condition === 'landslide' ? 'bg-yellow-100 text-yellow-800' :
+                                    issue.condition === 'damaged' ? 'bg-orange-100 text-orange-800' :
+                                    'bg-purple-100 text-purple-800'
+                                  }`}>
+                                    {issue.condition === 'blocked' ? '🚧 BLOCKED' :
+                                     issue.condition === 'flooded' ? '🌊 FLOODED' :
+                                     issue.condition === 'landslide' ? '⛰️ LANDSLIDE' :
+                                     issue.condition === 'damaged' ? '🔨 DAMAGED' :
+                                     '⚠️ HAZARDOUS'}
+                                  </span>
+                                </div>
+                                <h5 className="text-lg font-semibold text-gray-900 mb-2">
+                                  {issue.road_name || issue.location_name || 'Unnamed Road'}
+                                </h5>
+                                {issue.description && (
+                                  <p className="text-gray-700 mb-2">{issue.description}</p>
+                                )}
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  <span className="flex items-center">
+                                    <MapPin className="h-4 w-4 mr-1" />
+                                    {distance} km from {nearestPoint}
+                                  </span>
+                                  {issue.district && (
+                                    <span>📍 {issue.district}</span>
+                                  )}
+                                  {issue.traffic_status && (
+                                    <span className="capitalize">🚦 {issue.traffic_status}</span>
+                                  )}
+                                </div>
+                                {issue.emergency_vehicles_accessible === false && (
+                                  <div className="mt-2 bg-red-50 border border-red-200 rounded-lg p-2 text-sm text-red-700">
+                                    ⚠️ Emergency vehicles cannot access this area
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Disaster Zones */}
+                {disasterZones.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div className="bg-red-600 px-6 py-4 border-b">
+                      <h4 className="text-lg font-bold text-white flex items-center">
+                        🚨 Active Disaster Zones ({disasterZones.length})
+                      </h4>
+                    </div>
+                    <div className="divide-y divide-gray-200">
+                      {disasterZones.map((zone, index) => {
+                        const [reportLon, reportLat] = zone.location.coordinates;
+                        const distanceFromStart = calculateDistance(
+                          fromCoords![0], fromCoords![1], reportLat, reportLon
+                        );
+                        const distanceFromEnd = calculateDistance(
+                          toCoords![0], toCoords![1], reportLat, reportLon
+                        );
+                        const nearestPoint = distanceFromStart < distanceFromEnd ? fromLocation : toLocation;
+                        const distance = Math.min(distanceFromStart, distanceFromEnd).toFixed(1);
+                        
+                        return (
+                          <div key={zone._id || index} className="p-6 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                                    🚨 EMERGENCY
+                                  </span>
+                                  {zone.disaster_type && (
+                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                                      {zone.disaster_type.toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <h5 className="text-lg font-semibold text-gray-900 mb-2">
+                                  {zone.location_name || 'Emergency Zone'}
+                                </h5>
+                                {zone.message && (
+                                  <p className="text-gray-700 mb-2">{zone.message}</p>
+                                )}
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  <span className="flex items-center">
+                                    <MapPin className="h-4 w-4 mr-1" />
+                                    {distance} km from {nearestPoint}
+                                  </span>
+                                  {zone.district && (
+                                    <span>📍 {zone.district}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Safety Recommendations */}
+                <div className="bg-blue-50 rounded-xl shadow-md p-6 border border-blue-200">
+                  <h4 className="text-lg font-bold text-blue-900 mb-3 flex items-center">
+                    💡 Safety Recommendations
+                  </h4>
+                  <ul className="space-y-2 text-blue-800">
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Consider postponing your travel until conditions improve</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Try selecting different locations to find safer routes</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Monitor real-time updates and check conditions before departure</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Keep emergency contacts handy: 117 (Emergency), 119 (Police), 110 (Fire), 108 (Ambulance)</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">

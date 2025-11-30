@@ -263,7 +263,7 @@ const CitizenDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Risk Status */}
+          {/* Risk Status with Visual */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center space-x-2 mb-4">
               <AlertTriangle className="h-5 w-5 text-blue-600" />
@@ -273,11 +273,26 @@ const CitizenDashboard: React.FC = () => {
               <p className="text-gray-500">Calculating risk...</p>
             ) : (
               <div>
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className={`h-4 w-4 rounded-full ${getRiskColor(riskStatus)}`}></div>
-                  <span className="text-2xl font-bold text-gray-800">{riskStatus} Risk</span>
+                <div className="flex flex-col items-center mb-4">
+                  <img 
+                    src={`/images/${
+                      riskStatus.toLowerCase() === 'high' ? 'highRisk' :
+                      riskStatus.toLowerCase() === 'medium' ? 'mediumRisk' :
+                      'lowRisk'
+                    }.png`}
+                    alt={`${riskStatus} Risk`}
+                    className="w-full max-w-xs h-auto rounded-lg shadow-lg mb-3"
+                    onError={(e) => {
+                      // Fallback if image doesn't load
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="flex items-center space-x-3">
+                    <div className={`h-4 w-4 rounded-full ${getRiskColor(riskStatus)}`}></div>
+                    <span className="text-2xl font-bold text-gray-800">{riskStatus} Risk</span>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 text-center">
                   {riskStatus === 'High' && 'Stay alert and follow safety guidelines'}
                   {riskStatus === 'Medium' && 'Be prepared for possible emergencies'}
                   {riskStatus === 'Low' && 'No immediate threats detected'}
