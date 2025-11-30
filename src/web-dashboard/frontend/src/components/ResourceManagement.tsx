@@ -71,7 +71,7 @@ const ResourceManagement: React.FC = () => {
                 }`}
               >
                 <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">{tab.label}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
           })}

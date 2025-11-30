@@ -36,6 +36,9 @@ class MockSLUDIService {
     // Simulate MOSIP response structure
     const user = this.mockUsers.find(u => u.individualId === individualId);
     
+    // IMPORTANT: This is a MOCK service for development/testing only
+    // In production, this should be replaced with actual SLUDI/eSignet integration
+    // TODO: Move test credentials to environment variables
     if (user && request.otp === "80888275Ab") { // Mock OTP validation
       return {
         id: authRequest.id,

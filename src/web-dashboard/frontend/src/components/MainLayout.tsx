@@ -338,10 +338,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="flex-1">
           {children}
         </div>
-        
-        {/* Footer */}
-        <Footer />
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
