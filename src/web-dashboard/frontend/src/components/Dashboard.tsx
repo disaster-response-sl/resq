@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   AlertTriangle,
   MapPin,
-  DollarSign,
+  FileText,
   Activity,
   Package,
   TrendingUp,
@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MainLayout from './MainLayout';
-import { getDonationStats } from '../services/donationService';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -29,10 +28,9 @@ interface DashboardStats {
     responding: number;
     resolved: number;
   };
-  payments: {
-    totalAmount: number;
-    totalDonations: number;
-    recentDonations: number;
+  reports: {
+    total: number;
+    pending: number;
   };
   resources: {
     total: number;
@@ -43,7 +41,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'sos' | 'disaster' | 'payment' | 'resource';
+  type: 'sos' | 'disaster' | 'report' | 'resource';
   title: string;
   description: string;
   timestamp: string;
@@ -56,7 +54,7 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
     disasters: { total: 0, active: 0, resolved: 0, critical: 0 },
     sos: { total: 0, pending: 0, acknowledged: 0, responding: 0, resolved: 0 },
-    payments: { totalAmount: 0, totalDonations: 0, recentDonations: 0 },
+    reports: { total: 0, pending: 0 },
     resources: { total: 0, allocated: 0, available: 0 }
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -85,8 +83,13 @@ const Dashboard: React.FC = () => {
       });
 
       // Fetch all data in parallel with error handling
-      const [paymentStats, sosResponse, disasterResponse, resourceResponse] = await Promise.allSettled([
-        getDonationStats(localStorage.getItem('token') || ''),
+      const [reportsResponse, sosResponse, disasterResponse, resourceResponse] = await Promise.allSettled([
+        fetch(`${API_BASE_URL}/api/public/reports`, {
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }),
         fetch(`${API_BASE_URL}/api/admin/sos/dashboard?${sosQueryParams}`, {
           signal: controller.signal,
           headers: {
@@ -116,7 +119,7 @@ const Dashboard: React.FC = () => {
       const newStats: DashboardStats = {
         disasters: { total: 0, active: 0, resolved: 0, critical: 0 },
         sos: { total: 0, pending: 0, acknowledged: 0, responding: 0, resolved: 0 },
-        payments: { totalAmount: 0, totalDonations: 0, recentDonations: 0 },
+        reports: { total: 0, pending: 0 },
         resources: { total: 0, allocated: 0, available: 0 }
       };
 
@@ -126,26 +129,24 @@ const Dashboard: React.FC = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let disasterData: any = null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let paymentData: any = null;
+      let reportsData: any = null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let resourceData: any = null;
 
-      // Handle payment stats
-      if (paymentStats.status === 'fulfilled' && paymentStats.value.success && paymentStats.value.data) {
-        console.log('Payment stats received:', paymentStats.value.data);
-        console.log('Payment summary:', paymentStats.value.data.summary);
-        paymentData = paymentStats.value.data; // Store for recent activity generation
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const paymentDataObj = paymentStats.value.data as any;
-        newStats.payments = {
-          totalAmount: paymentDataObj.summary?.totalAmount || paymentDataObj.totalAmount || 0,
-          totalDonations: paymentDataObj.summary?.totalDonations || paymentDataObj.totalDonations || 0,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          recentDonations: paymentDataObj.recentActivity?.slice(0, 7).reduce((sum: number, item: any) => sum + (item.count || 0), 0) || 0
-        };
-        console.log('Mapped payment stats:', newStats.payments);
-      } else if (paymentStats.status === 'rejected') {
-        console.warn('Payment stats failed:', paymentStats.reason);
+      // Handle reports stats
+      if (reportsResponse.status === 'fulfilled' && reportsResponse.value.ok) {
+        try {
+          reportsData = await reportsResponse.value.json();
+          if (reportsData.success && reportsData.data) {
+            const reports = reportsData.data;
+            newStats.reports = {
+              total: reports.length,
+              pending: reports.filter((r: any) => r.status === 'pending').length
+            };
+          }
+        } catch (error) {
+          console.warn('Reports stats parsing error:', error);
+        }
       }
 
       // Handle SOS stats
@@ -276,19 +277,7 @@ const Dashboard: React.FC = () => {
         }
       }
 
-      // Add payment activities from actual data
-      if (paymentData?.summary) {
-        if (paymentData.summary.totalDonations > 0) {
-          activities.push({
-            id: 'payment-total',
-            type: 'payment',
-            title: 'Donation Summary',
-            description: `${paymentData.summary.totalDonations} total donations received`,
-            timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-            status: 'completed'
-          });
-        }
-      }
+
 
       // Add resource activities from actual data
       if (resourceData?.data?.overview) {
@@ -328,17 +317,6 @@ const Dashboard: React.FC = () => {
             timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
             status: 'active',
             priority: 'critical'
-          });
-        }
-
-        if (newStats.payments.totalDonations > 0) {
-          activities.push({
-            id: '3',
-            type: 'payment',
-            title: 'Donation Activity',
-            description: `${newStats.payments.totalDonations} donations received (${formatCurrency(newStats.payments.totalAmount)})`,
-            timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-            status: 'completed'
           });
         }
 
@@ -446,8 +424,8 @@ const Dashboard: React.FC = () => {
     switch (type) {
       case 'sos': return <AlertTriangle className="w-4 h-4" />;
       case 'disaster': return <MapPin className="w-4 h-4" />;
-      case 'payment': return <DollarSign className="w-4 h-4" />;
       case 'resource': return <Package className="w-4 h-4" />;
+      case 'report': return <FileText className="w-4 h-4" />;
       default: return <Activity className="w-4 h-4" />;
     }
   };
@@ -518,17 +496,17 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Payment Overview */}
+          {/* Reports Overview */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Donations</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.payments.totalAmount)}</p>
+                <p className="text-sm font-medium text-gray-600">Citizen Reports</p>
+                <p className="text-2xl font-bold text-blue-600">{formatNumber(stats.reports.total)}</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {formatNumber(stats.payments.totalDonations)} donations
+                  {stats.reports.pending} pending review
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-green-500" />
+              <FileText className="w-8 h-8 text-blue-500" />
             </div>
           </div>
 
@@ -578,17 +556,6 @@ const Dashboard: React.FC = () => {
               </Link>
 
               <Link
-                to="/payments"
-                className="flex items-center gap-3 p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
-              >
-                <DollarSign className="w-5 h-5 text-green-600" />
-                <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">Payments</p>
-                  <p className="text-xs text-gray-500">Manage donations</p>
-                </div>
-              </Link>
-
-              <Link
                 to="/resources"
                 className="flex items-center gap-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
               >
@@ -610,14 +577,6 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span className="text-xs text-green-600">Operational</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Payment Gateway</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-xs text-green-600">Active</span>
                 </div>
               </div>
 
@@ -654,8 +613,8 @@ const Dashboard: React.FC = () => {
                   <div className={`p-2 rounded-lg ${
                     activity.type === 'sos' ? 'bg-red-100' :
                     activity.type === 'disaster' ? 'bg-orange-100' :
-                    activity.type === 'payment' ? 'bg-green-100' :
-                    'bg-blue-100'
+                    activity.type === 'report' ? 'bg-blue-100' :
+                    'bg-purple-100'
                   }`}>
                     {getActivityIcon(activity.type)}
                   </div>
@@ -768,33 +727,31 @@ const Dashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Payment Analytics */}
+          {/* Emergency Statistics */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Payment Analytics</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Emergency Statistics</h3>
               <TrendingUp className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Total Raised</span>
-                <span className="text-sm font-medium text-green-600">{formatCurrency(stats.payments.totalAmount)}</span>
+                <span className="text-sm text-gray-600">Active Disasters</span>
+                <span className="text-sm font-medium text-red-600">{stats.disasters.active}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Recent Donations</span>
-                <span className="text-sm font-medium text-blue-600">{stats.payments.recentDonations}</span>
+                <span className="text-sm text-gray-600">Pending SOS</span>
+                <span className="text-sm font-medium text-orange-600">{stats.sos.pending}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Avg. Donation</span>
-                <span className="text-sm font-medium text-purple-600">
-                  {stats.payments.totalDonations > 0 ? formatCurrency(stats.payments.totalAmount / stats.payments.totalDonations) : 'LKR 0'}
-                </span>
+                <span className="text-sm text-gray-600">Pending Reports</span>
+                <span className="text-sm font-medium text-blue-600">{stats.reports.pending}</span>
               </div>
             </div>
             <Link
-              to="/payments"
+              to="/reports"
               className="w-full mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium inline-block text-center"
             >
-              View Payment Stats
+              View All Reports
             </Link>
           </div>
         </div>

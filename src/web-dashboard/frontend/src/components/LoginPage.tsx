@@ -41,13 +41,24 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50">
+      {/* Back to Citizen Portal Link */}
+      <button
+        onClick={() => navigate('/citizen')}
+        className="absolute top-6 left-6 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+      >
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Back to Citizen Portal</span>
+      </button>
+
       {/* Centered Login Container */}
       <div className="max-w-md w-full mx-4">
         {/* Header Section */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <img
-              src="/logo.png"
+              src="/favicon.png"
               alt="ResQ Hub Logo"
               className="w-12 h-12 mr-3"
             />
@@ -56,7 +67,7 @@ const LoginPage: React.FC = () => {
             </h1>
           </div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Welcome back
+            Admin/Responder Login
           </h2>
           <p className="text-gray-500 text-sm">
             National Disaster Management Platform

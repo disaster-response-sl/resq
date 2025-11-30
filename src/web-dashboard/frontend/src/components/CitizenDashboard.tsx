@@ -310,7 +310,14 @@ const CitizenDashboard: React.FC = () => {
 
         {/* Recent Alerts */}
         <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Alerts</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-800">Recent Alerts</h3>
+            {recentAlerts.length > 0 && recentAlerts[0].timestamp && (
+              <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                Last DMC Update: {new Date(recentAlerts[0].timestamp).toLocaleString()}
+              </span>
+            )}
+          </div>
           {recentAlerts.length > 0 ? (
             <div className="space-y-3">
               {recentAlerts.map((alert) => (
@@ -318,21 +325,14 @@ const CitizenDashboard: React.FC = () => {
                   key={alert._id}
                   className="border-l-4 border-orange-500 bg-orange-50 p-4 rounded"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getSeverityColor(alert.severity)}`}>
-                          {alert.severity}
-                        </span>
-                        <span className="text-sm font-semibold text-gray-700">{alert.type}</span>
-                      </div>
-                      <p className="text-gray-700 mb-1">{alert.message}</p>
-                      <p className="text-sm text-gray-500">{alert.location}</p>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {new Date(alert.timestamp).toLocaleString()}
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${getSeverityColor(alert.severity)}`}>
+                      {alert.severity}
                     </span>
+                    <span className="text-sm font-semibold text-gray-700">{alert.type}</span>
                   </div>
+                  <p className="text-gray-700 mb-1">{alert.message}</p>
+                  <p className="text-sm text-gray-500">{alert.location}</p>
                 </div>
               ))}
             </div>

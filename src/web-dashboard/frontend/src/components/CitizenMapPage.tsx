@@ -334,7 +334,7 @@ const CitizenMapPage: React.FC = () => {
       </div>
 
       {/* Map */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative" style={{ minHeight: '600px' }}>
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="text-center">
@@ -346,7 +346,7 @@ const CitizenMapPage: React.FC = () => {
           <MapContainer
             center={defaultCenter}
             zoom={10}
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%', minHeight: '600px' }}
           >
             <ChangeView center={defaultCenter} zoom={10} />
             <TileLayer
