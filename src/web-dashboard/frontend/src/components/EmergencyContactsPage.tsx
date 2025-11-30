@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, AlertTriangle, Shield, MapPin, ArrowLeft, Users, RefreshCw } from 'lucide-react';
+import { Phone, AlertTriangle, Shield, MapPin, Users, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import CitizenNavbar from './CitizenNavbar';
 
 interface DistrictContact {
   district: string;
@@ -142,33 +143,20 @@ const EmergencyContactsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
-      {/* Header */}
-      <header className="bg-red-600 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate('/citizen')}
-                className="p-2 hover:bg-red-700 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-6 w-6" />
-              </button>
-              <div className="flex items-center space-x-3">
-                <Phone className="h-8 w-8" />
-                <div>
-                  <h1 className="text-2xl font-bold">Emergency Contacts</h1>
-                  <p className="text-red-100 text-sm">24/7 Emergency Response Numbers</p>
-                </div>
-              </div>
+      <CitizenNavbar />
+      
+      {/* Page Title Section */}
+      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-6 shadow-lg">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center space-x-3">
+            <Phone className="h-8 w-8" />
+            <div>
+              <h1 className="text-2xl font-bold">Emergency Contacts</h1>
+              <p className="text-red-100 text-sm">24/7 Emergency Response Numbers</p>
             </div>
-            <img 
-              src="/favicon.png" 
-              alt="ResQ Hub Logo" 
-              className="h-10 w-10"
-            />
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="container mx-auto px-4 py-8">
         {/* Emergency Statistics */}

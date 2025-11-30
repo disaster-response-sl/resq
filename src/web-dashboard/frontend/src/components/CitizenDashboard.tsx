@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Cloud, AlertTriangle, Package, MessageSquare, Map, Phone } from 'lucide-react';
+import { MapPin, Cloud, AlertTriangle, Package, Phone } from 'lucide-react';
 import axios from 'axios';
+import CitizenNavbar from './CitizenNavbar';
 
 interface Location {
   lat: number;
@@ -24,14 +25,6 @@ interface Alert {
   message: string;
 }
 
-interface EmergencyStats {
-  total_sos: number;
-  total_missing: number;
-  total_rescued: number;
-  total_active_disasters: number;
-  total_relief_camps: number;
-}
-
 const CitizenDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [location, setLocation] = useState<Location | null>(null);
@@ -40,18 +33,10 @@ const CitizenDashboard: React.FC = () => {
   const [riskStatus, setRiskStatus] = useState<string>('Low');
   const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<EmergencyStats>({
-    total_sos: 0,
-    total_missing: 0,
-    total_rescued: 0,
-    total_active_disasters: 0,
-    total_relief_camps: 0
-  });
 
   useEffect(() => {
     getCurrentLocation();
     fetchRecentAlerts();
-    fetchEmergencyStats();
   }, []); // Only run once on mount
 
   useEffect(() => {
@@ -157,40 +142,6 @@ const CitizenDashboard: React.FC = () => {
     }
   };
 
-  const fetchEmergencyStats = async () => {
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      
-      // Fetch SOS count
-      const sosResponse = await axios.get(`${API_BASE_URL}/api/public/sos-signals?limit=10000`);
-      const sosCount = sosResponse.data.success ? sosResponse.data.count || sosResponse.data.data.length : 0;
-
-      // Fetch disasters count
-      const disastersResponse = await axios.get(`${API_BASE_URL}/api/public/disasters`);
-      const activeDisasters = disastersResponse.data.success 
-        ? disastersResponse.data.data.filter((d: any) => d.status === 'active').length 
-        : 0;
-
-      // Fetch relief camps count
-      const reliefResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?limit=1000`);
-      const reliefCount = reliefResponse.data.success 
-        ? (reliefResponse.data.data.requests?.length || 0) 
-        : 0;
-
-      setStats({
-        total_sos: sosCount,
-        total_missing: 282, // Mock data - would need missing persons API
-        total_rescued: 180, // Mock data - would need rescue tracking API
-        total_active_disasters: activeDisasters,
-        total_relief_camps: reliefCount
-      });
-
-      console.log(`✅ Loaded emergency stats: ${sosCount} SOS, ${activeDisasters} disasters, ${reliefCount} relief camps`);
-    } catch (error) {
-      console.error('Error fetching emergency stats:', error);
-    }
-  };
-
   const getRiskColor = (risk: string) => {
     switch (risk.toLowerCase()) {
       case 'high':
@@ -217,70 +168,16 @@ const CitizenDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="/favicon.png" 
-                alt="ResQ Hub Logo" 
-                className="h-10 w-10"
-              />
-              <div>
-                <h1 className="text-2xl font-bold">ResQ Hub</h1>
-                <p className="text-blue-100 text-sm">Sri Lanka Emergency Response System</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/login')}
-              className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              Admin/Responder Login
-            </button>
-          </div>
-        </div>
-      </header>
+      <CitizenNavbar />
 
       <div className="container mx-auto px-4 py-8">
-        {/* National Emergency Overview Statistics */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center space-x-3 mb-6">
-            <AlertTriangle className="h-7 w-7 text-red-600" />
-            <h2 className="text-2xl font-bold text-gray-900">National Emergency Overview</h2>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-red-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">🚨 Total SOS</p>
-              <p className="text-3xl font-bold text-red-600">{stats.total_sos.toLocaleString()}</p>
-            </div>
-            <div className="bg-orange-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">👥 Missing Persons</p>
-              <p className="text-3xl font-bold text-orange-600">{stats.total_missing.toLocaleString()}</p>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">✅ Rescued</p>
-              <p className="text-3xl font-bold text-green-600">{stats.total_rescued.toLocaleString()}</p>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">⚠️ Active Disasters</p>
-              <p className="text-3xl font-bold text-purple-600">{stats.total_active_disasters.toLocaleString()}</p>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">⛺ Relief Camps</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.total_relief_camps.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions - Emergency First */}
+        {/* Quick Actions - Most Essential Only */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Emergency Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={() => navigate('/citizen/emergency-contacts')}
-              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 ring-4 ring-red-300 relative"
+              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
             >
               <div className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
                 NEW
@@ -294,7 +191,7 @@ const CitizenDashboard: React.FC = () => {
               onClick={() => navigate('/citizen/sos')}
               className="bg-red-500 hover:bg-red-600 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
             >
-              <Phone className="h-12 w-12 mx-auto mb-3" />
+              <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">SOS Emergency</h3>
               <p className="text-sm text-red-100 mt-1">Send distress signal</p>
             </button>
@@ -315,24 +212,6 @@ const CitizenDashboard: React.FC = () => {
               <Package className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">Relief Tracker</h3>
               <p className="text-sm text-purple-100 mt-1">Find help or volunteer</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/citizen/map')}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
-            >
-              <Map className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">Risk Map</h3>
-              <p className="text-sm text-blue-100 mt-1">View disaster zones</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/citizen/chat')}
-              className="bg-green-600 hover:bg-green-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
-            >
-              <MessageSquare className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">AI Assistant</h3>
-              <p className="text-sm text-green-100 mt-1">Safety guidance</p>
             </button>
           </div>
         </div>
