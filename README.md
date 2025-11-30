@@ -1,13 +1,23 @@
 # 🚨 ResQ - National Disaster Response Platform
 
-[![Production Status](https://img.shields.io/badge/status-production%20ready-brightgreen)](https://github.com/disaster-response-sl/resq)
+[![Production Status](https://img.shields.io/badge/status-production%20deployed-brightgreen)](https://resq-five.vercel.app)
 [![Real-Time Data](https://img.shields.io/badge/data-live%20DMC%20API-blue)](https://lk-flood-api.vercel.app)
 [![Relief Coordination](https://img.shields.io/badge/relief-Supabase%20API-green)](https://supabase.com)
 [![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka-red)](https://www.dmc.gov.lk)
+[![Deployment](https://img.shields.io/badge/frontend-Vercel-black)](https://resq-five.vercel.app)
+[![Backend](https://img.shields.io/badge/backend-Render-purple)](https://resq-backend-3efi.onrender.com)
 
 > **🎯 Real-World Disaster Response Platform**  
+> **LIVE DEPLOYMENT:** [https://resq-five.vercel.app](https://resq-five.vercel.app)  
 > Production-ready emergency response system with **real-time flood monitoring**, **relief coordination**, and **volunteer management**.  
 > **39 DMC gauging stations** • **Live relief camps** • **Emergency SOS** • **Volunteer registration** • **No login required for citizens**
+
+## 🌐 Live Deployment
+
+- **Frontend:** [https://resq-five.vercel.app](https://resq-five.vercel.app) (Vercel)
+- **Backend:** [https://resq-backend-3efi.onrender.com](https://resq-backend-3efi.onrender.com) (Render)
+- **Database:** MongoDB Atlas (Singapore Region)
+- **Status:** ✅ Production Ready
 
 ## 🚀 Production Ready: 100% Real APIs
 
@@ -15,24 +25,29 @@ Comprehensive disaster response platform powered by **verified government and pr
 
 ### 🌊 Core Features
 
-#### For Citizens (Public Access)
+#### For Citizens (Public Access - No Login Required)
 - ✅ **Real-Time Flood Monitoring** - Live water levels from 39 DMC gauging stations (15-min updates)
-- ✅ **Interactive Risk Map** - Leaflet-powered map with flood alerts, relief camps, and user location
+- ✅ **Interactive Risk Map** - Leaflet-powered map with flood alerts, relief camps, and user location with precise geocoding
 - ✅ **Emergency SOS** - One-tap distress signal with GPS location (no authentication required)
 - ✅ **Incident Reporting** - Submit reports with photos and location data
-- ✅ **Relief Demand & Supply Tracker** - Find nearby help or volunteer to assist
+- ✅ **Relief Demand & Supply Tracker** - Find nearby help within 5-200km radius with debounced search
 - ✅ **Volunteer Registration** - Comprehensive form to offer goods, services, or labor
 - ✅ **AI Safety Assistant** - Google Gemini-powered emergency guidance chatbot
 - ✅ **Recent Alerts Dashboard** - Real-time DMC flood alerts with severity levels
+- ✅ **LankaRouteWatch** - Plan safe routes with location search, road hazard reports, and risk assessment
+- ✅ **Emergency Contacts** - Quick access to DDMCU hotlines by district
+- ✅ **Location Services** - Accurate reverse geocoding showing street address, city, and district
 
-#### For Admins & Responders
+#### For Admins & Responders (Authenticated Access)
 - ✅ **SOS Dashboard** - Real-time emergency signal monitoring with auto-escalation
 - ✅ **Disaster Management** - Create, track, and manage disaster events
-- ✅ **Live Disaster Heat Map** - Real-time DMC flood data visualization
+- ✅ **Live Disaster Heat Map** - Real-time DMC flood data visualization with interactive markers
 - ✅ **Resource Management** - Allocate and track emergency supplies
 - ✅ **Reports Dashboard** - Citizen incident report review and verification
 - ✅ **Relief Camp Dashboard** - Manage help requests and volunteer contributions
 - ✅ **Analytics & Metrics** - Comprehensive dashboard with emergency statistics
+- ✅ **Role-Based Access** - Individual ID + OTP authentication with JWT tokens
+- ✅ **Auto-Escalation** - SOS signals auto-escalate every 5 minutes if unassigned
 
 ### 🔌 Production APIs (Zero Mock Data)
 
@@ -190,70 +205,243 @@ Sri Lanka faces critical gaps in disaster response:
 
 ## ✨ Key Features & Updates
 
-### Citizen Web Portal (Public Access - No Login Required)
-- 🌊 **Live Flood Monitoring**: Real-time water levels from 39 DMC gauging stations with 15-min updates
-- 🗺️ **Interactive Risk Map**: Leaflet map with flood alerts (🌊), relief camps (⛺), and user location (📍)
-- 🚨 **Emergency SOS**: One-tap distress signal with GPS location and priority levels
-- 📝 **Incident Reporting**: Submit reports with photos, location, and detailed descriptions
-- 💬 **AI Safety Assistant**: Google Gemini-powered chatbot for emergency guidance and safety tips
-- 🆘 **Relief Demand Tracker**: Find nearby help within 5-200km radius
-- 💚 **Volunteer Registration**: Comprehensive form to offer goods, services, or labor
-- 📊 **Recent Alerts Dashboard**: Live DMC flood alerts with severity badges and water level trends
-- 🎯 **Location-Based Search**: Distance-sorted relief camps with urgency filtering
+### 🌐 Citizen Web Portal (Public Access - No Login Required)
 
-### Admin & Responder Dashboard
-- 👥 **Role-based Access**: Individual ID + OTP authentication for government officials
-- 🚨 **SOS Dashboard**: Live emergency signal monitoring with auto-escalation (5-min intervals)
-- 🗺️ **Live Disaster Heat Map**: Real-time DMC flood data with 39 station markers and alert status
-- 📊 **Analytics Dashboard**: 
-  - Emergency Statistics (replacing payment metrics)
-  - Citizen Reports tracking (total/pending)
-  - Active disasters monitoring
-  - Pending SOS signals overview
-- 📝 **Reports Dashboard**: Citizen incident report review and status management
-- ⛺ **Relief Camp Management**: Track help requests and volunteer contributions from Supabase
-- 📦 **Resource Management**: Allocate and track emergency supplies and equipment
-- 🔄 **Real-time Updates**: Auto-refresh dashboards with latest DMC flood data
+#### Emergency Response
+- 🚨 **Emergency SOS** - One-tap distress signal with GPS location and priority levels
+  - No authentication required
+  - Automatic GPS capture
+  - Priority levels: High, Medium, Low
+  - Optional message field
+  
+- 📝 **Incident Reporting** - Submit detailed reports with evidence
+  - Photo upload capability (up to 5MB)
+  - Location confirmation
+  - Report types: Food shortage, Shelter, Medical, Danger
+  - Status tracking
 
-### Recent Updates (Production Migration)
-- ✅ **Fixed Map Display**: Added explicit height (600px) to resolve Leaflet rendering issue
-- ✅ **Enhanced Login UX**: Added "Back to Citizen Portal" navigation button
-- ✅ **Removed Payment System**: Replaced donation metrics with emergency statistics
-- ✅ **DMC Timestamp Clarity**: Added "Last DMC Update" badge showing batch update time
-- ✅ **Volunteer System**: Complete CRUD workflow for relief contributions
-- ✅ **Admin Map Fix**: Disaster heat map now uses live DMC flood data instead of MongoDB
-- ✅ **Relief Tracker**: "Offer Support" button navigates to volunteer registration form
+#### Real-Time Information
+- 🌊 **Live Flood Monitoring** - Real-time water levels from 39 DMC gauging stations
+  - 15-minute update intervals
+  - Water level trends (Rising/Falling)
+  - Alert status: MAJOR, MINOR, ALERT, NORMAL
+  - Rainfall data and timestamps
+  
+- 🗺️ **Interactive Risk Map** - Leaflet-powered disaster visualization
+  - Flood alerts with custom markers (🌊)
+  - Relief camps locations (⛺)
+  - User location with accurate geocoding (📍)
+  - Shows: "St Mary's Road, Kochchikade, Gampaha District"
+  - Clickable markers with detailed info popups
+
+- 📊 **Dashboard Statistics**
+  - Total road reports
+  - Active disasters
+  - Affected districts
+  - Blocked routes
+
+#### Relief & Support
+- 🆘 **Relief Demand Tracker** - Find nearby assistance
+  - Search radius: 5-200km (debounced slider)
+  - Distance-sorted results
+  - Urgency filtering (emergency, high, medium, low)
+  - Shows help requests + volunteer contributions
+  - Real-time availability status
+  
+- 💚 **Volunteer Registration** - Offer support to affected communities
+  - Comprehensive form (name, contact, location)
+  - Select contribution type (goods, services, labor)
+  - Specify resources available
+  - Set urgency level
+  - Submitted to Supabase Relief API
+
+- 📞 **Emergency Contacts** - District-specific DDMCU hotlines
+  - 4 main emergency services (Fire, Police, Ambulance, Disaster)
+  - District-specific contacts with direct call buttons
+  - Automatic district detection from user location
+
+#### Navigation & Safety
+- 🛣️ **LankaRouteWatch** - Safe route planning
+  - Location search with Nominatim autocomplete
+  - Replace district dropdowns with address search
+  - Road hazard reports with distances
+  - Risk level assessment (Low/Medium/High)
+  - Detailed hazard breakdown when routes blocked
+  - Real-time road closure information
+  
+- 💬 **AI Safety Assistant** - Google Gemini-powered guidance
+  - Natural language emergency queries
+  - Contextual safety recommendations
+  - Quick question templates
+  - 24/7 availability
+
+#### Weather & Alerts
+- ☁️ **Weather Dashboard** - Current conditions for user location
+  - Temperature, humidity, wind speed
+  - Weather icons and descriptions
+  - Powered by OpenWeatherMap API
+  
+- 📋 **Recent Alerts Feed** - Latest DMC flood alerts
+  - Severity badges (MAJOR, MINOR, ALERT)
+  - Station names and river information
+  - Water level changes
+  - Sortable and filterable
+
+### 🔐 Admin & Responder Dashboard (Authenticated Access)
+
+#### Authentication & Access Control
+- 👥 **Role-Based Authentication**
+  - Individual ID + OTP login
+  - JWT token-based sessions
+  - 24-hour token expiration
+  - Admin vs Responder permissions
+  - Secure logout
+
+#### Emergency Management
+- 🚨 **SOS Dashboard** - Real-time emergency monitoring
+  - Live signal feed from MongoDB
+  - Auto-escalation every 5 minutes
+  - Priority sorting (High → Medium → Low)
+  - Status management (Pending → Assigned → Resolved)
+  - GPS coordinates display
+  - Responder assignment workflow
+  
+- 📝 **Reports Dashboard** - Citizen incident management
+  - Review submitted reports with photos
+  - Status updates (Pending → Verified → Resolved)
+  - Filter by type (food, shelter, medical, danger)
+  - Location and timestamp information
+  - Batch operations
+
+#### Disaster Operations
+- 🗺️ **Live Disaster Heat Map** - Real-time DMC flood visualization
+  - 39 gauging station markers
+  - Color-coded alert status
+  - Water level display
+  - Rising/Falling indicators
+  - Interactive popups
+  - Auto-refresh every 5 minutes
+  
+- 🔥 **Disaster Management** - Create and track events
+  - Disaster type selection (Flood, Landslide, Fire, etc.)
+  - Severity levels (Low, Medium, High, Critical)
+  - Affected districts and locations
+  - Description and status tracking
+  - Timeline management
+
+#### Analytics & Insights
+- 📊 **Analytics Dashboard** - Comprehensive metrics
+  - Emergency Statistics
+    - Total citizen reports
+    - Pending reports count
+    - Active disasters
+    - Pending SOS signals
+  - Visual charts with Recharts
+  - Real-time data updates
+  - Exportable reports
+  
+- ⛺ **Relief Camp Management** - Coordinate assistance
+  - Track help requests from citizens
+  - Monitor volunteer contributions
+  - Location-based camp mapping
+  - Urgency prioritization
+  - Status updates (Pending → Available → Resolved)
+
+#### Resource Operations
+- 📦 **Resource Management** - Supply allocation
+  - Inventory tracking
+  - Distribution planning
+  - Location-based assignment
+  - Status monitoring
+  - History logs
+
+### Recent Updates (November 2025 - Production Deployment)
+
+#### UI/UX Enhancements
+- ✅ **Dashboard Redesign** - Soft pastel color scheme with overlapping risk assessment cards
+- ✅ **Mobile Optimization** - Emergency contacts and stats display in 2 columns on mobile
+- ✅ **Navbar Visibility** - "ResQ Hub" and subtitle now visible on mobile screens
+- ✅ **Location Accuracy** - Shows precise address: "St Mary's Road, Kochchikade, Gampaha District"
+- ✅ **Debounced Search** - Relief Tracker radius slider prevents notification spam (800ms delay)
+- ✅ **Risk Level Images** - Visual indicators (lowRisk.png, mediumRisk.png, highRisk.png)
+
+#### LankaRouteWatch Features
+- ✅ **Location Search** - Nominatim autocomplete for start/end locations (replacing district dropdowns)
+- ✅ **Road Hazard Display** - Shows detailed reports when no safe routes available
+- ✅ **Distance Calculation** - Displays hazard distance from route with severity indicators
+- ✅ **Backend Geocoding Proxy** - `/api/geocode/reverse` endpoint to avoid CORS issues
+
+#### Production Fixes
+- ✅ **CORS Configuration** - Supports all Vercel preview deployments (*.vercel.app)
+- ✅ **JWT Authentication** - Environment variable validation with clear error messages
+- ✅ **Supabase Fallback** - Graceful handling when external API unavailable
+- ✅ **Error Logging** - Comprehensive console logging for debugging production issues
+- ✅ **Environment Setup** - Complete guide in `RENDER_ENV_SETUP.md`
+
+#### Deployment Infrastructure
+- ✅ **Frontend Deployed** - Vercel with automatic preview deployments
+- ✅ **Backend Deployed** - Render with MongoDB Atlas (Singapore region)
+- ✅ **CI/CD Pipeline** - GitHub integration with auto-deploy on push
+- ✅ **Environment Variables** - Secure secret management on both platforms
+- ✅ **Deployment Guides** - `QUICK_DEPLOY.md`, `DEPLOYMENT_GUIDE.md`, `RENDER_ENV_SETUP.md`
+
+#### Code Quality & Maintenance
+- ✅ **Removed Payment System** - Streamlined to core disaster response features
+- ✅ **Fixed Map Display** - Explicit height (600px) resolves Leaflet rendering
+- ✅ **DMC Timestamp Clarity** - "Last DMC Update" badge shows batch update time
+- ✅ **Volunteer System** - Complete CRUD workflow for relief contributions
+- ✅ **Admin Map Fix** - Uses live DMC flood data instead of MongoDB
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **Framework**: React 18.3.1 + Vite 7.1.0
-- **Routing**: React Router DOM v7
-- **UI Components**: Tailwind CSS + Lucide React icons
+- **Framework**: React 18.3.1 + TypeScript
+- **Build Tool**: Vite 7.1.0 (fast HMR and optimized builds)
+- **Routing**: React Router DOM v7 (latest)
+- **UI Framework**: Tailwind CSS 3.4.17 + PostCSS
+- **Icons**: Lucide React (modern, tree-shakeable)
 - **Maps**: Leaflet 1.9.4 + React-Leaflet 4.2.1
 - **HTTP Client**: Axios 1.7.9
-- **Notifications**: React Hot Toast
-- **State Management**: React Context API
-- **Mobile App**: React Native (separate development)
+- **Notifications**: React Hot Toast (lightweight toast library)
+- **Charts**: Recharts 2.15.0 (data visualization)
+- **State Management**: React Context API + Hooks
+- **Mobile App**: React Native 0.76.5 (separate development)
 
 ### Backend
-- **Runtime**: Node.js with Express.js 5.1.0
-- **Database**: MongoDB Atlas with geospatial indexing
-- **Authentication**: Mock SLUDI (Individual ID + OTP)
-- **AI Integration**: Google Gemini AI for safety chatbot
+- **Runtime**: Node.js 20.x
+- **Framework**: Express.js 5.1.0
+- **Database**: MongoDB 8.11.0 with Mongoose ODM
+- **Authentication**: JWT tokens + Mock SLUDI (Individual ID + OTP)
+- **AI Integration**: Google Gemini AI API for safety chatbot
 - **HTTP Client**: Axios for external API calls
-- **Middleware**: CORS, body-parser, dotenv
+- **Security**: Helmet, express-rate-limit, CORS
+- **Middleware**: body-parser, dotenv, express-sanitizer
+- **Services**: SOS Auto-Escalation (5-min intervals)
 
-### Production APIs
-- **DMC Flood API**: Real-time water level monitoring (39 stations)
+### Production APIs & External Services
+- **DMC Flood API**: Real-time water level monitoring (39 stations, 15-min updates)
 - **Supabase Relief API**: Relief camp coordination and volunteer management
-- **MongoDB**: User-generated data (SOS signals, reports, chat logs)
+- **OpenStreetMap Nominatim**: Reverse geocoding (address from coordinates)
+- **MongoDB Atlas**: User-generated data (SOS signals, reports, chat logs)
+- **Google Gemini AI**: Emergency guidance chatbot
 
-### Deployment
-- **Frontend**: Vercel (Static hosting with CDN)
-- **Backend**: Render / Railway / Fly.io (recommended)
-- **Database**: MongoDB Atlas (Cloud cluster)
+### Deployment & Infrastructure
+- **Frontend Hosting**: Vercel (https://resq-five.vercel.app)
+  - Automatic preview deployments for PRs
+  - Edge CDN for fast global delivery
+  - Zero-config SSL certificates
+- **Backend Hosting**: Render (https://resq-backend-3efi.onrender.com)
+  - Auto-deploy from GitHub
+  - Health check monitoring
+  - Environment variable management
+- **Database**: MongoDB Atlas (Singapore region)
+  - Geospatial indexing for location queries
+  - Automatic backups
+  - High availability cluster
 - **Version Control**: GitHub (disaster-response-sl/resq)
+  - Feature branch workflow
+  - Protected main branch
+- **CI/CD**: Automatic deployment on push to main/feature branches
 
 ## 📚 API Documentation
 
@@ -299,61 +487,88 @@ GET /public-data-api?type=requests&urgency=emergency&lat=6.9271&lng=79.8612&radi
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB Atlas account
+- Node.js (v18 or higher recommended: v20.x)
+- MongoDB Atlas account (free tier available)
 - Git
 - Code editor (VS Code recommended)
+- Google Gemini API key (for AI chatbot)
 
-### Backend Setup
+### Local Development Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/disaster-response-sl/resq.git
-   cd resq
-   ```
+#### 1. Clone the repository
+```bash
+git clone https://github.com/disaster-response-sl/resq.git
+cd resq
+```
 
-2. **Install backend dependencies**
-   ```bash
-   cd src/web-dashboard/backend
-   npm install
-   ```
+#### 2. Backend Setup
 
-3. **Environment Configuration**
-   Create a `.env` file in `src/web-dashboard/backend/`:
-   ```env
-   PORT=5000
-   MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/disaster_platform
-   JWT_SECRET=your-secure-jwt-secret
-   GEMINI_API_KEY=your-google-gemini-api-key
-   SLUDI_MOCK_ENABLED=true
-   # Full .env template available in repository
-   ```
+```bash
+cd src/web-dashboard/backend
+npm install
+```
 
-4. **Start the backend server**
-   ```bash
-   npm run dev
-   ```
-   Server runs on `http://localhost:5000`
+Create a `.env` file in `src/web-dashboard/backend/`:
+```env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
 
-### Frontend Setup
+# Database
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/disaster_platform
 
-1. **Install frontend dependencies**
-   ```bash
-   cd src/web-dashboard/frontend
-   npm install
-   ```
+# Authentication
+JWT_SECRET=your-secure-random-64-character-string
+JWT_EXPIRES_IN=24h
+USE_MOCK_SLUDI=true
 
-2. **Environment Configuration**
-   Create a `.env` file:
-   ```env
-   VITE_API_BASE_URL=http://localhost:5000/api
-   ```
+# AI Integration
+GEMINI_API_KEY=your-google-gemini-api-key
 
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-   Frontend runs on `http://localhost:5173`
+# External Services (optional - uses public APIs if not set)
+OPENWEATHER_API_KEY=your-openweather-api-key
+```
+
+**Generate JWT_SECRET:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Start the backend server:
+```bash
+npm run dev
+```
+✅ Server runs on `http://localhost:5000`
+
+#### 3. Frontend Setup
+
+```bash
+cd src/web-dashboard/frontend
+npm install
+```
+
+Create a `.env` file in `src/web-dashboard/frontend/`:
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+Start the development server:
+```bash
+npm run dev
+```
+✅ Frontend runs on `http://localhost:5173`
+
+### 🧪 Test the Application
+
+**Citizen Portal (No Login):**
+- Navigate to `http://localhost:5173`
+- Access all public features (SOS, reports, relief tracker, etc.)
+
+**Admin/Responder Login:**
+- Click "Admin Login" or "Responder Login"
+- Test credentials:
+  - **Admin:** Individual ID: `1234567890`, OTP: `123456`
+  - **Responder:** Individual ID: `0987654321`, OTP: `123456`
 
 ### Mobile App Setup
 
@@ -398,9 +613,20 @@ GET /public-data-api?type=requests&urgency=emergency&lat=6.9271&lng=79.8612&radi
 ## 🧪 Testing
 
 ### Test Credentials
-- **Citizen Login**: `citizen001` / `123456`
-- **Responder Login**: `responder001` / `123456`
-- **Admin Login**: `admin001` / `123456`
+
+**Admin Access:**
+- Individual ID: `1234567890`
+- OTP: `123456`
+- Role: Administrator (full access)
+
+**Responder Access:**
+- Individual ID: `0987654321`
+- OTP: `123456`
+- Role: Responder (field operations)
+
+**Citizen Access:**
+- No login required for public portal
+- Full access to SOS, reporting, relief tracker, and AI assistant
 
 ### API Endpoints
 
@@ -431,15 +657,28 @@ GET /public-data-api?type=requests&urgency=emergency&lat=6.9271&lng=79.8612&radi
 ## 👥 Team
 
 ### Development Team
-- **Shalon** - Software Architect & Lead Software engineer
+- **Shalon Fernando** - Lead Software Engineer & Full-Stack Architect
+  - Backend API development (Express.js, MongoDB)
+  - Production deployment (Vercel, Render)
+  - CORS configuration and error handling
+  - Authentication system (JWT, Mock SLUDI)
+  - Mobile app development (React Native)
+  - Technical architecture and system design
+  
 - **Gaindu** - Mobile App Development
-- **Lehan** - Web Dashboard Development  
+  - React Native implementation
+  - Mobile UI/UX design
+  
+- **Lehan** - Web Dashboard Development
+  - React frontend development
+  - Admin dashboard features
+  
 - **Pavith** - Web Dashboard Development
+  - React frontend development
+  - Responsive design implementation
 
-### Roles & Responsibilities
-- **Shalon**: Technical architecture, Mobile app development, React Native implementation
-- **Gaindu & Shalon**: Mobile app development, React Native implementation
-- **Lehan & Pavith**: Web dashboard development, React implementation
+### Recent Contributions
+- **Shalon**: Production deployment, UI/UX redesign, LankaRouteWatch implementation, location services, debouncing, CORS fixes, environment setup guides
 - **All Members**: Testing, documentation, and quality assurance
 
 ## 📅 Development Timeline
@@ -561,61 +800,278 @@ export const API_BASE_URL = 'http://10.0.2.2:5000'; // Android Emulator
 - Image compression and caching
 - Lazy loading for large datasets
 
+## 🚀 Production Deployment
+
+### Current Production Status ✅
+
+**Frontend:** https://resq-five.vercel.app
+- Hosted on Vercel
+- Automatic deployments from GitHub
+- Global CDN distribution
+- SSL/HTTPS enabled
+
+**Backend:** https://resq-backend-3efi.onrender.com
+- Hosted on Render
+- Connected to MongoDB Atlas (Singapore)
+- Auto-deploy from GitHub
+- Health monitoring enabled
+
+### Quick Deploy Commands
+
+**Deploy Frontend (Vercel):**
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+cd src/web-dashboard/frontend
+vercel --prod
+```
+
+**Deploy Backend (Render):**
+- Push to GitHub `main` or `feature-deployment-ready` branch
+- Render auto-deploys in 2-3 minutes
+- Or use "Manual Deploy" in Render Dashboard
+
+### Environment Variables for Production
+
+**Critical variables that MUST be set on Render:**
+
+```env
+JWT_SECRET=<64-char-random-string>  # Required for login
+USE_MOCK_SLUDI=true                  # Enable authentication
+MONGO_URI=<mongodb-atlas-url>        # Database connection
+NODE_ENV=production
+JWT_EXPIRES_IN=24h
+```
+
+**See [RENDER_ENV_SETUP.md](./RENDER_ENV_SETUP.md) for complete setup guide.**
+
+---
+
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Production Issues
 
-1. **MongoDB Connection Error**
-   - Verify MONGO_URI in .env file
-   - Check network connectivity
-   - Ensure IP whitelist in MongoDB Atlas
+**1. Login Fails with 500 Error**
+- ❌ Missing `JWT_SECRET` on Render
+- ✅ Add environment variable: See [RENDER_ENV_SETUP.md](./RENDER_ENV_SETUP.md)
+- ✅ Verify with: `curl https://resq-backend-3efi.onrender.com/api/test`
 
-2. **Mobile App API Connection**
-   - Use `10.0.2.2` for Android emulator
-   - Use `localhost` for iOS simulator
-   - Check backend server is running
+**2. Relief Camps Show Empty or Error**
+- ⚠️ External Supabase API may be slow/unavailable
+- ✅ Backend now returns empty array gracefully (not critical)
+- ✅ Shows: "Relief camps service temporarily unavailable"
 
-3. **GPS Location Issues**
-   - Enable location permissions
-   - Check device GPS settings
-   - Verify location services are enabled
+**3. CORS Errors in Production**
+- ✅ Fixed: Backend allows all `*.vercel.app` domains
+- ✅ Redeploy backend if still seeing errors
+
+### Local Development Issues
+
+**1. MongoDB Connection Error**
+- Verify `MONGO_URI` in `.env` file
+- Check network connectivity
+- Ensure IP whitelist in MongoDB Atlas (add 0.0.0.0/0 for development)
+- Test connection: `mongosh <your-mongo-uri>`
+
+**2. Backend Port Already in Use**
+```bash
+# Windows: Find and kill process on port 5000
+netstat -ano | findstr :5000
+taskkill /PID <process-id> /F
+
+# Or change PORT in .env file
+```
+
+**3. Frontend Can't Connect to Backend**
+- Verify backend is running: `curl http://localhost:5000/api/health`
+- Check `VITE_API_BASE_URL` in frontend `.env`
+- Clear browser cache and reload
+
+**4. GPS Location Issues**
+- Enable location permissions in browser
+- Use HTTPS (required for geolocation API)
+- Check device GPS settings
+- Verify location services are enabled
+
+**5. Leaflet Map Not Displaying**
+- Check browser console for errors
+- Verify map container has explicit height (600px)
+- Import Leaflet CSS: `import 'leaflet/dist/leaflet.css'`
 
 ### Debug Commands
+
 ```bash
 # Check backend logs
 cd src/web-dashboard/backend
-npm start
+npm run dev
 
-# Check mobile app logs
+# Test backend health
+curl http://localhost:5000/api/health
+
+# Test MongoDB connection
+curl http://localhost:5000/api/public/stats
+
+# Check frontend build
+cd src/web-dashboard/frontend
+npm run build
+
+# Mobile app logs
 cd src/MobileApp
 npx react-native log-android
 npx react-native log-ios
-
-# Reset database
-npm run seed
 ```
+
+### Verification Checklist
+
+After deployment, verify these features:
+
+- [ ] Backend health check responds: `/api/health`
+- [ ] Admin login works (1234567890 / 123456)
+- [ ] Statistics display correctly (reports, disasters, SOS)
+- [ ] Location shows accurate address
+- [ ] Road reports display on LankaRouteWatch
+- [ ] SOS signals load on dashboard
+- [ ] Disaster heat map shows DMC flood data
+- [ ] Relief tracker search works (debounced)
+- [ ] AI chatbot responds to queries
+- [ ] Emergency contacts display DDMCU hotlines
 
 ## 📚 Documentation
 
-- [API Documentation](./docs/api.md)
-- [Database Schema](./docs/schema.md)
-- [Deployment Guide](./docs/deployment.md)
-- [Contributing Guidelines](./CONTRIBUTING.md)
+### Deployment Guides
+- **[QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Quick reference for deploying to Vercel and Render
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Comprehensive deployment guide with troubleshooting
+- **[RENDER_ENV_SETUP.md](./RENDER_ENV_SETUP.md)** - Environment variable setup for Render backend
+- **[PRODUCTION_FIX_SUMMARY.md](./PRODUCTION_FIX_SUMMARY.md)** - Production error fixes and solutions
+
+### API Documentation
+- **[DMC Flood Data API](./docs/sriLankaFloodDataAPI.md)** - Real-time flood monitoring (39 stations)
+- **[Supabase Relief API](./docs/publicDataAPI.md)** - Relief camp coordination and volunteer management
+- **[Backend API Endpoints](./docs/api.md)** - Internal API documentation (if available)
+
+### Architecture & Schema
+- **[Database Schema](./docs/schema.md)** - MongoDB collections and data models (if available)
+- **[Project Structure](./docs/)** - Full documentation folder
 
 ## 📄 License
 
 This project is developed for Codefest's Revive Nation hackathon and is intended for educational and demonstration purposes.
 
+## 🔧 Technical Improvements & Optimizations
+
+### Performance Enhancements
+- ✅ **Debounced Search** - Relief Tracker radius slider with 800ms delay prevents notification spam
+- ✅ **Lazy Loading** - Efficient component loading reduces initial bundle size
+- ✅ **Geospatial Indexing** - MongoDB 2dsphere index for fast location queries
+- ✅ **CDN Distribution** - Vercel Edge Network for global low-latency access
+- ✅ **API Response Caching** - Reduced redundant external API calls
+
+### Error Handling & Resilience
+- ✅ **JWT Validation** - Backend checks for JWT_SECRET before authentication
+- ✅ **Supabase Fallback** - Graceful degradation when external API unavailable
+- ✅ **CORS Configuration** - Supports all Vercel preview deployments (*.vercel.app)
+- ✅ **Comprehensive Logging** - Console logging for debugging production issues
+- ✅ **Rate Limiting** - 10,000 requests per 15 min (5 for auth endpoints)
+- ✅ **Input Sanitization** - NoSQL injection prevention
+
+### Location Services
+- ✅ **Reverse Geocoding** - Accurate address from coordinates
+  - Direct Nominatim API (10s timeout)
+  - Backend proxy fallback (12s timeout)
+  - Shows: "St Mary's Road, Kochchikade, Gampaha District"
+- ✅ **Location Autocomplete** - Search locations by name (Nominatim)
+- ✅ **Distance Calculations** - Haversine formula for accurate distances
+- ✅ **CORS Proxy** - `/api/geocode/reverse` endpoint avoids browser CORS issues
+
+### Mobile Responsiveness
+- ✅ **Adaptive Layouts** - Tailwind breakpoints (sm, md, lg, xl)
+- ✅ **Touch-Friendly UI** - Larger buttons and spacing on mobile
+- ✅ **Responsive Grid** - 2 columns on mobile, 4-5 on desktop
+- ✅ **Navbar Visibility** - Logo and subtitle visible on all screen sizes
+- ✅ **Mobile-First Design** - Progressive enhancement approach
+
+### Security Features
+- ✅ **Helmet.js** - Secure HTTP headers
+- ✅ **JWT Authentication** - Stateless token-based auth
+- ✅ **Environment Variables** - Secure secret management
+- ✅ **HTTPS Enforcement** - SSL certificates on production
+- ✅ **Rate Limiting** - Brute force protection
+- ✅ **Input Validation** - Prevents injection attacks
+
+### Monitoring & Observability
+- ✅ **Health Check Endpoint** - `/api/health` for uptime monitoring
+- ✅ **Test Endpoint** - `/api/test` shows environment status
+- ✅ **Console Logging** - Structured logs with emojis (✅, ❌, ⚠️)
+- ✅ **Error Tracking** - Comprehensive error messages
+- ✅ **API Response Logging** - Track external API calls
+
+---
+
+## 🎯 Known Limitations & Future Enhancements
+
+### Current Limitations
+- ⚠️ **Mock Authentication** - Uses Individual ID + OTP instead of real SLUDI
+- ⚠️ **Supabase Dependency** - Relief camps may be unavailable if external API down
+- ⚠️ **Single Language** - Currently English only (Sinhala/Tamil planned)
+- ⚠️ **No Real-Time Sync** - Dashboard updates on refresh (WebSocket planned)
+
+### Planned Features
+- 🔮 **Real SLUDI Integration** - Connect to actual eSignet authentication
+- 🔮 **Multi-Language Support** - Sinhala, Tamil, English
+- 🔮 **Push Notifications** - Real-time alerts to mobile devices
+- 🔮 **Offline Mode** - Service worker for offline access
+- 🔮 **WebSocket Integration** - Live dashboard updates
+- 🔮 **Advanced Analytics** - Predictive disaster modeling
+- 🔮 **SMS Gateway** - Send alerts via SMS for areas without internet
+- 🔮 **Drone Integration** - Aerial surveillance and delivery coordination
+
+---
+
 ## 🙏 Acknowledgments
 
+### Data Sources & APIs
+- **Sri Lanka DMC** - Real-time flood monitoring data (39 gauging stations)
+- **Supabase** - Relief camp coordination and volunteer management
+- **OpenStreetMap Nominatim** - Geocoding and location search
+- **Google Gemini AI** - Emergency guidance chatbot
+- **OpenWeatherMap** - Weather data integration
+
+### Technology Partners
+- **Vercel** - Frontend hosting and CDN
+- **Render** - Backend hosting and deployment
+- **MongoDB Atlas** - Cloud database hosting
+- **GitHub** - Version control and CI/CD
+
+### Open Source Community
+- React and React Native communities
+- Leaflet mapping library
+- Tailwind CSS framework
+- Lucide icons
+- All npm package maintainers
+
+### Special Thanks
 - Sri Lanka Digital Public Infrastructure (DPI) team
-- React Native and React communities
-- MongoDB Atlas for database hosting
-- OpenWeatherMap for weather data
-- Google Maps for mapping services
+- Disaster Management Centre (DMC) Sri Lanka
+- ICTA Sri Lanka
+- Codefest Hackathon organizers
+- All contributors and testers
 
 ---
 
 **Built with ❤️ for Sri Lanka's disaster response needs**
 
-*This platform demonstrates the potential of AI and modern technology in addressing critical national challenges.* 
+*This platform demonstrates the potential of AI and modern technology in addressing critical national challenges. We aim to save lives, coordinate relief efforts, and empower citizens during disasters.*
+
+**🌟 Star this repo if you find it useful!**
+
+---
+
+## 📞 Contact & Support
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/disaster-response-sl/resq/issues)
+- **Production Site**: [https://resq-five.vercel.app](https://resq-five.vercel.app)
+- **Documentation**: [Full docs folder](./docs/)
+
+**Emergency Hotline (Sri Lanka):** 117 (DMC Disaster Management Centre) 
