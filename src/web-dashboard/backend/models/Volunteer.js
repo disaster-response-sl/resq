@@ -27,7 +27,22 @@ const volunteerSchema = new mongoose.Schema({
   contribution_types: {
     type: [String],
     required: true,
-    enum: ['food_distribution', 'medical_assistance', 'shelter_support', 'transportation', 'counseling', 'search_rescue', 'other']
+    enum: ['Goods', 'Services', 'Labor']
+  },
+  goods_types: {
+    type: [String],
+    default: [],
+    enum: ['Food', 'Medicine', 'Clothing', 'Shelter Materials', 'Hygiene Items', 'Other', '']
+  },
+  services_types: {
+    type: [String],
+    default: [],
+    enum: ['Medical', 'Transportation', 'Communication', 'Counseling', 'Legal Aid', 'Other', '']
+  },
+  labor_types: {
+    type: [String],
+    default: [],
+    enum: ['Construction', 'Rescue', 'Cleanup', 'Distribution', 'Administrative', 'Other', '']
   },
   skills: {
     type: [String],
