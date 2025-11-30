@@ -115,6 +115,38 @@ router.post('/reports', async (req, res) => {
   }
 });
 
+// POST /api/public/volunteer - Submit volunteer/contribution registration
+router.post('/volunteer', async (req, res) => {
+  try {
+    console.log('💚 VOLUNTEER REGISTRATION received:', req.body);
+
+    // Forward to Supabase Relief API as a contribution
+    const supabaseResponse = await axios.post(
+      'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api/contributions',
+      req.body,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log('✅ VOLUNTEER registered successfully in Supabase');
+
+    res.json({
+      success: true,
+      message: "Volunteer registration submitted successfully",
+      data: supabaseResponse.data
+    });
+  } catch (error) {
+    console.error('❌ VOLUNTEER REGISTRATION ERROR:', error.response?.data || error);
+    res.status(500).json({
+      success: false,
+      message: error.response?.data?.error || "Server error submitting volunteer registration"
+    });
+  }
+});
+
 // GET /api/public/disasters - Get active disasters (public access)
 router.get('/disasters', async (req, res) => {
   try {

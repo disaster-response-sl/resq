@@ -23,6 +23,7 @@ import CitizenReportPage from './components/CitizenReportPage';
 import CitizenChatPage from './components/CitizenChatPage';
 import CitizenMapPage from './components/CitizenMapPage';
 import ReliefTrackerPage from './components/ReliefTrackerPage';
+import VolunteerFormPage from './components/VolunteerFormPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -137,6 +138,7 @@ function App() {
               <Route path="/citizen/chat" element={<CitizenChatPage />} />
               <Route path="/citizen/map" element={<CitizenMapPage />} />
               <Route path="/citizen/relief-tracker" element={<ReliefTrackerPage />} />
+              <Route path="/citizen/volunteer" element={<VolunteerFormPage />} />
               
               {/* Redirect root to citizen dashboard */}
               <Route path="/" element={<Navigate to="/citizen" replace />} />

@@ -313,26 +313,57 @@ router.get('/statistics', async (req, res) => {
 // Get disasters with geographic data
 router.get('/disasters', async (req, res) => {
   try {
-    const { status, type, severity } = req.query;
+    console.log('🌊 MAP DISASTERS - Fetching real-time DMC flood data...');
+    
+    // Fetch real-time flood alerts from DMC API
+    const floodResponse = await axios.get('https://lk-flood-api.vercel.app/alerts');
+    const alerts = floodResponse.data || [];
 
-    let query = {};
+    // Also fetch station data for coordinates
+    const stationsResponse = await axios.get('https://lk-flood-api.vercel.app/stations');
+    const stations = stationsResponse.data || [];
 
-    if (status) query.status = status;
-    if (type) query.type = type;
-    if (severity) query.severity = severity;
+    // Create station lookup map
+    const stationMap = {};
+    stations.forEach(station => {
+      stationMap[station.name] = station;
+    });
 
-    const disasters = await Disaster.find(query)
-      .select('location type severity description timestamp status')
-      .sort({ timestamp: -1 });
+    // Transform DMC flood data to disaster format for the map
+    const disasters = alerts.map(alert => {
+      const station = stationMap[alert.station_name] || {};
+      const latLng = station.lat_lng || [6.9271, 79.8612];
+      
+      return {
+        _id: `flood-${alert.station_name}`,
+        location: {
+          type: 'Point',
+          coordinates: [latLng[1], latLng[0]] // [lng, lat] for GeoJSON
+        },
+        type: 'flood',
+        severity: alert.alert_status === 'MAJOR' ? 'critical' : 
+                 alert.alert_status === 'MINOR' ? 'high' : 'medium',
+        description: `${alert.alert_status} flood alert at ${alert.station_name}. Water level: ${alert.water_level}m (${alert.rising_or_falling}). River: ${alert.river_name}`,
+        timestamp: alert.timestamp,
+        status: 'active',
+        station_name: alert.station_name,
+        river_name: alert.river_name,
+        water_level: alert.water_level,
+        alert_status: alert.alert_status
+      };
+    });
+
+    console.log(`✅ MAP DISASTERS - Returning ${disasters.length} real-time flood alerts from DMC`);
 
     res.json({
       success: true,
       data: disasters,
-      count: disasters.length
+      count: disasters.length,
+      source: 'dmc_flood_api'
     });
 
   } catch (error) {
-    console.error('Error fetching disasters:', error);
+    console.error('❌ MAP DISASTERS ERROR:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching disasters',

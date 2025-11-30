@@ -156,10 +156,7 @@ const ReliefTrackerPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => {
-                  toast.success('Opening volunteer registration form...');
-                  // This would open a form to register as volunteer/donor
-                }}
+                onClick={() => navigate('/citizen/volunteer')}
                 className="bg-green-600 hover:bg-green-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Heart className="h-8 w-8" />
