@@ -115,34 +115,110 @@ router.post('/reports', async (req, res) => {
   }
 });
 
-// POST /api/public/volunteer - Submit volunteer/contribution registration
+// POST /api/public/volunteer - Submit volunteer/contribution registration (MongoDB Primary)
 router.post('/volunteer', async (req, res) => {
   try {
     console.log('💚 VOLUNTEER REGISTRATION received:', req.body);
 
-    // Forward to Supabase Relief API as a contribution
-    const supabaseResponse = await axios.post(
-      'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api/contributions',
-      req.body,
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const Volunteer = require('../models/Volunteer');
 
-    console.log('✅ VOLUNTEER registered successfully in Supabase');
+    // Save to MongoDB (Primary)
+    const volunteer = new Volunteer(req.body);
+    await volunteer.save();
+
+    console.log('✅ VOLUNTEER registered successfully in MongoDB');
+
+    // Also try to forward to Supabase as backup (don't fail if this fails)
+    try {
+      await axios.post(
+        'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api/contributions',
+        req.body,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('✅ VOLUNTEER also saved to Supabase as backup');
+    } catch (supabaseError) {
+      console.warn('⚠️ Supabase backup failed (non-critical):', supabaseError.message);
+    }
 
     res.json({
       success: true,
       message: "Volunteer registration submitted successfully",
-      data: supabaseResponse.data
+      data: volunteer
     });
   } catch (error) {
-    console.error('❌ VOLUNTEER REGISTRATION ERROR:', error.response?.data || error);
+    console.error('❌ VOLUNTEER REGISTRATION ERROR:', error);
     res.status(500).json({
       success: false,
-      message: error.response?.data?.error || "Server error submitting volunteer registration"
+      message: error.message || "Server error submitting volunteer registration"
+    });
+  }
+});
+
+// GET /api/public/volunteer - Get volunteer list (HYBRID: MongoDB + Supabase)
+router.get('/volunteer', async (req, res) => {
+  try {
+    const { status, limit = 100 } = req.query;
+
+    console.log('💚 FETCHING HYBRID volunteers...');
+
+    const Volunteer = require('../models/Volunteer');
+
+    // Fetch from MongoDB
+    let mongoQuery = {};
+    if (status) {
+      mongoQuery.status = status;
+    }
+
+    const mongoVolunteers = await Volunteer.find(mongoQuery)
+      .sort({ created_at: -1 })
+      .limit(parseInt(limit));
+
+    console.log(`✅ MongoDB volunteers: ${mongoVolunteers.length}`);
+
+    // Fetch from Supabase
+    let supabaseVolunteers = [];
+    try {
+      const supabaseResponse = await axios.get(
+        'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api/contributions',
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (supabaseResponse.data && Array.isArray(supabaseResponse.data)) {
+        supabaseVolunteers = supabaseResponse.data;
+      }
+      console.log(`✅ Supabase contributions: ${supabaseVolunteers.length}`);
+    } catch (supabaseError) {
+      console.warn('⚠️ Supabase fetch failed:', supabaseError.message);
+    }
+
+    // Merge both sources
+    const allVolunteers = [...mongoVolunteers, ...supabaseVolunteers];
+
+    console.log(`✅ HYBRID volunteers: ${mongoVolunteers.length} MongoDB + ${supabaseVolunteers.length} Supabase = ${allVolunteers.length} total`);
+
+    res.json({
+      success: true,
+      data: allVolunteers,
+      source: 'hybrid',
+      counts: {
+        mongodb: mongoVolunteers.length,
+        supabase: supabaseVolunteers.length,
+        total: allVolunteers.length
+      }
+    });
+  } catch (error) {
+    console.error('❌ VOLUNTEER FETCH ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Server error fetching volunteers"
     });
   }
 });
