@@ -169,7 +169,7 @@ const ResourceAnalysisLayer: React.FC<{ resourceData: ResourceAnalysis[]; loadin
   return null;
 };
 
-// Filter Panel Component
+// Filter Panel Component - Mobile Responsive (Stacked below stats on mobile)
 const FilterPanel: React.FC<{
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
@@ -181,19 +181,19 @@ const FilterPanel: React.FC<{
   };
 
   return (
-    <div className="absolute top-56 right-4 z-[1000] bg-white p-4 rounded-lg shadow-lg w-64 max-w-[calc(100vw-2rem)] md:w-64">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
-        <Filter className="w-5 h-5 mr-2 text-blue-600" />
+    <div className="absolute top-4 left-4 md:top-44 md:right-4 md:left-auto z-[1000] bg-white p-3 sm:p-4 rounded-lg shadow-lg w-64 sm:w-72 md:w-64 max-w-[calc(100vw-2rem)]">
+      <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-2 sm:mb-3 md:mb-4 flex items-center">
+        <Filter className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-blue-600" />
         Filters
       </h3>
 
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Disaster Type</label>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Disaster Type</label>
           <select
             value={filters.type || ''}
             onChange={(e) => handleFilterChange('type', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-1.5 sm:p-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={loading}
           >
             <option value="">All Types</option>
@@ -204,11 +204,11 @@ const FilterPanel: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status</label>
           <select
             value={filters.status || ''}
             onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-1.5 sm:p-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={loading}
           >
             <option value="">All Status</option>
@@ -219,11 +219,11 @@ const FilterPanel: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Priority</label>
           <select
             value={filters.priority || ''}
             onChange={(e) => handleFilterChange('priority', e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-1.5 sm:p-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={loading}
           >
             <option value="">All Priorities</option>
@@ -237,7 +237,7 @@ const FilterPanel: React.FC<{
   );
 };
 
-// Disaster Statistics Panel Component
+// Disaster Statistics Panel Component - Mobile Responsive
 const DisasterStatisticsPanel: React.FC<{ reports: Report[]; loading: boolean }> = ({ reports, loading }) => {
   if (loading) return null;
 
@@ -247,26 +247,26 @@ const DisasterStatisticsPanel: React.FC<{ reports: Report[]; loading: boolean }>
   const totalAffected = reports.reduce((sum, r) => sum + (r.affected_people || 0), 0);
 
   return (
-    <div className="absolute top-4 right-4 z-[1000] bg-white p-4 rounded-lg shadow-lg w-80">
-      <h3 className="text-lg font-semibold mb-3 flex items-center">
-        <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
-        Disaster Statistics
+    <div className="absolute top-4 right-4 z-[1000] bg-white p-3 sm:p-4 rounded-lg shadow-lg w-64 sm:w-72 md:w-80 max-w-[calc(100vw-2rem)]">
+      <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-2 sm:mb-3 flex items-center">
+        <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-orange-500" />
+        Statistics
       </h3>
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
+      <div className="space-y-1.5 sm:space-y-2">
+        <div className="flex justify-between text-xs sm:text-sm">
           <span>Total Reports:</span>
           <span className="font-medium">{totalReports}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span>Active Disasters:</span>
+        <div className="flex justify-between text-xs sm:text-sm">
+          <span>Active:</span>
           <span className="font-medium text-orange-600">{activeReports}</span>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs sm:text-sm">
           <span>High Priority:</span>
           <span className="font-medium text-red-600">{highPriorityReports}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span>Total Affected:</span>
+        <div className="flex justify-between text-xs sm:text-sm">
+          <span>Affected:</span>
           <span className="font-medium text-blue-600">{totalAffected.toLocaleString()}</span>
         </div>
       </div>
@@ -346,23 +346,23 @@ const DisasterHeatMap: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="p-6 h-full">
+      <div className="p-3 sm:p-4 md:p-6 h-full">
         <div className="max-w-7xl mx-auto h-full">
-          {/* Page Header */}
-          <div className="mb-6">
+          {/* Page Header - Mobile Responsive */}
+          <div className="mb-3 sm:mb-4 md:mb-6">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Disaster Response Heat Map</h1>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Disaster Heat Map</h1>
               {loading && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Loading data...
+                <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                  Loading...
                 </div>
               )}
             </div>
           </div>
 
-          {/* Map */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[calc(100vh-200px)] relative">
+          {/* Map - Mobile Responsive Height */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-[calc(100vh-140px)] sm:h-[calc(100vh-170px)] md:h-[calc(100vh-200px)] relative">
             {error && (
               <div className="absolute top-4 right-4 z-[1000] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 {error}

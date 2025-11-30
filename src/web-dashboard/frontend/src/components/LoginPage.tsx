@@ -41,54 +41,55 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      {/* Back to Citizen Portal Link */}
+      {/* Back to Citizen Portal Link - Mobile Responsive */}
       <button
         onClick={() => navigate('/citizen')}
-        className="absolute top-6 left-6 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1 sm:gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm sm:text-base"
       >
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
-        <span>Back to Citizen Portal</span>
+        <span className="hidden sm:inline">Back to Citizen Portal</span>
+        <span className="sm:hidden">Back</span>
       </button>
 
-      {/* Centered Login Container */}
-      <div className="max-w-md w-full mx-4">
-        {/* Header Section */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center mb-4">
+      {/* Centered Login Container - Mobile Responsive */}
+      <div className="max-w-md w-full px-4 sm:px-6">
+        {/* Header Section - Mobile Responsive */}
+        <div className="mb-6 sm:mb-8 text-center">
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
             <img
               src="/favicon.png"
               alt="ResQ Hub Logo"
-              className="w-12 h-12 mr-3"
+              className="w-10 h-10 sm:w-12 sm:h-12 mr-2 sm:mr-3"
             />
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               ResQ Hub
             </h1>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-1 sm:mb-2">
             Admin/Responder Login
           </h2>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-xs sm:text-sm">
             National Disaster Management Platform
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Individual ID Field */}
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          {/* Individual ID Field - Mobile Responsive */}
           <div>
             <input
               id="individualId"
               type="text"
               value={individualId}
               onChange={(e) => setIndividualId(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base text-gray-700 placeholder-gray-400 shadow-sm"
               placeholder="Enter your ID"
               disabled={isLoading}
             />
           </div>
 
-          {/* OTP Field */}
+          {/* OTP Field - Mobile Responsive */}
           <div>
             <div className="relative">
               <input
@@ -96,7 +97,7 @@ const LoginPage: React.FC = () => {
                 type={showOtp ? 'text' : 'password'}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 pr-10 sm:pr-12 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base text-gray-700 placeholder-gray-400 shadow-sm"
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
@@ -106,20 +107,20 @@ const LoginPage: React.FC = () => {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 disabled={isLoading}
               >
-                {showOtp ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showOtp ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Button - Mobile Responsive */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-full font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+            className="w-full bg-blue-600 text-white py-2.5 px-4 sm:py-3 rounded-full font-medium text-sm sm:text-base hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 Signing in...
               </>
             ) : (
@@ -128,9 +129,9 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Demo Credentials */}
-        <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-300 opacity-75">
-          <h3 className="text-xs font-medium text-gray-600 mb-2">Demo Credentials (Click to use):</h3>
+        {/* Demo Credentials - Mobile Responsive */}
+        <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-gray-100 rounded-lg border border-gray-300 opacity-75">
+          <h3 className="text-xs font-medium text-gray-600 mb-1.5 sm:mb-2">Demo Credentials (Click to use):</h3>
           <div className="space-y-1">
             <button
               type="button"
@@ -138,11 +139,11 @@ const LoginPage: React.FC = () => {
                 setIndividualId('responder001');
                 setOtp('123456');
               }}
-              className="w-full text-left p-1.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 transition-colors opacity-90 hover:opacity-100"
+              className="w-full text-left p-1 sm:p-1.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 transition-colors opacity-90 hover:opacity-100"
               disabled={isLoading}
             >
-              <div className="font-medium text-gray-700">Responder Account</div>
-              <div className="text-gray-600">responder001 / OTP: 123456</div>
+              <div className="font-medium text-gray-700 text-xs">Responder Account</div>
+              <div className="text-gray-600 text-xs">responder001 / OTP: 123456</div>
             </button>
 
             <button
@@ -151,20 +152,20 @@ const LoginPage: React.FC = () => {
                 setIndividualId('admin001');
                 setOtp('123456');
               }}
-              className="w-full text-left p-1.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 transition-colors opacity-90 hover:opacity-100"
+              className="w-full text-left p-1 sm:p-1.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 transition-colors opacity-90 hover:opacity-100"
               disabled={isLoading}
             >
-              <div className="font-medium text-gray-700">Admin Account</div>
-              <div className="text-gray-600">admin001 / OTP: 123456</div>
+              <div className="font-medium text-gray-700 text-xs">Admin Account</div>
+              <div className="text-gray-600 text-xs">admin001 / OTP: 123456</div>
             </button>
           </div>
-          <div className="mt-2 text-xs text-gray-600">
+          <div className="mt-1.5 sm:mt-2 text-xs text-gray-600">
             Click any credential above to auto-fill the form
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6 text-sm text-gray-500">
+        {/* Footer - Mobile Responsive */}
+        <div className="text-center mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500">
           <p>ResQ Hub - National Disaster Management Platform © 2025</p>
         </div>
       </div>

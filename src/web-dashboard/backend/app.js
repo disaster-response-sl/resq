@@ -246,6 +246,35 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// 404 handler - return JSON for API routes, HTML for others
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      success: false,
+      message: 'API endpoint not found',
+      path: req.path
+    });
+  }
+  res.status(404).send('Page not found');
+});
+
+// Global error handler - always return JSON for API routes
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  
+  // Return JSON error for API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(err.status || 500).json({
+      success: false,
+      message: err.message || 'Internal server error',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+  }
+  
+  // HTML error for non-API routes
+  res.status(err.status || 500).send(err.message || 'Internal server error');
+});
+
 // MongoDB connection
 const PORT = process.env.PORT || 5000;
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/disaster-platform';
