@@ -38,8 +38,8 @@ class MockSLUDIService {
     
     // IMPORTANT: This is a MOCK service for development/testing only
     // In production, this should be replaced with actual SLUDI/eSignet integration
-    // TODO: Move test credentials to environment variables
-    if (user && request.otp === "80888275Ab") { // Mock OTP validation
+    const MOCK_OTP = process.env.MOCK_OTP || "80888275Ab";
+    if (user && request.otp === MOCK_OTP) { // Mock OTP validation
       return {
         id: authRequest.id,
         version: authRequest.version,

@@ -314,5 +314,3 @@ export default function ReliefDataDashboard() {
     </MainLayout>
   );
 };
-
-export default ReliefDataDashboard;

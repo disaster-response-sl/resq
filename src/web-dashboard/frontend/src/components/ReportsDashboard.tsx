@@ -199,7 +199,7 @@ export default function ReportsDashboard() {
                   }`}
                 >
                   <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">{type.label}</h3>
-                  <p className="text-sm text-gray-600">{type.description}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">{type.description}</p>
                 </div>
               ))}
             </div>
