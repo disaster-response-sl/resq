@@ -80,29 +80,114 @@ const CitizenDashboard: React.FC = () => {
   const reverseGeocode = async () => {
     if (!location) return;
     
+    // Try direct fetch first (often faster and avoids double-hop)
     try {
-      // Use backend proxy to avoid CORS issues
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const directResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&addressdetails=1`,
+        {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'ResQ-Disaster-Platform/1.0'
+          }
+        }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (directResponse.ok) {
+        const data = await directResponse.json();
+        if (data.display_name) {
+          const address = data.address;
+          let locationParts = [];
+          
+          // Build clean address from structured data
+          if (address) {
+            if (address.road) locationParts.push(address.road);
+            else if (address.suburb) locationParts.push(address.suburb);
+            else if (address.neighbourhood) locationParts.push(address.neighbourhood);
+            
+            if (address.city) locationParts.push(address.city);
+            else if (address.town) locationParts.push(address.town);
+            else if (address.village) locationParts.push(address.village);
+            
+            if (address.state_district) locationParts.push(address.state_district);
+            else if (address.county) locationParts.push(address.county);
+          }
+          
+          let finalLocation = '';
+          if (locationParts.length > 0) {
+            finalLocation = locationParts.slice(0, 3).join(', ');
+          } else {
+            // Parse display_name
+            const parts = data.display_name.split(',').map((p: string) => p.trim());
+            const meaningfulParts = parts.filter((p: string) => 
+              p && !p.match(/^\d+$/) && p !== 'Sri Lanka'
+            ).slice(0, 3);
+            finalLocation = meaningfulParts.join(', ');
+          }
+          
+          setLocationName(finalLocation);
+          console.log('✅ Location found:', finalLocation);
+          return;
+        }
+      }
+    } catch (directError) {
+      console.log('Direct geocoding failed, trying backend proxy...', directError);
+    }
+    
+    // Fallback to backend proxy
+    try {
       const response = await axios.get(`${API_BASE_URL}/api/geocode/reverse`, {
         params: {
           lat: location.lat,
           lon: location.lng
         },
-        timeout: 5000
+        timeout: 12000
       });
       
       if (response.data.success && response.data.data?.display_name) {
-        const parts = response.data.data.display_name.split(',');
-        setLocationName(parts.slice(0, 3).join(','));
+        const address = response.data.data.address;
+        let locationParts = [];
+        
+        if (address) {
+          if (address.road) locationParts.push(address.road);
+          else if (address.suburb) locationParts.push(address.suburb);
+          else if (address.neighbourhood) locationParts.push(address.neighbourhood);
+          
+          if (address.city) locationParts.push(address.city);
+          else if (address.town) locationParts.push(address.town);
+          else if (address.village) locationParts.push(address.village);
+          
+          if (address.state_district) locationParts.push(address.state_district);
+          else if (address.county) locationParts.push(address.county);
+        }
+        
+        let finalLocation = '';
+        if (locationParts.length > 0) {
+          finalLocation = locationParts.slice(0, 3).join(', ');
+        } else {
+          const parts = response.data.data.display_name.split(',').map((p: string) => p.trim());
+          const meaningfulParts = parts.filter((p: string) => 
+            p && !p.match(/^\d+$/) && p !== 'Sri Lanka'
+          ).slice(0, 3);
+          finalLocation = meaningfulParts.join(', ');
+        }
+        
+        setLocationName(finalLocation);
+        console.log('✅ Location found via proxy:', finalLocation);
         return;
       }
-      
-      // Fallback to coordinates if geocoding fails
-      setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
     } catch (error: any) {
-      console.error('Reverse geocoding error:', error);
-      // Fallback to coordinates display
-      setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+      console.error('Backend proxy also failed:', error.message || error);
     }
+    
+    // Show coordinates if all geocoding fails
+    console.warn('⚠️ All geocoding methods failed, showing coordinates');
+    setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
   };
 
   const fetchWeather = async () => {

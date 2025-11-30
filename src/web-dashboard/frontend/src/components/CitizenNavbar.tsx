@@ -37,9 +37,9 @@ const CitizenNavbar: React.FC = () => {
               alt="ResQ Hub Logo" 
               className="h-8 w-8"
             />
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold">ResQ Hub</h1>
-              <p className="text-blue-100 text-xs">Sri Lanka Emergency Response</p>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold">ResQ Hub</h1>
+              <p className="text-blue-100 text-[10px] sm:text-xs">Sri Lanka Emergency Response</p>
             </div>
           </div>
 
