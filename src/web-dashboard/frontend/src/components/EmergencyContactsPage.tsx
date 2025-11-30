@@ -94,55 +94,29 @@ const EmergencyContactsPage: React.FC = () => {
   const fetchDistrictContact = async () => {
     setLoading(true);
     try {
-      // Mock DDMCU contact data - in production, this would come from an API
-      const mockContacts: { [key: string]: DistrictContact } = {
-        'Gampaha': {
-          district: 'Gampaha',
-          district_si: 'ගම්පහ',
-          district_ta: 'கம்பஹா',
-          officer_name: 'Mr. A. M. A. N. Chandrasiri',
-          officer_title: 'Deputy Director (District)',
-          office_phone: '+94 332 234 671',
-          mobile_phone: '+94 773 957 871',
-          email: 'gampaha.ddmc@dmc.gov.lk',
-          address: 'District Disaster Management Centre, Gampaha'
-        },
-        'Colombo': {
-          district: 'Colombo',
-          district_si: 'කොළඹ',
-          district_ta: 'கொழும்பு',
-          officer_name: 'Ms. K. P. Jayasinghe',
-          officer_title: 'Deputy Director (District)',
-          office_phone: '+94 112 136 136',
-          mobile_phone: '+94 771 234 567',
-          email: 'colombo.ddmc@dmc.gov.lk',
-          address: 'District Disaster Management Centre, Colombo 7'
-        },
-        'Kandy': {
-          district: 'Kandy',
-          district_si: 'මහනුවර',
-          district_ta: 'கண்டி',
-          officer_name: 'Mr. R. M. S. Bandara',
-          officer_title: 'Deputy Director (District)',
-          office_phone: '+94 812 232 371',
-          mobile_phone: '+94 772 345 678',
-          email: 'kandy.ddmc@dmc.gov.lk',
-          address: 'District Disaster Management Centre, Kandy'
-        },
-        'Galle': {
-          district: 'Galle',
-          district_si: 'ගාල්ල',
-          district_ta: 'காலி',
-          officer_name: 'Mr. P. A. Silva',
-          officer_title: 'Deputy Director (District)',
-          office_phone: '+94 912 234 156',
-          mobile_phone: '+94 773 456 789',
-          email: 'galle.ddmc@dmc.gov.lk',
-          address: 'District Disaster Management Centre, Galle'
-        }
-      };
+      console.log(`📞 Fetching DDMCU contact for ${selectedDistrict}...`);
+      
+      const response = await axios.get(
+        `${API_BASE_URL}/api/public/ddmcu-contacts?district=${selectedDistrict}`
+      );
 
-      const contact = mockContacts[selectedDistrict] || {
+      if (response.data.success && response.data.data) {
+        console.log(`✅ Loaded DDMCU contact for ${selectedDistrict} (source: ${response.data.source})`);
+        setDistrictContact(response.data.data);
+        
+        // Show notification if using local data (not yet in Supabase)
+        if (response.data.source === 'local' && response.data.note) {
+          console.log(`ℹ️ ${response.data.note}`);
+        }
+      } else {
+        toast.error('District contact information not available');
+      }
+    } catch (error) {
+      console.error('Error fetching district contact:', error);
+      toast.error('Failed to load district contact');
+      
+      // Fallback to showing unavailable message
+      setDistrictContact({
         district: selectedDistrict,
         district_si: selectedDistrict,
         district_ta: selectedDistrict,
@@ -150,12 +124,7 @@ const EmergencyContactsPage: React.FC = () => {
         officer_title: 'Deputy Director (District)',
         office_phone: 'N/A',
         mobile_phone: 'N/A'
-      };
-
-      setDistrictContact(contact);
-    } catch (error) {
-      console.error('Error fetching district contact:', error);
-      toast.error('Failed to load district contact');
+      });
     } finally {
       setLoading(false);
     }

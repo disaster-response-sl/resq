@@ -656,4 +656,366 @@ router.post('/chat', async (req, res) => {
   }
 });
 
+// GET /api/public/ddmcu-contacts - Get District Disaster Management Centre Unit contacts
+router.get('/ddmcu-contacts', async (req, res) => {
+  try {
+    const { district } = req.query;
+    
+    console.log(`📞 Fetching DDMCU contacts${district ? ` for district: ${district}` : ' (all districts)'}`);
+
+    // Try to fetch from Supabase API - it may have DDMCU data in a separate table
+    // If not available via public API, we'll need to query Supabase directly
+    const supabaseUrl = 'https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api';
+    const params = new URLSearchParams();
+    
+    // Try fetching with type=ddmcu or similar parameter
+    if (district) {
+      params.append('district', district);
+    }
+    
+    try {
+      // First attempt: try the public API with district filter
+      const response = await axios.get(`${supabaseUrl}?${params.toString()}`, {
+        timeout: 5000
+      });
+      
+      // Check if response contains DDMCU data
+      if (response.data && response.data.ddmcu_contacts) {
+        console.log(`✅ Found DDMCU contacts from Supabase API`);
+        return res.json({
+          success: true,
+          data: response.data.ddmcu_contacts,
+          source: 'supabase'
+        });
+      }
+    } catch (apiError) {
+      console.log('⚠️ Supabase public API does not contain DDMCU data, using local data');
+    }
+
+    // Official DDMCU contact data for all 25 districts of Sri Lanka
+    const ddmcuContacts = {
+      'Ampara': {
+        district: 'Ampara',
+        district_si: 'අම්පාර',
+        district_ta: 'அம்பாறை',
+        officer_name: 'Mr.M.A.C.M.Riyas',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 632 222 218',
+        mobile_phone: '+94 773 957 883',
+        email: 'ampara.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Ampara'
+      },
+      'Anuradhapura': {
+        district: 'Anuradhapura',
+        district_si: 'අනුරාධපුරය',
+        district_ta: 'அனுராதபுரம்',
+        officer_name: 'Lt Col SMDM Samarakoon',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 252 234 817',
+        mobile_phone: '+94 773 957 881',
+        email: 'anuradhapura.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Anuradhapura'
+      },
+      'Badulla': {
+        district: 'Badulla',
+        district_si: 'බදුල්ල',
+        district_ta: 'பதுளை',
+        officer_name: 'Mr. E. M. L. U. Kumara',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 552 224 751',
+        mobile_phone: '+94 773 957 880',
+        email: 'badulla.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Badulla'
+      },
+      'Batticaloa': {
+        district: 'Batticaloa',
+        district_si: 'මඩකලපුව',
+        district_ta: 'மட்டக்களப்பு',
+        officer_name: 'Mr.A.S.M.Ziyath',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 652 227 701',
+        mobile_phone: '+94 773 957 885',
+        email: 'batticaloa.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Batticaloa'
+      },
+      'Colombo': {
+        district: 'Colombo',
+        district_si: 'කොළඹ',
+        district_ta: 'கொழும்பு',
+        officer_name: 'Wing Comm. G P Dissanayaka',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 112 434 028',
+        mobile_phone: '+94 773 957 870',
+        email: 'colombo.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Colombo'
+      },
+      'Galle': {
+        district: 'Galle',
+        district_si: 'ගාල්ල',
+        district_ta: 'காலி',
+        officer_name: 'Lt Col JNP Liyanagama',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 912 227 315',
+        mobile_phone: '+94 773 957 873',
+        email: 'galle.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Galle'
+      },
+      'Gampaha': {
+        district: 'Gampaha',
+        district_si: 'ගම්පහ',
+        district_ta: 'கம்பஹா',
+        officer_name: 'Mr. A. M. A. N. Chandrasiri',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 332 234 671',
+        mobile_phone: '+94 773 957 871',
+        email: 'gampaha.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Gampaha'
+      },
+      'Hambantota': {
+        district: 'Hambantota',
+        district_si: 'හම්බන්තොට',
+        district_ta: 'அம்பாந்தோட்டை',
+        officer_name: 'Sqn Ldr KA Kumara',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 472 256 463',
+        mobile_phone: '+94 773 957 875',
+        email: 'hambantota.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Hambantota'
+      },
+      'Jaffna': {
+        district: 'Jaffna',
+        district_si: 'යාපනය',
+        district_ta: 'யாழ்ப்பாணம்',
+        officer_name: 'Mr.N.Sooriyarajah',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 212 221 676',
+        mobile_phone: '+94 773 957 894',
+        email: 'jaffna.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Jaffna'
+      },
+      'Kalutara': {
+        district: 'Kalutara',
+        district_si: 'කළුතර',
+        district_ta: 'களுத்துறை',
+        officer_name: 'Lt Col T V N De Saa',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 342 222 912',
+        mobile_phone: '+94 773 957 872',
+        email: 'kalutara.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Kalutara'
+      },
+      'Kandy': {
+        district: 'Kandy',
+        district_si: 'මහනුවර',
+        district_ta: 'கண்டி',
+        officer_name: 'Mr.I.A.K.Ranaweera',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 812 202 697',
+        mobile_phone: '+94 773 957 878',
+        email: 'kandy.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Kandy'
+      },
+      'Kegalle': {
+        district: 'Kegalle',
+        district_si: 'කෑගල්ල',
+        district_ta: 'கேகாலை',
+        officer_name: 'Mr.K.A.D.K.S.D Bandara',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 352 222 603',
+        mobile_phone: '+94 773 957 876',
+        email: 'kegalle.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Kegalle'
+      },
+      'Kilinochchi': {
+        district: 'Kilinochchi',
+        district_si: 'කිලිනොච්චිය',
+        district_ta: 'கிளிநொச்சி',
+        officer_name: 'Mr.A.M.R.M.K.Alahakoon',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 212 285 330',
+        mobile_phone: '+94 772 320 528',
+        email: 'kilinochchi.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Kilinochchi'
+      },
+      'Kurunegala': {
+        district: 'Kurunegala',
+        district_si: 'කුරුණෑගල',
+        district_ta: 'குருநாகல்',
+        officer_name: 'Mr.Anura Viraj Dissanayake',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 372 221 709',
+        mobile_phone: '+94 773 957 887',
+        email: 'kurunegala.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Kurunegala'
+      },
+      'Mannar': {
+        district: 'Mannar',
+        district_si: 'මන්නාරම',
+        district_ta: 'மன்னார்',
+        officer_name: 'Mr.K.Thileepan',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 232 250 133',
+        mobile_phone: '+94 772 320 529',
+        email: 'mannar.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Mannar'
+      },
+      'Matale': {
+        district: 'Matale',
+        district_si: 'මාතලේ',
+        district_ta: 'மாத்தளை',
+        officer_name: 'Mr.Chaminda Amaraweera',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 662 230 926',
+        mobile_phone: '+94 773 957 890',
+        email: 'matale.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Matale'
+      },
+      'Matara': {
+        district: 'Matara',
+        district_si: 'මාතර',
+        district_ta: 'மாத்தறை',
+        officer_name: 'Lt.Col.K.G.C.K.Kudagamage',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 412 234 134',
+        mobile_phone: '+94 773 957 874',
+        email: 'matara.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Matara'
+      },
+      'Moneragala': {
+        district: 'Moneragala',
+        district_si: 'මොණරාගල',
+        district_ta: 'மொணராகலை',
+        officer_name: 'Mr.A.H.Ravindra Kumara',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 552 276 867',
+        mobile_phone: '+94 773 957 889',
+        email: 'monaragala.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Moneragala'
+      },
+      'Mullaitivu': {
+        district: 'Mullaitivu',
+        district_si: 'මුලතිව්',
+        district_ta: 'முல்லைத்தீவு',
+        officer_name: 'Acting Mr.S.Kokularajah',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 212 290 054',
+        mobile_phone: '+94 773 957 886',
+        email: 'mullaitivu.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Mullaitivu'
+      },
+      'Nuwara Eliya': {
+        district: 'Nuwara Eliya',
+        district_si: 'නුවරඑළිය',
+        district_ta: 'நுவரெலியா',
+        officer_name: 'Lt Col H B M B N Bandra RWP RSP USP SLA',
+        officer_title: 'Asst. Director (District)',
+        office_phone: '+94 522 222 113',
+        mobile_phone: '+94 773 957 879',
+        email: 'nuwaraeliya.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Nuwara Eliya'
+      },
+      'Polonnaruwa': {
+        district: 'Polonnaruwa',
+        district_si: 'පොළොන්නරුව',
+        district_ta: 'பொலன்னறுவை',
+        officer_name: 'Lt Col AJS Abenayaka',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 272 226 676',
+        mobile_phone: '+94 773 957 882',
+        email: 'polonnaruwa.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Polonnaruwa'
+      },
+      'Puttalam': {
+        district: 'Puttalam',
+        district_si: 'පුත්තලම',
+        district_ta: 'புத்தளம்',
+        officer_name: 'Wing Comm. W.M.D.T.Bandara',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 322 265 756',
+        mobile_phone: '+94 773 957 888',
+        email: 'puttalam.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Puttalam'
+      },
+      'Ratnapura': {
+        district: 'Ratnapura',
+        district_si: 'රත්නපුර',
+        district_ta: 'இரத்தினபுரி',
+        officer_name: 'Mr.S.H.M.Manjula',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 452 222 991',
+        mobile_phone: '+94 773 957 877',
+        email: 'ratnapura.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Ratnapura'
+      },
+      'Trincomalee': {
+        district: 'Trincomalee',
+        district_si: 'ත්‍රිකුණාමලය',
+        district_ta: 'திருகோணமலை',
+        officer_name: 'Mr.K.Sugunathas',
+        officer_title: 'Deputy Director (District)',
+        office_phone: '+94 262 224 711',
+        mobile_phone: '+94 773 957 884',
+        email: 'trincomalee.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Trincomalee'
+      },
+      'Vavuniya': {
+        district: 'Vavuniya',
+        district_si: 'වව්නියාව',
+        district_ta: 'வவுனியா',
+        officer_name: 'Mr.Ruwan Rathnayake',
+        officer_title: 'Asst.Director (District)',
+        office_phone: '+94 242 225 553',
+        mobile_phone: '+94 773 957 892',
+        email: 'vavuniya.ddmc@dmc.gov.lk',
+        address: 'District Disaster Management Centre, Vavuniya'
+      }
+    };
+
+    if (district) {
+      const contact = ddmcuContacts[district];
+      if (contact) {
+        console.log(`✅ Found DDMCU contact for ${district}`);
+        return res.json({
+          success: true,
+          data: contact,
+          source: 'dmc_official',
+          note: 'Official DDMCU contact data from Sri Lanka Disaster Management Center (DMC).'
+        });
+      } else {
+        console.log(`⚠️ No DDMCU contact found for ${district}`);
+        return res.json({
+          success: true,
+          data: {
+            district: district,
+            officer_name: 'Contact Information Not Available',
+            officer_title: 'Deputy Director (District)',
+            office_phone: 'N/A',
+            mobile_phone: 'N/A',
+            note: 'Please contact National DMC: +94 11 2 136136'
+          },
+          source: 'local'
+        });
+      }
+    }
+
+    // Return all contacts if no district specified
+    console.log(`✅ Returning all DDMCU contacts (${Object.keys(ddmcuContacts).length} districts)`);
+    res.json({
+      success: true,
+      data: Object.values(ddmcuContacts),
+      count: Object.keys(ddmcuContacts).length,
+      source: 'dmc_official',
+      note: 'Official DDMCU contact data from Sri Lanka Disaster Management Center (DMC).'
+    });
+
+  } catch (error) {
+    console.error('❌ ERROR fetching DDMCU contacts:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching DDMCU contacts",
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
