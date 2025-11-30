@@ -155,6 +155,41 @@ app.use('/api/external', externalDataRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/public', routesRoutes); // LankaRouteWatch routes
 
+// Geocoding proxy to avoid CORS issues with Nominatim
+app.get('/api/geocode/reverse', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    
+    if (!lat || !lon) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Latitude and longitude are required' 
+      });
+    }
+
+    const axios = require('axios');
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+      {
+        timeout: 5000,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'ResQ-Disaster-Platform/1.0'
+        }
+      }
+    );
+
+    return res.json({ success: true, data: response.data });
+  } catch (error) {
+    console.error('Geocoding proxy error:', error.message);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch location data',
+      fallback: true 
+    });
+  }
+});
+
 // Health check routes
 app.get('/api/health', (req, res) => {
   res.json({ 

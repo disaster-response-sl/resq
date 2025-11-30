@@ -79,37 +79,25 @@ const CitizenDashboard: React.FC = () => {
   const reverseGeocode = async () => {
     if (!location) return;
     
-    // Create abort controller with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}`,
-        {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'ResQ-Disaster-Platform/1.0'
-          }
-        }
-      );
+      // Use backend proxy to avoid CORS issues
+      const response = await axios.get(`${API_BASE_URL}/api/geocode/reverse`, {
+        params: {
+          lat: location.lat,
+          lon: location.lng
+        },
+        timeout: 5000
+      });
       
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.display_name) {
-          const parts = data.display_name.split(',');
-          setLocationName(parts.slice(0, 3).join(','));
-          return;
-        }
+      if (response.data.success && response.data.data?.display_name) {
+        const parts = response.data.data.display_name.split(',');
+        setLocationName(parts.slice(0, 3).join(','));
+        return;
       }
       
       // Fallback to coordinates if geocoding fails
       setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
     } catch (error: any) {
-      clearTimeout(timeoutId);
       console.error('Reverse geocoding error:', error);
       // Fallback to coordinates display
       setLocationName(`${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
