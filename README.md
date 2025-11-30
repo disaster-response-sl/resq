@@ -1,26 +1,89 @@
-# 🚨 National Disaster Response Platform for Sri Lanka
+# 🚨 ResQ - National Disaster Response Platform
 
-[![Production Status](https://img.shields.io/badge/status-production-brightgreen)](https://your-domain.com)
+[![Production Status](https://img.shields.io/badge/status-production%20ready-brightgreen)](https://github.com/disaster-response-sl/resq)
 [![Real-Time Data](https://img.shields.io/badge/data-live%20DMC%20API-blue)](https://lk-flood-api.vercel.app)
-[![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka%20Disasters-red)](https://www.dmc.gov.lk)
+[![Relief Coordination](https://img.shields.io/badge/relief-Supabase%20API-green)](https://supabase.com)
+[![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka-red)](https://www.dmc.gov.lk)
 
-> **🎯 From Hackathon Prototype to Real-World Disaster Response**  
-> Originally built for SLIIT Hackathon, now **deployed in production** during Sri Lanka's ongoing disaster crisis.  
-> **Real-time flood monitoring** • **Relief camp locations** • **Emergency SOS** • **No login required**
+> **🎯 Real-World Disaster Response Platform**  
+> Production-ready emergency response system with **real-time flood monitoring**, **relief coordination**, and **volunteer management**.  
+> **39 DMC gauging stations** • **Live relief camps** • **Emergency SOS** • **Volunteer registration** • **No login required for citizens**
 
-## 🚀 Production Status: LIVE
+## 🚀 Production Ready: 100% Real APIs
 
-Real-time disaster response platform with **actual government data sources** replacing all mock APIs.
+Comprehensive disaster response platform powered by **verified government and production data sources**.
 
-**Key Changes (Hackathon → Production):**
-- ✅ **Real DMC Flood Data** - 39 gauging stations, live water levels, 15-min updates
-- ✅ **Real Relief Camps** - Supabase API with verified camp locations across Sri Lanka
-- ✅ **Public Access** - Citizens can access emergency features without authentication
-- ✅ **AI Safety Assistant** - Google Gemini-powered disaster guidance
-- ❌ **Removed Mock APIs** - NDX, PayDPI, SLUDI sandbox integrations disabled
-- ❌ **Removed Payments** - Focusing on core disaster response features
+### 🌊 Core Features
 
-📖 **[View Production Deployment Guide](./PRODUCTION_DEPLOYMENT.md)** | **[Repository Strategy](./REPOSITORY_STRATEGY.md)**
+#### For Citizens (Public Access)
+- ✅ **Real-Time Flood Monitoring** - Live water levels from 39 DMC gauging stations (15-min updates)
+- ✅ **Interactive Risk Map** - Leaflet-powered map with flood alerts, relief camps, and user location
+- ✅ **Emergency SOS** - One-tap distress signal with GPS location (no authentication required)
+- ✅ **Incident Reporting** - Submit reports with photos and location data
+- ✅ **Relief Demand & Supply Tracker** - Find nearby help or volunteer to assist
+- ✅ **Volunteer Registration** - Comprehensive form to offer goods, services, or labor
+- ✅ **AI Safety Assistant** - Google Gemini-powered emergency guidance chatbot
+- ✅ **Recent Alerts Dashboard** - Real-time DMC flood alerts with severity levels
+
+#### For Admins & Responders
+- ✅ **SOS Dashboard** - Real-time emergency signal monitoring with auto-escalation
+- ✅ **Disaster Management** - Create, track, and manage disaster events
+- ✅ **Live Disaster Heat Map** - Real-time DMC flood data visualization
+- ✅ **Resource Management** - Allocate and track emergency supplies
+- ✅ **Reports Dashboard** - Citizen incident report review and verification
+- ✅ **Relief Camp Dashboard** - Manage help requests and volunteer contributions
+- ✅ **Analytics & Metrics** - Comprehensive dashboard with emergency statistics
+
+### 🔌 Production APIs (Zero Mock Data)
+
+#### 1. **DMC Flood Data API** 🌊
+- **Source**: [lk-flood-api.vercel.app](https://lk-flood-api.vercel.app)
+- **Documentation**: [docs/sriLankaFloodDataAPI.md](./docs/sriLankaFloodDataAPI.md)
+- **Data**: Official Sri Lanka Disaster Management Centre flood monitoring
+- **Coverage**: 39 gauging stations across all major rivers
+- **Update Frequency**: Every 15 minutes
+- **Endpoints Used**:
+  - `/alerts` - Active flood alerts (MAJOR, MINOR, ALERT status)
+  - `/levels/latest` - Latest water levels for all stations
+  - `/stations` - Station metadata with GPS coordinates
+- **Features**:
+  - Water level measurements (meters)
+  - Rising/Falling trends
+  - Alert status classification
+  - Rainfall data (mm)
+  - Historical readings
+
+#### 2. **Supabase Relief Coordination API** ⛺
+- **Source**: [Supabase Public Data API](https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api)
+- **Documentation**: [docs/publicDataAPI.md](./docs/publicDataAPI.md)
+- **Data**: Real-time relief camp locations and volunteer contributions
+- **Features**:
+  - Help Requests (people needing assistance)
+  - Volunteer Contributions (people offering support)
+  - Location-based search (radius filtering)
+  - Urgency levels (emergency, high, medium, low)
+  - Establishment types (School, Temple, Kitchen, etc.)
+  - Distance calculations (Haversine formula)
+- **Query Parameters**:
+  - `type` - requests, contributions, or all
+  - `status` - pending, resolved, available
+  - `urgency` - emergency, high, medium, low
+  - `lat`, `lng`, `radius_km` - Location-based filtering
+  - `search` - Text search across all fields
+  - `limit`, `offset` - Pagination
+- **CRUD Operations**:
+  - ✅ Create help requests (citizen reports)
+  - ✅ Create volunteer contributions (offer support)
+  - ✅ Read/Search relief data (public access)
+  - ✅ Update status (admin/responder access)
+
+### ❌ Removed Features (Production Focus)
+- ❌ **Payment/Donation System** - Streamlined to core disaster response
+- ❌ **Mock Government APIs** - NDX, PayDPI sandboxes removed
+- ❌ **SLUDI Authentication** - Simplified to Individual ID + OTP for admins
+- ❌ **Missing Persons Database** - Requires law enforcement integration (not available)
+
+📖 **[View API Documentation](./docs/)** | **[Deployment Guide](./PRODUCTION_DEPLOYMENT.md)**
 
 ---
 
@@ -123,68 +186,130 @@ Sri Lanka faces critical gaps in disaster response:
 - ❌ Slow government notifications
 - ❌ Lack of citizen agency in reporting
 - ❌ Fragmented data across systems
+- ❌ No centralized volunteer coordination during disasters
 
-## ✅ Solution Features
+## ✨ Key Features & Updates
 
-#### Mobile App (Citizen Interface)
-- 🔐 **SLUDI Authentication**: Secure login using Sri Lanka's Digital Public Infrastructure
-- 📍 **Real-time Location Services**: GPS-based emergency reporting
-- 🚨 **One-tap SOS**: Emergency signal with automatic location capture
-- 📝 **Incident Reporting**: Food, shelter, medical, and danger reports with photo upload
-- 🤖 **AI Safety Assistant**: Contextual chatbot for safety guidance
-- 🗺️ **Risk Map**: Color-coded disaster zones with real-time updates
-- 📊 **Dashboard**: Weather, risk assessment, and recent alerts
+### Citizen Web Portal (Public Access - No Login Required)
+- 🌊 **Live Flood Monitoring**: Real-time water levels from 39 DMC gauging stations with 15-min updates
+- 🗺️ **Interactive Risk Map**: Leaflet map with flood alerts (🌊), relief camps (⛺), and user location (📍)
+- 🚨 **Emergency SOS**: One-tap distress signal with GPS location and priority levels
+- 📝 **Incident Reporting**: Submit reports with photos, location, and detailed descriptions
+- 💬 **AI Safety Assistant**: Google Gemini-powered chatbot for emergency guidance and safety tips
+- 🆘 **Relief Demand Tracker**: Find nearby help within 5-200km radius
+- 💚 **Volunteer Registration**: Comprehensive form to offer goods, services, or labor
+- 📊 **Recent Alerts Dashboard**: Live DMC flood alerts with severity badges and water level trends
+- 🎯 **Location-Based Search**: Distance-sorted relief camps with urgency filtering
 
-#### Web Dashboard (Government Interface)
-- 👥 **Role-based Access**: SLUDI authentication for government officials
-- 📈 **Analytics Dashboard**: Overview statistics and real-time monitoring
-- 🚨 **SOS Monitor**: Live emergency signal tracking with priority sorting
-- 🗺️ **Reports Heatmap**: Geographic visualization of citizen needs
-- 📦 **Resource Management**: AI-powered supply allocation and tracking
-- ⚡ **Real-time Updates**: WebSocket connections for live data
+### Admin & Responder Dashboard
+- 👥 **Role-based Access**: Individual ID + OTP authentication for government officials
+- 🚨 **SOS Dashboard**: Live emergency signal monitoring with auto-escalation (5-min intervals)
+- 🗺️ **Live Disaster Heat Map**: Real-time DMC flood data with 39 station markers and alert status
+- 📊 **Analytics Dashboard**: 
+  - Emergency Statistics (replacing payment metrics)
+  - Citizen Reports tracking (total/pending)
+  - Active disasters monitoring
+  - Pending SOS signals overview
+- 📝 **Reports Dashboard**: Citizen incident report review and status management
+- ⛺ **Relief Camp Management**: Track help requests and volunteer contributions from Supabase
+- 📦 **Resource Management**: Allocate and track emergency supplies and equipment
+- 🔄 **Real-time Updates**: Auto-refresh dashboards with latest DMC flood data
+
+### Recent Updates (Production Migration)
+- ✅ **Fixed Map Display**: Added explicit height (600px) to resolve Leaflet rendering issue
+- ✅ **Enhanced Login UX**: Added "Back to Citizen Portal" navigation button
+- ✅ **Removed Payment System**: Replaced donation metrics with emergency statistics
+- ✅ **DMC Timestamp Clarity**: Added "Last DMC Update" badge showing batch update time
+- ✅ **Volunteer System**: Complete CRUD workflow for relief contributions
+- ✅ **Admin Map Fix**: Disaster heat map now uses live DMC flood data instead of MongoDB
+- ✅ **Relief Tracker**: "Offer Support" button navigates to volunteer registration form
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **Mobile App**: React Native with offline-first design
-- **Web Dashboard**: React with responsive design
-- **Maps**: React Native Maps / Google Maps API
+- **Framework**: React 18.3.1 + Vite 7.1.0
+- **Routing**: React Router DOM v7
+- **UI Components**: Tailwind CSS + Lucide React icons
+- **Maps**: Leaflet 1.9.4 + React-Leaflet 4.2.1
+- **HTTP Client**: Axios 1.7.9
+- **Notifications**: React Hot Toast
 - **State Management**: React Context API
+- **Mobile App**: React Native (separate development)
 
 ### Backend
-- **API Gateway**: Express.js with middleware
+- **Runtime**: Node.js with Express.js 5.1.0
 - **Database**: MongoDB Atlas with geospatial indexing
-- **Authentication**: SLUDI mock implementation
-- **Real-time**: WebSocket connections
-- **AI Integration**: Dialogflow/Rasa for chatbot
+- **Authentication**: Mock SLUDI (Individual ID + OTP)
+- **AI Integration**: Google Gemini AI for safety chatbot
+- **HTTP Client**: Axios for external API calls
+- **Middleware**: CORS, body-parser, dotenv
 
-### Data Integration
-- **NDX**: Mock JSON APIs for disaster data
-- **SLUDI**: OAuth2 mock for authentication
-- **PayDPI**: Optional payment simulation
+### Production APIs
+- **DMC Flood API**: Real-time water level monitoring (39 stations)
+- **Supabase Relief API**: Relief camp coordination and volunteer management
+- **MongoDB**: User-generated data (SOS signals, reports, chat logs)
 
-## DPI Integration (Government-Ready Architecture)
+### Deployment
+- **Frontend**: Vercel (Static hosting with CDN)
+- **Backend**: Render / Railway / Fly.io (recommended)
+- **Database**: MongoDB Atlas (Cloud cluster)
+- **Version Control**: GitHub (disaster-response-sl/resq)
 
-This platform is architected to integrate with Sri Lanka's Digital Public Infrastructure (SLUDI, NDX, PayDPI).
+## 📚 API Documentation
 
-For the hackathon, mock/sandbox endpoints were used.
+### DMC Flood Data API
+- **Base URL**: `https://lk-flood-api.vercel.app`
+- **Documentation**: [Swagger UI](https://lk-flood-api.vercel.app/docs) | [ReDoc](https://lk-flood-api.vercel.app/redoc)
+- **Full Docs**: [docs/sriLankaFloodDataAPI.md](./docs/sriLankaFloodDataAPI.md)
 
-Upon approval and access from the Ministry/ICTA, the platform can immediately connect to the production-grade DPI services without any code restructuring.
+**Key Endpoints**:
+- `GET /alerts` - Active flood alerts (MAJOR, MINOR, ALERT)
+- `GET /levels/latest` - Latest water levels for all 39 stations
+- `GET /stations` - Station metadata with GPS coordinates
+- `GET /rivers` - River information with basin data
+
+**Example Response** (`/alerts`):
+```json
+{
+  "station_name": "Hanwella",
+  "river_name": "Kelani Ganga",
+  "water_level": 10.75,
+  "alert_status": "MAJOR",
+  "rising_or_falling": "Falling",
+  "timestamp": "2025-11-30 12:30:00"
+}
+```
+
+### Supabase Relief Coordination API
+- **Base URL**: `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api`
+- **Documentation**: [docs/publicDataAPI.md](./docs/publicDataAPI.md)
+
+**Query Parameters**:
+- `type` - `requests` (help needed) or `contributions` (help offered)
+- `status` - `pending`, `resolved`, `available`
+- `urgency` - `emergency`, `high`, `medium`, `low`
+- `lat`, `lng`, `radius_km` - Location-based filtering
+- `search` - Text search across all fields
+
+**Example**: Find emergency help requests within 30km:
+```
+GET /public-data-api?type=requests&urgency=emergency&lat=6.9271&lng=79.8612&radius_km=30&sort=distance
+```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v16 or higher)
+- Node.js (v18 or higher)
 - MongoDB Atlas account
-- React Native development environment
-- Android Studio / Xcode (for mobile development)
+- Git
+- Code editor (VS Code recommended)
 
 ### Backend Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/disaster-response-sl/national-disaster-platform.git
-   cd national-disaster-platform
+   git clone https://github.com/disaster-response-sl/resq.git
+   cd resq
    ```
 
 2. **Install backend dependencies**
@@ -197,18 +322,38 @@ Upon approval and access from the Ministry/ICTA, the platform can immediately co
    Create a `.env` file in `src/web-dashboard/backend/`:
    ```env
    PORT=5000
-   MONGO_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/disaster_platform
-   JWT_SECRET=your-jwt-secret-key
-   JWT_EXPIRES_IN=24h
+   MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/disaster_platform
+   JWT_SECRET=your-secure-jwt-secret
+   GEMINI_API_KEY=your-google-gemini-api-key
    SLUDI_MOCK_ENABLED=true
-   SLUDI_BASE_URL=http://localhost:5000/mock-sludi
-   //.env full file provided in documentaion not provided here due to security reasons.
+   # Full .env template available in repository
    ```
 
 4. **Start the backend server**
    ```bash
-   npm start
+   npm run dev
    ```
+   Server runs on `http://localhost:5000`
+
+### Frontend Setup
+
+1. **Install frontend dependencies**
+   ```bash
+   cd src/web-dashboard/frontend
+   npm install
+   ```
+
+2. **Environment Configuration**
+   Create a `.env` file:
+   ```env
+   VITE_API_BASE_URL=http://localhost:5000/api
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+   Frontend runs on `http://localhost:5173`
 
 ### Mobile App Setup
 
