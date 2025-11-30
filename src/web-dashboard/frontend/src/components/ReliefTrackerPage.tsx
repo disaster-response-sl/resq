@@ -79,9 +79,9 @@ const ReliefTrackerPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${params.toString()}`
       );
 
-      // Fetch MongoDB help requests (reports with type 'help_needed')
+      // Fetch MongoDB help requests - all pending reports (food, shelter, medical, danger)
       const mongoResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?type=help_needed&status=pending&limit=100`
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
       const supabaseCamps = supabaseResponse.data.success ? (supabaseResponse.data.data.requests || []) : [];
@@ -90,18 +90,28 @@ const ReliefTrackerPage: React.FC = () => {
       // Merge both sources - convert MongoDB help requests to relief camp format
       const mergedCamps = [
         ...supabaseCamps,
-        ...mongoHelp.map((help: any) => ({
-          id: help._id,
-          full_name: 'Local Help Request',
-          address: help.description || 'No description',
-          latitude: help.location.lat,
-          longitude: help.location.lng,
-          establishment_type: 'Help Needed',
-          urgency: 'high',
-          status: help.status,
-          assistance_types: [help.type],
-          source: 'mongodb'
-        }))
+        ...mongoHelp.map((help: any) => {
+          // Map report types to readable labels
+          const typeLabels: any = {
+            food: 'Food Shortage 🍽️',
+            shelter: 'Shelter Needed 🏠',
+            medical: 'Medical Emergency 🏥',
+            danger: 'Danger Alert ⚠️'
+          };
+          
+          return {
+            id: help._id,
+            full_name: typeLabels[help.type] || 'Help Request',
+            address: help.description || 'No description',
+            latitude: help.location.lat,
+            longitude: help.location.lng,
+            establishment_type: typeLabels[help.type] || 'Help Needed',
+            urgency: help.type === 'medical' ? 'emergency' : 'high',
+            status: help.status,
+            assistance_types: [help.type],
+            source: 'mongodb'
+          };
+        })
       ];
 
       console.log(`✅ HYBRID Relief: ${supabaseCamps.length} Supabase camps + ${mongoHelp.length} MongoDB help = ${mergedCamps.length} total`);

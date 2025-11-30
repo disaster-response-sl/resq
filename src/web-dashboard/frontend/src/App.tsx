@@ -17,12 +17,14 @@ import AnalyticsPage from './components/AnalyticsPage';
 import MissingPersonsDashboard from './components/MissingPersonsDashboard';
 import ReliefDataDashboard from './components/ReliefDataDashboard';
 import ReportsDashboard from './components/ReportsDashboard';
+import AdminIncidentReportsPage from './components/AdminIncidentReportsPage';
 import CitizenDashboard from './components/CitizenDashboard';
 import CitizenSOSPage from './components/CitizenSOSPage';
 import CitizenReportPage from './components/CitizenReportPage';
 import CitizenChatPage from './components/CitizenChatPage';
 import CitizenMapPage from './components/CitizenMapPage';
 import ReliefTrackerPage from './components/ReliefTrackerPage';
+import EmergencyContactsPage from './components/EmergencyContactsPage';
 import VolunteerFormPage from './components/VolunteerFormPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -131,6 +133,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="/admin/incident-reports" 
+                element={
+                  <ProtectedRoute>
+                    <AdminIncidentReportsPage />
+                  </ProtectedRoute>
+                } 
+              />
               {/* Public Citizen Routes - No Authentication Required */}
               <Route path="/citizen" element={<CitizenDashboard />} />
               <Route path="/citizen/sos" element={<CitizenSOSPage />} />
@@ -138,6 +148,7 @@ function App() {
               <Route path="/citizen/chat" element={<CitizenChatPage />} />
               <Route path="/citizen/map" element={<CitizenMapPage />} />
               <Route path="/citizen/relief-tracker" element={<ReliefTrackerPage />} />
+              <Route path="/citizen/emergency-contacts" element={<EmergencyContactsPage />} />
               <Route path="/citizen/volunteer" element={<VolunteerFormPage />} />
               
               {/* Redirect root to citizen dashboard */}

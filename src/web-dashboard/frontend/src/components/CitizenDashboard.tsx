@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Cloud, AlertTriangle, Package, MessageSquare, Map, Phone, Shield } from 'lucide-react';
+import { MapPin, Cloud, AlertTriangle, Package, MessageSquare, Map, Phone } from 'lucide-react';
 import axios from 'axios';
 
 interface Location {
@@ -198,8 +198,20 @@ const CitizenDashboard: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Emergency Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <button
+              onClick={() => navigate('/citizen/emergency-contacts')}
+              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 ring-4 ring-red-300 relative"
+            >
+              <div className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                NEW
+              </div>
+              <Phone className="h-12 w-12 mx-auto mb-3" />
+              <h3 className="text-xl font-bold">Emergency Contacts</h3>
+              <p className="text-sm text-red-100 mt-1">117, 119, 110, 108 & DDMCU</p>
+            </button>
+
+            <button
               onClick={() => navigate('/citizen/sos')}
-              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
             >
               <Phone className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">SOS Emergency</h3>
