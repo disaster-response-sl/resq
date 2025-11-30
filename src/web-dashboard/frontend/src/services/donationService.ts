@@ -3,6 +3,8 @@
 
 import { DonationStatsResponse, DonationListResponse, DonationQueryParams } from '../types/donation';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 export async function getDonationStats(token: string, startDate?: string, endDate?: string): Promise<DonationStatsResponse> {
   // Donation API disabled - return empty stats
   // Payment/donation features removed to focus on disaster response
@@ -50,7 +52,7 @@ export async function getDonations(
 }
 
 export async function getDonationById(token: string, donationId: string) {
-  const res = await fetch(`/api/donations/${donationId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/donations/${donationId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -70,7 +72,7 @@ export async function updateDonationStatus(
   status: string,
   notes?: string
 ) {
-  const res = await fetch(`/api/donations/${donationId}/status`, {
+  const res = await fetch(`${API_BASE_URL}/api/donations/${donationId}/status`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -87,7 +89,7 @@ export async function updateDonationStatus(
 }
 
 export async function getPaymentAnalytics(token: string, timeframe: string = '30d') {
-  const res = await fetch(`/api/donations/analytics?timeframe=${timeframe}`, {
+  const res = await fetch(`${API_BASE_URL}/api/donations/analytics?timeframe=${timeframe}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'

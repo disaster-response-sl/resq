@@ -106,8 +106,10 @@ export interface DisasterFilters {
   includeArchived?: boolean;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 class DisasterService {
-  private baseURL = '/api/admin/disasters';
+  private baseURL = `${API_BASE_URL}/api/admin/disasters`;
 
   private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
     const token = authService.getToken();

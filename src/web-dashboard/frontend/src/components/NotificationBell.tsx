@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 import ResponderNotifications from './ResponderNotifications';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 const NotificationBell: React.FC = () => {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -15,7 +17,7 @@ const NotificationBell: React.FC = () => {
     
     try {
       const token = authService.getToken();
-      const response = await fetch('/api/responder/notifications', {
+      const response = await fetch(`${API_BASE_URL}/api/responder/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
