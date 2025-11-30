@@ -1,21 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const MissingPerson = require('../models/MissingPerson');
-
-// Middleware to check authentication (reuse from other routes)
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'Access token required' });
-  }
-
-  // For now, we'll skip JWT verification to keep it simple
-  // In production, verify the JWT token here
-  req.user = { _id: 'admin-user', role: 'admin' };
-  next();
-};
+const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/missing-persons - Get all missing persons
 router.get('/', async (req, res) => {

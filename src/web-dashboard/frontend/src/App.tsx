@@ -12,6 +12,9 @@ import Settings from './components/Settings';
 import NDXPage from './components/NDXPage';
 import AnalyticsPage from './components/AnalyticsPage';
 import PaymentStatistics from './components/PaymentStatistics';
+import MissingPersonsDashboard from './components/MissingPersonsDashboard';
+import ReliefDataDashboard from './components/ReliefDataDashboard';
+import ReportsDashboard from './components/ReportsDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -104,6 +107,30 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <NDXPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/missing-persons" 
+                element={
+                  <ProtectedRoute>
+                    <MissingPersonsDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/relief-data" 
+                element={
+                  <ProtectedRoute>
+                    <ReliefDataDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/reports" 
+                element={
+                  <ProtectedRoute>
+                    <ReportsDashboard />
                   </ProtectedRoute>
                 } 
               />

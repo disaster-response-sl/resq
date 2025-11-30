@@ -224,6 +224,47 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Link>
               )}
 
+              {/* Missing Persons */}
+              <Link
+                to="/missing-persons"
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                  location.pathname === '/missing-persons'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <Users className="w-5 h-5 mr-3" />
+                Missing Persons
+              </Link>
+
+              {/* Relief Data */}
+              <Link
+                to="/relief-data"
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                  location.pathname === '/relief-data'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <Package className="w-5 h-5 mr-3" />
+                Relief Operations
+              </Link>
+
+              {/* Reports - Admin only */}
+              {isAdmin() && (
+                <Link
+                  to="/reports"
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    location.pathname === '/reports'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <BarChart3 className="w-5 h-5 mr-3" />
+                  Advanced Reports
+                </Link>
+              )}
+
               {/* NDX - Admin only */}
               {isAdmin() && (
                 <Link
