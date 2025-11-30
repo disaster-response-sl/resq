@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { reportsService, ReportType, ReportConfig } from '../services/reportsService';
 import toast from 'react-hot-toast';
+import MainLayout from './MainLayout';
 
 export default function ReportsDashboard() {
   const [loading, setLoading] = useState(false);
@@ -170,33 +171,34 @@ export default function ReportsDashboard() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Advanced Reports System</h1>
-          <p className="text-gray-600 mt-1">Generate comprehensive reports across all systems</p>
-        </div>
+    <MainLayout>
+      <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          {/* Header - Mobile Responsive */}
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Advanced Reports System</h1>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1">Generate comprehensive reports across all systems</p>
+          </div>
 
-        {/* Configuration Panel */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Report Configuration</h2>
+          {/* Configuration Panel - Mobile Responsive */}
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Report Configuration</h2>
 
-          {/* Report Type Selection */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Report Type</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Report Type Selection - Mobile Responsive */}
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Report Type</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
               {reportTypes.map((type) => (
                 <div
                   key={type.value}
                   onClick={() => setConfig({ ...config, report_type: type.value })}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                  className={`border-2 rounded-lg p-2 sm:p-4 cursor-pointer transition-all ${
                     config.report_type === type.value
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-blue-300'
                   }`}
                 >
-                  <h3 className="font-semibold text-gray-900 mb-1">{type.label}</h3>
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">{type.label}</h3>
                   <p className="text-sm text-gray-600">{type.description}</p>
                 </div>
               ))}
@@ -284,7 +286,8 @@ export default function ReportsDashboard() {
             {config.include_charts && renderCharts()}
           </>
         )}
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }

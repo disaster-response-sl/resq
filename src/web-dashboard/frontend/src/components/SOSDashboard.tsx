@@ -370,12 +370,13 @@ const SOSDashboard: React.FC<SOSDashboardProps> = ({ standalone = true }) => {
 
   return standalone ? (
     <MainLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <AlertTriangle className="w-8 h-8 text-red-600" />
-            SOS Emergency Dashboard
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+        {/* Header - Mobile Responsive */}
+        <div className="flex justify-between items-center gap-2">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-1 sm:gap-2">
+            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-red-600" />
+            <span className="hidden sm:inline">SOS Emergency Dashboard</span>
+            <span className="sm:hidden">SOS Dashboard</span>
           </h1>
           <button
             onClick={() => {
@@ -384,66 +385,66 @@ const SOSDashboard: React.FC<SOSDashboardProps> = ({ standalone = true }) => {
               fetchAnalytics();
             }}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center gap-1 sm:gap-2 px-2 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm sm:text-base"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
 
-        {/* Statistics Cards */}
+        {/* Statistics Cards - Mobile Responsive */}
         {stats && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow p-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-600 truncate">Total Signals</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.total}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-600 truncate">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Pending</p>
+                  <p className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-600 truncate">Responding</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.responding}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Responding</p>
+                  <p className="text-lg sm:text-2xl font-bold text-orange-600">{stats.responding}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white rounded-lg shadow p-2 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-600 truncate">Critical</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.critical || 0}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Critical</p>
+                  <p className="text-lg sm:text-2xl font-bold text-red-600">{stats.critical || 0}</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">Filters:</span>
+        {/* Filters - Mobile Responsive */}
+        <div className="bg-white rounded-lg shadow p-2 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 items-start sm:items-center">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <Filter className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+              <span className="text-xs sm:text-sm font-medium text-gray-700">Filters:</span>
             </div>
             
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0 flex-1 sm:flex-none"
+              className="border border-gray-300 rounded-md px-2 py-1 sm:px-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0 flex-1 sm:flex-none"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
