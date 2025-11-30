@@ -135,26 +135,159 @@ router.get('/disasters', async (req, res) => {
   }
 });
 
-// GET /api/public/recent-alerts - Get recent public alerts
+// GET /api/public/relief-camps - Get real-time relief camp data from Supabase
+router.get('/relief-camps', async (req, res) => {
+  try {
+    const { lat, lng, radius_km, urgency, establishment, status, type } = req.query;
+    
+    // Build query params for Supabase API
+    const params = new URLSearchParams();
+    params.append('type', type || 'all');
+    params.append('limit', '100');
+    
+    if (status) params.append('status', status);
+    if (urgency) params.append('urgency', urgency);
+    if (establishment) params.append('establishment', establishment);
+    
+    // Location-based filtering
+    if (lat && lng) {
+      params.append('lat', lat);
+      params.append('lng', lng);
+      params.append('radius_km', radius_km || '50');
+      params.append('sort', 'distance');
+    } else {
+      params.append('sort', 'newest');
+    }
+
+    const response = await axios.get(
+      `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${params.toString()}`
+    );
+
+    res.json({
+      success: true,
+      data: response.data,
+      source: 'supabase_public_api'
+    });
+  } catch (error) {
+    console.error('[PUBLIC RELIEF CAMPS ERROR]', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching relief camp data",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/public/flood-alerts - Get real-time flood data from Sri Lanka Flood API
+router.get('/flood-alerts', async (req, res) => {
+  try {
+    // Fetch active flood alerts from the official Sri Lanka Flood API
+    const [alertsResponse, levelsResponse, stationsResponse] = await Promise.all([
+      axios.get('https://lk-flood-api.vercel.app/alerts'),
+      axios.get('https://lk-flood-api.vercel.app/levels/latest'),
+      axios.get('https://lk-flood-api.vercel.app/stations')
+    ]);
+
+    const alerts = alertsResponse.data || [];
+    const levels = levelsResponse.data || [];
+    const stations = stationsResponse.data || [];
+
+    // Create a station lookup map
+    const stationMap = {};
+    stations.forEach(station => {
+      stationMap[station.name] = station;
+    });
+
+    // Transform to our format with location data
+    const floodAlerts = alerts.map(alert => {
+      const station = stationMap[alert.station_name] || {};
+      const latLng = station.lat_lng || [6.9271, 79.8612];
+      
+      return {
+        id: alert.station_name,
+        station_name: alert.station_name,
+        river_name: alert.river_name,
+        location: alert.station_name,
+        lat: latLng[0],
+        lng: latLng[1],
+        water_level: alert.water_level,
+        previous_water_level: alert.previous_water_level,
+        alert_status: alert.alert_status,
+        flood_score: alert.flood_score,
+        rising_or_falling: alert.rising_or_falling,
+        rainfall_mm: alert.rainfall_mm,
+        remarks: alert.remarks,
+        timestamp: alert.timestamp,
+        severity: alert.alert_status === 'MAJOR' ? 'critical' : 
+                 alert.alert_status === 'MINOR' ? 'high' : 
+                 alert.alert_status === 'ALERT' ? 'medium' : 'low',
+        alert_level: station.alert_level,
+        minor_flood_level: station.minor_flood_level,
+        major_flood_level: station.major_flood_level
+      };
+    });
+
+    res.json({
+      success: true,
+      data: floodAlerts,
+      all_levels: levels,
+      source: 'lk_flood_api',
+      last_updated: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[PUBLIC FLOOD ALERTS ERROR]', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching flood alert data",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/public/recent-alerts - Get recent public alerts (combines local disasters + real flood alerts)
 router.get('/recent-alerts', async (req, res) => {
   try {
-    // Get recent disasters as alerts
-    const disasters = await Disaster.find({ status: 'active' })
-      .sort({ timestamp: -1 })
-      .limit(10);
+    // Fetch both local disasters and real-time flood alerts
+    const [disasters, floodResponse] = await Promise.all([
+      Disaster.find({ status: 'active' })
+        .sort({ timestamp: -1 })
+        .limit(5),
+      axios.get('https://lk-flood-api.vercel.app/alerts').catch(() => ({ data: [] }))
+    ]);
 
-    const alerts = disasters.map(d => ({
+    // Map local disasters to alert format
+    const disasterAlerts = disasters.map(d => ({
       _id: d._id,
       type: d.type,
       location: d.affected_areas?.join(', ') || 'Multiple areas',
       severity: d.severity,
       timestamp: d.timestamp,
-      message: `${d.type} alert: ${d.description || 'Stay safe and follow safety guidelines'}`
+      message: `${d.type} alert: ${d.description || 'Stay safe and follow safety guidelines'}`,
+      source: 'local'
     }));
+
+    // Map flood alerts
+    const floodAlerts = (floodResponse.data || []).slice(0, 5).map(alert => ({
+      _id: `flood-${alert.station_name}`,
+      type: 'flood',
+      location: `${alert.station_name} - ${alert.river_name}`,
+      severity: alert.alert_status === 'MAJOR' ? 'critical' : 
+               alert.alert_status === 'MINOR' ? 'high' : 'medium',
+      timestamp: alert.timestamp,
+      message: `${alert.alert_status} flood alert at ${alert.station_name}. Water level: ${alert.water_level}m (${alert.rising_or_falling})`,
+      source: 'flood_api',
+      water_level: alert.water_level,
+      alert_status: alert.alert_status
+    }));
+
+    // Combine and sort by timestamp
+    const allAlerts = [...disasterAlerts, ...floodAlerts]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 10);
 
     res.json({
       success: true,
-      data: alerts
+      data: allAlerts
     });
   } catch (error) {
     console.error('[PUBLIC ALERTS ERROR]', error);

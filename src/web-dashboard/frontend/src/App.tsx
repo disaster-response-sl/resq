@@ -9,9 +9,11 @@ import DisasterHeatMap from './components/DisasterHeatMap';
 import SOSHeatMap from './components/SOSHeatMapNew';
 import ResourceManagement from './components/ResourceManagement';
 import Settings from './components/Settings';
-import NDXPage from './components/NDXPage';
+// Removed mock DPI integrations for production
+// import NDXPage from './components/NDXPage';
 import AnalyticsPage from './components/AnalyticsPage';
-import PaymentStatistics from './components/PaymentStatistics';
+// Removed payment/donation features - focusing on disaster response
+// import PaymentStatistics from './components/PaymentStatistics';
 import MissingPersonsDashboard from './components/MissingPersonsDashboard';
 import ReliefDataDashboard from './components/ReliefDataDashboard';
 import ReportsDashboard from './components/ReportsDashboard';
@@ -91,14 +93,8 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route 
-                path="/payments" 
-                element={
-                  <ProtectedRoute>
-                    <PaymentStatistics />
-                  </ProtectedRoute>
-                } 
-              />
+              {/* Payment routes removed - focusing on disaster response features */}
+              {/* <Route path="/payments" element={<ProtectedRoute><PaymentStatistics /></ProtectedRoute>} /> */}
               <Route 
                 path="/settings" 
                 element={
@@ -107,14 +103,8 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route 
-                path="/ndx" 
-                element={
-                  <ProtectedRoute>
-                    <NDXPage />
-                  </ProtectedRoute>
-                } 
-              />
+              {/* NDX routes removed - mock DPI integration not needed for production */}
+              {/* <Route path="/ndx" element={<ProtectedRoute><NDXPage /></ProtectedRoute>} /> */}
               <Route 
                 path="/missing-persons" 
                 element={

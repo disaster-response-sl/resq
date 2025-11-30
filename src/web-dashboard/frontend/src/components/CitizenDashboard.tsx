@@ -174,7 +174,7 @@ const CitizenDashboard: React.FC = () => {
             <div className="flex items-center space-x-3">
               <Shield className="h-10 w-10" />
               <div>
-                <h1 className="text-2xl font-bold">National Disaster Platform</h1>
+                <h1 className="text-2xl font-bold">ResQ Hub</h1>
                 <p className="text-blue-100 text-sm">Sri Lanka Emergency Response System</p>
               </div>
             </div>

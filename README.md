@@ -1,12 +1,35 @@
-# 🚨 National AI-Optimized Disaster Platform for Sri Lanka
+# 🚨 National Disaster Response Platform for Sri Lanka
 
-A comprehensive disaster response platform built for the hackathon addressing Sri Lanka's critical disaster management challenges through AI-powered mobile and web applications.
+[![Production Status](https://img.shields.io/badge/status-production-brightgreen)](https://your-domain.com)
+[![Real-Time Data](https://img.shields.io/badge/data-live%20DMC%20API-blue)](https://lk-flood-api.vercel.app)
+[![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka%20Disasters-red)](https://www.dmc.gov.lk)
+
+> **🎯 From Hackathon Prototype to Real-World Disaster Response**  
+> Originally built for SLIIT Hackathon, now **deployed in production** during Sri Lanka's ongoing disaster crisis.  
+> **Real-time flood monitoring** • **Relief camp locations** • **Emergency SOS** • **No login required**
+
+## 🚀 Production Status: LIVE
+
+Real-time disaster response platform with **actual government data sources** replacing all mock APIs.
+
+**Key Changes (Hackathon → Production):**
+- ✅ **Real DMC Flood Data** - 39 gauging stations, live water levels, 15-min updates
+- ✅ **Real Relief Camps** - Supabase API with verified camp locations across Sri Lanka
+- ✅ **Public Access** - Citizens can access emergency features without authentication
+- ✅ **AI Safety Assistant** - Google Gemini-powered disaster guidance
+- ❌ **Removed Mock APIs** - NDX, PayDPI, SLUDI sandbox integrations disabled
+- ❌ **Removed Payments** - Focusing on core disaster response features
+
+📖 **[View Production Deployment Guide](./PRODUCTION_DEPLOYMENT.md)** | **[Repository Strategy](./REPOSITORY_STRATEGY.md)**
+
+---
 
 ## 📋 Project Overview
 
-The National Disaster Response Platform is a dual-platform solution consisting of:
-- **Mobile App**: Citizen-facing React Native application for emergency reporting and real-time alerts
-- **Web Dashboard**: Government administrative interface for disaster management and resource allocation
+The National Disaster Response Platform is a comprehensive solution consisting of:
+- **Citizen Web App**: Public disaster information, emergency SOS, real-time maps (no login required)
+- **Mobile App**: React Native application for emergency reporting and real-time alerts
+- **Admin Dashboard**: Government interface for disaster management and resource allocation
 
 ## 🧑‍🤝‍🧑 Role Types
 

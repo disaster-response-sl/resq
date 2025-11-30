@@ -98,11 +98,12 @@ const mobileAuthRoutes = require('./routes/mobileAuth.routes');
 const publicRoutes = require('./routes/public.routes');
 const mapRoutes = require('./routes/map.routes');
 const resourceRoutes = require('./routes/resources.routes');
-const ndxRoutes = require('./routes/ndx.routes');
+// NDX routes removed - mock DPI integration not needed for production
+// const ndxRoutes = require('./routes/ndx.routes');
 
-// Import donation routes
-const paymentRoutes = require('./routes/payment.routes');
-const donationRoutes = require('./routes/donation.routes');
+// Payment/donation routes removed - focusing on disaster response features
+// const paymentRoutes = require('./routes/payment.routes');
+// const donationRoutes = require('./routes/donation.routes');
 
 // Import admin routes
 const adminSosRoutes = require('./routes/admin/sos.routes');
@@ -128,12 +129,14 @@ app.use('/api/mobile', authLimiter, mobileAuthRoutes);
 app.use('/api/public', publicRoutes); // Public citizen routes - no auth required
 app.use('/api/map', mapRoutes);
 app.use('/api/resources', resourceRoutes);
-app.use('/api/ndx', ndxRoutes);
 
-// Use donation routes
-app.use('/api/payment', paymentRoutes);
-app.use('/api/donations', donationRoutes);
-app.use('/api/donation', donationRoutes);
+// NDX routes disabled - mock DPI integration not needed for production
+// app.use('/api/ndx', ndxRoutes);
+
+// Payment/donation routes disabled - focusing on disaster response features
+// app.use('/api/payment', paymentRoutes);
+// app.use('/api/donations', donationRoutes);
+// app.use('/api/donation', donationRoutes);
 
 // Use admin routes
 app.use('/api/admin/sos', adminSosRoutes);
@@ -144,9 +147,6 @@ app.use('/api/admin/import-export', adminImportExportRoutes);     // Import/Expo
 
 // Use responder routes
 app.use('/api/responder/notifications', responderNotificationsRoutes);
-
-// Use donation routes
-app.use('/api', donationRoutes);
 
 // Use new feature routes
 app.use('/api/missing-persons', missingPersonsRoutes);

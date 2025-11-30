@@ -120,20 +120,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Link>
               )}
 
-              {/* Payment Statistics - Admin only */}
-              {isAdmin() && (
-                <Link
-                  to="/payments"
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    location.pathname === '/payments'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <DollarSign className="w-5 h-5 mr-3" />
-                  Payment Management
-                </Link>
-              )}
+              {/* Payment Management removed - focusing on disaster response features */}
+              {/* {isAdmin() && (
+                <Link to="/payments" className="..."><DollarSign className="w-5 h-5 mr-3" />Payment Management</Link>
+              )} */}
 
               {/* SOS Monitor - Admin only */}
               {isAdmin() && canRead('sos') && (
@@ -265,20 +255,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Link>
               )}
 
-              {/* NDX - Admin only */}
-              {isAdmin() && (
-                <Link
-                  to="/ndx"
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    location.pathname === '/ndx'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <Layers className="w-5 h-5 mr-3" />
-                  NDX
-                </Link>
-              )}
+              {/* NDX removed - mock DPI integration not needed for production */}
+              {/* {isAdmin() && (
+                <Link to="/ndx" className="..."><Layers className="w-5 h-5 mr-3" />NDX</Link>
+              )} */}
 
               {/* Settings - Admin only */}
               {isAdmin() && (
