@@ -78,22 +78,47 @@ const SafeRoutesPage: React.FC = () => {
     
     try {
       // Get all road reports to identify problem areas
-      const response = await axios.get(`${API_BASE_URL}/api/public/road-reports?limit=1000`);
-      const allReports = Array.isArray(response.data) ? response.data : [];
+      const roadReportsResponse = await axios.get(`${API_BASE_URL}/api/public/road-reports?limit=1000`);
+      const allRoadReports = Array.isArray(roadReportsResponse.data?.data) ? roadReportsResponse.data.data : 
+                            Array.isArray(roadReportsResponse.data) ? roadReportsResponse.data : [];
       
-      // Filter reports that affect the route between districts
-      const relevantReports = allReports.filter((report: any) => {
-        // Check if report is in or between selected districts
+      // Get SOS reports to check for disaster zones
+      let sosReports: any[] = [];
+      try {
+        const sosResponse = await axios.get(`${API_BASE_URL}/api/public/sos-reports?limit=1000`);
+        sosReports = Array.isArray(sosResponse.data) ? sosResponse.data : [];
+      } catch (sosError) {
+        console.log('SOS reports endpoint not available:', sosError);
+      }
+      
+      // Filter road reports that affect the route between districts
+      const relevantRoadReports = allRoadReports.filter((report: any) => {
         const districts = [fromDistrict, toDistrict];
         return districts.includes(report.district) && 
                avoidConditions.includes(report.condition) &&
                (report.status === 'pending' || report.status === 'verified');
       });
-
-      if (relevantReports.length === 0) {
-        toast.success(`✅ No reported ${avoidConditions.join(', ')} conditions between ${fromDistrict} and ${toDistrict}`);
+      
+      // Filter SOS reports in the districts (disaster zones to avoid)
+      const relevantSosReports = sosReports.filter((report: any) => {
+        const districts = [fromDistrict, toDistrict];
+        return districts.includes(report.district) && 
+               (report.status === 'pending' || report.status === 'in_progress');
+      });
+      
+      const totalIssues = relevantRoadReports.length + relevantSosReports.length;
+      
+      if (totalIssues === 0) {
+        toast.success(`✅ No reported hazards between ${fromDistrict} and ${toDistrict}`);
       } else {
-        toast(`⚠️ Found ${relevantReports.length} reported issue(s) to avoid on this route`, { icon: '⚠️' });
+        const messages: string[] = [];
+        if (relevantRoadReports.length > 0) {
+          messages.push(`${relevantRoadReports.length} road issue(s)`);
+        }
+        if (relevantSosReports.length > 0) {
+          messages.push(`${relevantSosReports.length} disaster zone(s)`);
+        }
+        toast(`⚠️ Found ${messages.join(' and ')} to avoid on this route`, { icon: '⚠️', duration: 5000 });
       }
       
       // For now, we'll show a message about crowdsourced data

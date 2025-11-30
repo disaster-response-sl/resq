@@ -37,6 +37,13 @@ const CitizenDashboard: React.FC = () => {
   useEffect(() => {
     getCurrentLocation();
     fetchRecentAlerts();
+    
+    // Auto-refresh alerts every 5 minutes (300000 ms)
+    const alertInterval = setInterval(() => {
+      fetchRecentAlerts();
+    }, 300000);
+    
+    return () => clearInterval(alertInterval);
   }, []); // Only run once on mount
 
   useEffect(() => {
@@ -315,20 +322,55 @@ const CitizenDashboard: React.FC = () => {
 
         {/* Emergency Contacts */}
         <div className="mt-8 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl shadow-md p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Emergency Contacts</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg p-4">
-              <p className="font-semibold text-gray-800">🚨 Emergency Services</p>
-              <p className="text-2xl font-bold text-red-600">119</p>
-            </div>
-            <div className="bg-white rounded-lg p-4">
-              <p className="font-semibold text-gray-800">🚑 Ambulance</p>
-              <p className="text-2xl font-bold text-red-600">1990</p>
-            </div>
-            <div className="bg-white rounded-lg p-4">
-              <p className="font-semibold text-gray-800">🚒 Fire & Rescue</p>
-              <p className="text-2xl font-bold text-red-600">110</p>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-800">General Emergency Numbers</h3>
+            <span className="text-xs font-semibold text-gray-600">🇱🇰 Sri Lanka</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a
+              href="tel:117"
+              className="bg-white hover:bg-red-50 rounded-lg p-4 transition-all transform hover:scale-105 cursor-pointer shadow-sm border-2 border-transparent hover:border-red-200"
+            >
+              <div className="text-center">
+                <p className="text-3xl mb-2">🚨</p>
+                <p className="text-2xl font-bold text-red-600 mb-1">117</p>
+                <p className="text-sm font-semibold text-gray-800">Emergency</p>
+                <p className="text-xs text-gray-500 mt-1">Tap to call</p>
+              </div>
+            </a>
+            <a
+              href="tel:119"
+              className="bg-white hover:bg-blue-50 rounded-lg p-4 transition-all transform hover:scale-105 cursor-pointer shadow-sm border-2 border-transparent hover:border-blue-200"
+            >
+              <div className="text-center">
+                <p className="text-3xl mb-2">👮</p>
+                <p className="text-2xl font-bold text-blue-600 mb-1">119</p>
+                <p className="text-sm font-semibold text-gray-800">Police</p>
+                <p className="text-xs text-gray-500 mt-1">Tap to call</p>
+              </div>
+            </a>
+            <a
+              href="tel:110"
+              className="bg-white hover:bg-orange-50 rounded-lg p-4 transition-all transform hover:scale-105 cursor-pointer shadow-sm border-2 border-transparent hover:border-orange-200"
+            >
+              <div className="text-center">
+                <p className="text-3xl mb-2">🚒</p>
+                <p className="text-2xl font-bold text-orange-600 mb-1">110</p>
+                <p className="text-sm font-semibold text-gray-800">Fire Brigade</p>
+                <p className="text-xs text-gray-500 mt-1">Tap to call</p>
+              </div>
+            </a>
+            <a
+              href="tel:108"
+              className="bg-white hover:bg-green-50 rounded-lg p-4 transition-all transform hover:scale-105 cursor-pointer shadow-sm border-2 border-transparent hover:border-green-200"
+            >
+              <div className="text-center">
+                <p className="text-3xl mb-2">🚑</p>
+                <p className="text-2xl font-bold text-green-600 mb-1">108</p>
+                <p className="text-sm font-semibold text-gray-800">Ambulance</p>
+                <p className="text-xs text-gray-500 mt-1">Tap to call</p>
+              </div>
+            </a>
           </div>
         </div>
       </div>

@@ -81,8 +81,9 @@ const LankaRouteWatchPage: React.FC = () => {
         axios.get(`${API_BASE_URL}/api/public/route-stats`)
       ]);
 
-      // Process crowdsourced reports
-      const reports = reportsRes.data || [];
+      // Process crowdsourced reports - API returns data in response.data.data structure
+      const reports = Array.isArray(reportsRes.data?.data) ? reportsRes.data.data : 
+                     Array.isArray(reportsRes.data) ? reportsRes.data : [];
       setRoadReports(reports);
 
       // Set statistics from aggregated crowdsourced data

@@ -81,18 +81,35 @@ const RouteMapPage: React.FC = () => {
   const fetchReports = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/public/road-reports?limit=500`);
-      const reportsData = Array.isArray(response.data) ? response.data : [];
       
-      // Filter reports with valid coordinates
+      // API returns data in response.data.data structure
+      const reportsData = Array.isArray(response.data?.data) ? response.data.data : 
+                         Array.isArray(response.data) ? response.data : [];
+      
+      console.log('API Response:', response.data);
+      console.log('Total reports from API:', reportsData.length);
+      
+      // Filter reports with valid coordinates (less strict - allow any coordinates present)
       const validReports = reportsData.filter((report: RoadReport) => 
         report.location?.coordinates && 
         Array.isArray(report.location.coordinates) &&
-        report.location.coordinates.length === 2
+        report.location.coordinates.length === 2 &&
+        typeof report.location.coordinates[0] === 'number' &&
+        typeof report.location.coordinates[1] === 'number'
       );
       
+      console.log('Reports with valid coordinates:', validReports.length);
+      if (reportsData.length > 0) {
+        console.log('Sample report:', reportsData[0]);
+      }
+      
       setReports(validReports);
-      if (validReports.length === 0) {
+      if (validReports.length === 0 && reportsData.length > 0) {
+        toast.error(`${reportsData.length} report(s) found but missing GPS coordinates. Please enable location when reporting.`);
+      } else if (validReports.length === 0) {
         toast('No reports with GPS coordinates yet. Submit the first one!', { icon: '📍' });
+      } else {
+        toast.success(`✅ Showing ${validReports.length} road reports on map`);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);

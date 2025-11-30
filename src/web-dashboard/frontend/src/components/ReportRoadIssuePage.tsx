@@ -54,26 +54,32 @@ const ReportRoadIssuePage: React.FC = () => {
           // Try reverse geocoding with timeout - fallback to coordinates if fails
           try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
             
-            const response = await axios.get(
+            // Use fetch instead of axios to avoid CORS issues
+            const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
               { 
-                signal: controller.signal
+                signal: controller.signal,
+                headers: {
+                  'Accept': 'application/json'
+                }
               }
             );
             clearTimeout(timeoutId);
             
-            const data = response.data;
-            const name = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-            setLocationName(name);
-            
-            setFormData(prev => ({
-              ...prev,
-              location_name: data.address?.road || data.address?.neighbourhood || 'Current Location',
-              city: data.address?.city || data.address?.town || '',
-              district: data.address?.state_district || data.address?.county || ''
-            }));
+            if (response.ok) {
+              const data = await response.json();
+              const name = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              setLocationName(name);
+              
+              setFormData(prev => ({
+                ...prev,
+                location_name: data.address?.road || data.address?.neighbourhood || 'Current Location',
+                city: data.address?.city || data.address?.town || '',
+                district: data.address?.state_district || data.address?.county || ''
+              }));
+            }
           } catch (error) {
             // Silently fail and use coordinates
             console.log('Using coordinates for location (geocoding unavailable)');

@@ -150,6 +150,17 @@ router.get('/road-reports', async (req, res) => {
         .limit(parseInt(limit));
     }
 
+    // Debug logging
+    console.log(`📊 Found ${roadReports.length} road reports`);
+    if (roadReports.length > 0) {
+      console.log('Sample report:', {
+        id: roadReports[0]._id,
+        road: roadReports[0].road_name,
+        hasLocation: !!roadReports[0].location,
+        coordinates: roadReports[0].location?.coordinates
+      });
+    }
+
     // Calculate statistics
     const stats = {
       total: roadReports.length,
