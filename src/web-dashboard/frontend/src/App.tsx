@@ -26,6 +26,8 @@ import CitizenMapPage from './components/CitizenMapPage';
 import ReliefTrackerPage from './components/ReliefTrackerPage';
 import EmergencyContactsPage from './components/EmergencyContactsPage';
 import VolunteerFormPage from './components/VolunteerFormPage';
+import LankaRouteWatchPage from './components/LankaRouteWatchPage';
+import ReportRoadIssuePage from './components/ReportRoadIssuePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -150,6 +152,8 @@ function App() {
               <Route path="/citizen/relief-tracker" element={<ReliefTrackerPage />} />
               <Route path="/citizen/emergency-contacts" element={<EmergencyContactsPage />} />
               <Route path="/citizen/volunteer" element={<VolunteerFormPage />} />
+              <Route path="/citizen/route-watch" element={<LankaRouteWatchPage />} />
+              <Route path="/citizen/report-road" element={<ReportRoadIssuePage />} />
               
               {/* Redirect root to citizen dashboard */}
               <Route path="/" element={<Navigate to="/citizen" replace />} />

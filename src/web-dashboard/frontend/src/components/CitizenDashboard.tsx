@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Cloud, AlertTriangle, Package, Phone } from 'lucide-react';
+import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation } from 'lucide-react';
 import axios from 'axios';
 import CitizenNavbar from './CitizenNavbar';
 
@@ -179,12 +179,21 @@ const CitizenDashboard: React.FC = () => {
               onClick={() => navigate('/citizen/emergency-contacts')}
               className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
             >
-              <div className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                NEW
-              </div>
               <Phone className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">Emergency Contacts</h3>
               <p className="text-sm text-red-100 mt-1">117, 119, 110, 108 & DDMCU</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/citizen/route-watch')}
+              className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
+            >
+              <div className="absolute -top-2 -right-2 bg-yellow-400 text-blue-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                NEW
+              </div>
+              <Navigation className="h-12 w-12 mx-auto mb-3" />
+              <h3 className="text-xl font-bold">LankaRouteWatch</h3>
+              <p className="text-sm text-blue-100 mt-1">Road conditions & safe routes</p>
             </button>
 
             <button
@@ -194,15 +203,6 @@ const CitizenDashboard: React.FC = () => {
               <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
               <h3 className="text-xl font-bold">SOS Emergency</h3>
               <p className="text-sm text-red-100 mt-1">Send distress signal</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/citizen/report')}
-              className="bg-orange-600 hover:bg-orange-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
-            >
-              <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
-              <h3 className="text-xl font-bold">Report Incident</h3>
-              <p className="text-sm text-orange-100 mt-1">Food, shelter, medical</p>
             </button>
 
             <button

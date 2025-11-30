@@ -119,6 +119,7 @@ const responderNotificationsRoutes = require('./routes/responder/notifications.r
 const missingPersonsRoutes = require('./routes/missing-persons.routes');
 const externalDataRoutes = require('./routes/external-data.routes');
 const reportsRoutes = require('./routes/reports.routes');
+const routesRoutes = require('./routes/routes.js');
 
 // Import services
 const SosEscalationService = require('./services/sos-escalation.service');
@@ -152,6 +153,7 @@ app.use('/api/responder/notifications', responderNotificationsRoutes);
 app.use('/api/missing-persons', missingPersonsRoutes);
 app.use('/api/external', externalDataRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/public', routesRoutes); // LankaRouteWatch routes
 
 // Health check routes
 app.get('/api/health', (req, res) => {

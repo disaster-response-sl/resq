@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, AlertTriangle, Package, Map, MessageSquare, Users } from 'lucide-react';
+import { Menu, X, Phone, AlertTriangle, Package, Map, MessageSquare, Users, Navigation } from 'lucide-react';
 
 const CitizenNavbar: React.FC = () => {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ const CitizenNavbar: React.FC = () => {
   const navItems = [
     { path: '/citizen', label: 'Home', icon: Map },
     { path: '/citizen/emergency-contacts', label: 'Emergency Contacts', icon: Phone },
+    { path: '/citizen/route-watch', label: 'RouteWatch', icon: Navigation },
     { path: '/citizen/sos', label: 'SOS', icon: AlertTriangle },
     { path: '/citizen/report', label: 'Report', icon: AlertTriangle },
     { path: '/citizen/relief-tracker', label: 'Relief', icon: Package },
