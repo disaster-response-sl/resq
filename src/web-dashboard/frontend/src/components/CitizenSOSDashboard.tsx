@@ -4,7 +4,7 @@ import axios from 'axios';
 import { citizenAuthService } from '../services/citizenAuthService';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 interface SOSSignal {
   _id: string;
@@ -51,7 +51,7 @@ const CitizenSOSDashboard: React.FC = () => {
         return;
       }
 
-      const response = await axios.get(`${API_URL}/sos/citizen/my-sos`, {
+      const response = await axios.get(`${API_URL}/api/sos/citizen/my-sos`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -87,7 +87,7 @@ const CitizenSOSDashboard: React.FC = () => {
       }
 
       const response = await axios.post(
-        `${API_URL}/sos/${selectedSOS._id}/messages`,
+        `${API_URL}/api/sos/${selectedSOS._id}/messages`,
         { message: messageText },
         {
           headers: {
@@ -120,7 +120,7 @@ const CitizenSOSDashboard: React.FC = () => {
       }
 
       const response = await axios.put(
-        `${API_URL}/sos/${selectedSOS._id}/status`,
+        `${API_URL}/api/sos/${selectedSOS._id}/status`,
         { status, notes: `Status updated to ${status}` },
         {
           headers: {
