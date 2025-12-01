@@ -88,7 +88,7 @@ const ReliefTrackerPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${requestParams.toString()}`
       ).catch((err) => {
         console.error('Supabase requests fetch error:', err);
-        return { data: { success: false, data: { requests: [] } } };
+        return { data: { requests: [] } };
       });
 
       // Fetch Supabase CONTRIBUTIONS (volunteers offering help)
@@ -98,7 +98,7 @@ const ReliefTrackerPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${contributionParams.toString()}`
       ).catch((err) => {
         console.error('Supabase contributions fetch error:', err);
-        return { data: { success: false, data: { contributions: [] } } };
+        return { data: { contributions: [] } };
       });
 
       // Fetch MongoDB help requests - all pending reports (food, shelter, medical, danger)
@@ -106,16 +106,17 @@ const ReliefTrackerPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      const supabaseRequests = requestsResponse.data.success ? (requestsResponse.data.data.requests || []) : [];
-      const supabaseContributions = contributionsResponse.data.success ? (contributionsResponse.data.data.contributions || []) : [];
+      // API returns data directly: { requests: [...], contributions: [...], meta: {...} }
+      const supabaseRequests = requestsResponse.data.requests || [];
+      const supabaseContributions = contributionsResponse.data.contributions || [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
 
       console.log('📊 Data fetched:', {
         supabaseRequests: supabaseRequests.length,
         supabaseContributions: supabaseContributions.length,
         mongoHelp: mongoHelp.length,
-        requestsSuccess: requestsResponse.data.success,
-        contributionsSuccess: contributionsResponse.data.success
+        requestsMeta: requestsResponse.data.meta,
+        contributionsMeta: contributionsResponse.data.meta
       });
 
       // Map Supabase contributions (people offering help)
