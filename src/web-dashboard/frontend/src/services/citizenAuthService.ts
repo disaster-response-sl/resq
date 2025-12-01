@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export interface CitizenUser {
   id: string;
@@ -38,7 +38,7 @@ class CitizenAuthService {
    */
   async signup(name: string, phone: string, email: string, password: string): Promise<SignupResponse> {
     try {
-      const response = await axios.post(`${API_URL}/citizen-auth/signup`, {
+      const response = await axios.post(`${API_URL}/api/citizen-auth/signup`, {
         name,
         phone,
         email,
@@ -63,7 +63,7 @@ class CitizenAuthService {
    */
   async login(identifier: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await axios.post(`${API_URL}/citizen-auth/login`, {
+      const response = await axios.post(`${API_URL}/api/citizen-auth/login`, {
         identifier, // Can be phone or email
         password
       });
@@ -91,7 +91,7 @@ class CitizenAuthService {
         return { success: false, message: 'No token found' };
       }
 
-      const response = await axios.get(`${API_URL}/citizen-auth/profile`, {
+      const response = await axios.get(`${API_URL}/api/citizen-auth/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -120,7 +120,7 @@ class CitizenAuthService {
         return { success: false, message: 'No token found' };
       }
 
-      const response = await axios.put(`${API_URL}/citizen-auth/profile`, updates, {
+      const response = await axios.put(`${API_URL}/api/citizen-auth/profile`, updates, {
         headers: {
           Authorization: `Bearer ${token}`
         }
