@@ -617,7 +617,6 @@ The platform implements a sophisticated dual authentication system to handle dif
 ```
 GET /public-data-api?type=requests&urgency=emergency&lat=6.9271&lng=79.8612&radius_km=30&sort=distance
 ```
-
 ## 🚀 Quick Start
 
 ### Prerequisites
