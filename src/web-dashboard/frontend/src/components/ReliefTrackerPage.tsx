@@ -73,60 +73,79 @@ const ReliefTrackerPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // HYBRID DATA MODEL: Fetch both Supabase relief camps AND MongoDB help requests
+      // HYBRID DATA MODEL: Fetch Supabase (requests + contributions) AND MongoDB help requests
       const params = new URLSearchParams();
-      params.append('type', 'requests');
-      params.append('status', 'pending');
-      params.append('limit', '200');
+      params.append('type', 'all'); // Get BOTH requests AND contributions
+      params.append('status', 'all'); // Get all statuses
+      params.append('limit', '500');
       params.append('lat', userLocation.lat.toString());
       params.append('lng', userLocation.lng.toString());
       params.append('radius_km', debouncedRadius);
       params.append('sort', 'distance');
 
-      // Fetch Supabase relief camps
+      // Fetch Supabase relief data (both help requests and volunteer contributions)
       const supabaseResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${params.toString()}`
-      );
+      ).catch(() => ({ data: { success: false, data: { requests: [], contributions: [] } } }));
 
       // Fetch MongoDB help requests - all pending reports (food, shelter, medical, danger)
       const mongoResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      const supabaseCamps = supabaseResponse.data.success ? (supabaseResponse.data.data.requests || []) : [];
+      const supabaseRequests = supabaseResponse.data.success ? (supabaseResponse.data.data.requests || []) : [];
+      const supabaseContributions = supabaseResponse.data.success ? (supabaseResponse.data.data.contributions || []) : [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
 
-      // Merge both sources - convert MongoDB help requests to relief camp format
+      // Map Supabase contributions (people offering help)
+      const contributionsCamps = supabaseContributions.map((contrib: any) => ({
+        id: contrib.id,
+        full_name: `💚 ${contrib.full_name} (Volunteer)`,
+        address: contrib.address,
+        latitude: contrib.latitude,
+        longitude: contrib.longitude,
+        establishment_type: 'Volunteer Contribution',
+        urgency: 'low',
+        status: contrib.status || 'available',
+        assistance_types: [...(contrib.goods_types || []), ...(contrib.services_types || []), ...(contrib.labor_types || [])],
+        distance_km: contrib.distance_km,
+        source: 'supabase_contribution'
+      }));
+
+      // Map MongoDB help requests to relief camp format
+      const mongoHelpAsCamps = mongoHelp.map((help: any) => {
+        const typeLabels: any = {
+          food: 'Food Shortage 🍽️',
+          shelter: 'Shelter Needed 🏠',
+          medical: 'Medical Emergency 🏥',
+          danger: 'Danger Alert ⚠️'
+        };
+        
+        return {
+          id: help._id,
+          full_name: typeLabels[help.type] || 'Help Request',
+          address: help.description || 'No description',
+          latitude: help.location.lat,
+          longitude: help.location.lng,
+          establishment_type: typeLabels[help.type] || 'Help Needed',
+          urgency: help.type === 'medical' ? 'emergency' : 'high',
+          status: help.status,
+          assistance_types: [help.type],
+          source: 'mongodb'
+        };
+      });
+
+      // Merge ALL sources
       const mergedCamps = [
-        ...supabaseCamps,
-        ...mongoHelp.map((help: any) => {
-          // Map report types to readable labels
-          const typeLabels: any = {
-            food: 'Food Shortage 🍽️',
-            shelter: 'Shelter Needed 🏠',
-            medical: 'Medical Emergency 🏥',
-            danger: 'Danger Alert ⚠️'
-          };
-          
-          return {
-            id: help._id,
-            full_name: typeLabels[help.type] || 'Help Request',
-            address: help.description || 'No description',
-            latitude: help.location.lat,
-            longitude: help.location.lng,
-            establishment_type: typeLabels[help.type] || 'Help Needed',
-            urgency: help.type === 'medical' ? 'emergency' : 'high',
-            status: help.status,
-            assistance_types: [help.type],
-            source: 'mongodb'
-          };
-        })
+        ...supabaseRequests,
+        ...contributionsCamps,
+        ...mongoHelpAsCamps
       ];
 
-      console.log(`✅ HYBRID Relief: ${supabaseCamps.length} Supabase camps + ${mongoHelp.length} MongoDB help = ${mergedCamps.length} total`);
+      console.log(`✅ HYBRID Relief: ${supabaseRequests.length} Supabase requests + ${contributionsCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${mergedCamps.length} total`);
 
       setReliefCamps(mergedCamps);
-      toast.success(`Found ${mergedCamps.length} relief locations (${supabaseCamps.length} camps + ${mongoHelp.length} help requests)`);
+      toast.success(`Found ${mergedCamps.length} relief locations within ${debouncedRadius}km`);
     } catch (error) {
       console.error('Relief camps fetch error:', error);
       toast.error('Failed to fetch relief camps');
