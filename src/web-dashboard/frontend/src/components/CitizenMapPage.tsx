@@ -228,18 +228,18 @@ const CitizenMapPage: React.FC = () => {
         baseParams.append('sort', 'distance');
       }
 
-      // Fetch Supabase REQUESTS (people asking for help)
+      // Fetch Supabase REQUESTS from public API
       const requestParams = new URLSearchParams(baseParams);
       requestParams.append('type', 'requests');
       const requestsResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${requestParams.toString()}`
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
       ).catch(() => ({ data: { requests: [] } }));
 
-      // Fetch Supabase CONTRIBUTIONS (volunteers offering help)
+      // Fetch Supabase CONTRIBUTIONS from public API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
       const contributionsResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${contributionParams.toString()}`
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
       ).catch(() => ({ data: { contributions: [] } }));
 
       // Fetch MongoDB help requests (user incident reports)
@@ -247,7 +247,7 @@ const CitizenMapPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      // API returns data directly: { requests: [...], contributions: [...], meta: {...} }
+      // Direct Supabase API response: { requests: [...], contributions: [...], meta: {...} }
       const supabaseRequests = requestsResponse.data.requests || [];
       const supabaseContributions = contributionsResponse.data.contributions || [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];

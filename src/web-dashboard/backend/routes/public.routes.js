@@ -407,17 +407,31 @@ router.get('/relief-camps', async (req, res) => {
 
       const response = await axios.get(
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${params.toString()}`,
-        { timeout: 5000 } // 5 second timeout
+        { 
+          timeout: 15000, // 15 second timeout (increased)
+          headers: {
+            'x-api-key': process.env.SUPABASE_API_KEY || '',
+          }
+        }
       );
 
-      console.log('✅ Supabase relief camps loaded');
+      console.log('✅ Supabase relief camps loaded:', {
+        totalRequests: response.data.meta?.total_requests,
+        totalContributions: response.data.meta?.total_contributions,
+        returned: response.data.meta?.pagination
+      });
+      
       return res.json({
         success: true,
         data: response.data,
         source: 'supabase_public_api'
       });
     } catch (supabaseError) {
-      console.warn('⚠️ Supabase API unavailable, falling back to MongoDB:', supabaseError.message);
+      console.error('⚠️ Supabase API error:', {
+        status: supabaseError.response?.status,
+        message: supabaseError.message,
+        data: supabaseError.response?.data
+      });
       
       // Fallback to MongoDB - return empty array since we don't have relief camps collection
       // Frontend will handle empty state gracefully
