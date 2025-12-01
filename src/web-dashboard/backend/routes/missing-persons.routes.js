@@ -65,7 +65,11 @@ router.get('/search', async (req, res) => {
   try {
     const { q, lat, lng, radius_km = 50 } = req.query;
     
-    let query = { status: 'missing', public_visibility: true };
+    let query = { 
+      status: 'missing', 
+      verification_status: { $ne: 'rejected' },
+      auto_hidden: { $ne: true }
+    };
     
     // Text search
     if (q) {
@@ -446,11 +450,11 @@ router.post('/submit', authenticateToken, async (req, res) => {
       ...manual_data,
       extracted_data: extracted_data || null,
       data_source: extracted_data ? 'ai_extracted' : 'manual',
-      verification_status: 'pending', // Always starts as pending
+      verification_status: 'unverified', // Trust but Verify - public immediately
       photo_urls: image_url ? [image_url] : [],
       created_by: req.user._id,
       last_modified_by: req.user._id,
-      public_visibility: false // Hide until verified
+      public_visibility: true // Public immediately with unverified badge
     };
     
     const missingPerson = new MissingPerson(missingPersonData);
@@ -460,7 +464,7 @@ router.post('/submit', authenticateToken, async (req, res) => {
     
     res.status(201).json({
       success: true,
-      message: 'Missing person report submitted successfully. Awaiting verification by admin.',
+      message: 'Missing person report submitted successfully and is now publicly visible as unverified.',
       data: missingPerson
     });
   } catch (error) {
@@ -494,7 +498,7 @@ router.put('/:id/verify', authenticateToken, async (req, res) => {
       });
     }
     
-    if (missingPerson.verification_status !== 'pending') {
+    if (missingPerson.verification_status !== 'unverified') {
       return res.status(400).json({
         success: false,
         message: `This report has already been ${missingPerson.verification_status}`
@@ -503,7 +507,6 @@ router.put('/:id/verify', authenticateToken, async (req, res) => {
     
     if (action === 'approve') {
       missingPerson.verification_status = 'verified';
-      missingPerson.public_visibility = true; // Make visible after verification
       missingPerson.verified_by = {
         user_id: req.user._id,
         username: req.user.username || req.user.full_name,
@@ -521,7 +524,7 @@ router.put('/:id/verify', authenticateToken, async (req, res) => {
     } else {
       missingPerson.verification_status = 'rejected';
       missingPerson.rejection_reason = rejection_reason || 'No reason provided';
-      missingPerson.public_visibility = false;
+      missingPerson.public_visibility = false; // Hide rejected reports
       
       console.log(`❌ Missing person ${missingPerson.case_number} REJECTED by ${req.user.username}`);
     }
@@ -544,10 +547,15 @@ router.put('/:id/verify', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/missing-persons/pending/list - Get pending reports (Admin/Responder only)
+// GET /api/missing-persons/pending/list - Get unverified and spam-flagged reports (Admin/Responder only)
 router.get('/pending/list', authenticateToken, async (req, res) => {
   try {
-    const pendingReports = await MissingPerson.find({ verification_status: 'pending' })
+    const pendingReports = await MissingPerson.find({ 
+      $or: [
+        { verification_status: 'unverified' },
+        { auto_hidden: true }
+      ]
+    })
       .sort({ created_at: -1 })
       .limit(50);
     
@@ -561,6 +569,63 @@ router.get('/pending/list', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching pending reports',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/missing-persons/:id/spam - Report spam (Community Policing)
+router.post('/:id/spam', async (req, res) => {
+  try {
+    const { reason, reported_by } = req.body;
+    
+    const missingPerson = await MissingPerson.findById(req.params.id);
+    
+    if (!missingPerson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Missing person not found'
+      });
+    }
+    
+    // Check if already reported by this user/IP
+    const alreadyReported = missingPerson.spam_reports.some(
+      report => report.reported_by === reported_by
+    );
+    
+    if (alreadyReported) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already reported this as spam'
+      });
+    }
+    
+    // Add spam report
+    missingPerson.spam_reports.push({
+      reported_by,
+      reason: reason || 'Spam or fake report',
+      timestamp: new Date()
+    });
+    
+    // Auto-hide if 3 or more spam reports
+    if (missingPerson.spam_reports.length >= 3 && !missingPerson.auto_hidden) {
+      missingPerson.auto_hidden = true;
+      console.log(`⚠️ Auto-hiding report ${missingPerson.case_number} due to ${missingPerson.spam_reports.length} spam reports`);
+    }
+    
+    await missingPerson.save();
+    
+    res.json({
+      success: true,
+      message: 'Spam report submitted successfully',
+      spam_count: missingPerson.spam_reports.length,
+      auto_hidden: missingPerson.auto_hidden
+    });
+  } catch (error) {
+    console.error('Error reporting spam:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reporting spam',
       error: error.message
     });
   }

@@ -52,6 +52,12 @@ export interface VerifiedBy {
   verified_at: Date;
 }
 
+export interface SpamReport {
+  reported_by: string;
+  reason: string;
+  timestamp: Date;
+}
+
 export interface MissingPerson {
   _id: string;
   
@@ -117,9 +123,13 @@ export interface MissingPerson {
   // AI Extraction (Hybrid Approach)
   extracted_data?: ExtractedData;
   data_source: 'manual' | 'ai_extracted' | 'api_import';
-  verification_status: 'pending' | 'verified' | 'rejected';
+  verification_status: 'unverified' | 'verified' | 'rejected';
   verified_by?: VerifiedBy;
   rejection_reason?: string;
+  
+  // Community Policing
+  spam_reports: SpamReport[];
+  auto_hidden: boolean;
   
   // System Fields
   created_by: string;
@@ -248,4 +258,16 @@ export interface UpdateStatusRequest {
   found_location?: Location;
   found_condition?: string;
   resolution_details?: string;
+}
+
+export interface ReportSpamRequest {
+  reason: string;
+  reported_by: string; // User ID or IP address
+}
+
+export interface ReportSpamResponse {
+  success: boolean;
+  message: string;
+  spam_count: number;
+  auto_hidden: boolean;
 }

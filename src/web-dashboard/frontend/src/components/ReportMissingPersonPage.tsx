@@ -182,7 +182,7 @@ const ReportMissingPersonPage: React.FC = () => {
       console.log('✅ Report submitted:', response.data.case_number);
       
       toast.success(
-        `Report submitted successfully! Case Number: ${response.data.case_number}. Awaiting verification.`,
+        `Report submitted successfully! Case Number: ${response.data.case_number}. Now publicly visible as unverified.`,
         { duration: 5000 }
       );
       
@@ -679,19 +679,20 @@ const ReportMissingPersonPage: React.FC = () => {
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Report Submitted Successfully!
+              Report Published Successfully!
             </h2>
             <p className="text-gray-600 mb-6">
-              Your missing person report is being reviewed by our team. Once verified, it will be published and searchable to help locate your loved one.
+              Your missing person report is now <strong>publicly visible</strong> and searchable. It will be shown with an "Unverified" badge until our team reviews it.
             </p>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-blue-900">
-                <strong>What happens next?</strong><br />
-                • Our team will verify the details within 24 hours<br />
-                • You'll receive a notification once it's approved<br />
-                • The report will then be visible to the public<br />
-                • We'll notify you of any sightings or updates
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-yellow-900">
+                <strong>Trust but Verify</strong><br />
+                • Your report is <strong>immediately public</strong> to maximize reach<br />
+                • It shows a yellow "User Reported - Not Verified" badge<br />
+                • Our team will review and verify within 24 hours<br />
+                • Once verified, it will show a green "Verified" badge<br />
+                • Community members can report spam if they see issues
               </p>
             </div>
 

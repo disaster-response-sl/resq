@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Phone, Calendar, AlertCircle, Filter, Loader2, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Search, MapPin, Phone, Calendar, AlertCircle, Filter, Loader2, ArrowLeft, ExternalLink, AlertTriangle, Flag, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { searchMissingPersons, getAllMissingPersons } from '../services/missingPersonService';
+import { searchMissingPersons, getAllMissingPersons, reportSpam } from '../services/missingPersonService';
 import { MissingPerson, SearchParams } from '../types/missingPerson';
 
 const MissingPersonSearchPage: React.FC = () => {
@@ -56,12 +56,8 @@ const MissingPersonSearchPage: React.FC = () => {
         ? await searchMissingPersons(searchParams)
         : await getAllMissingPersons(filters);
 
-      // Filter to only show verified and public reports
-      const verifiedReports = response.data.filter(
-        (p) => p.verification_status === 'verified' && p.public_visibility
-      );
-
-      setMissingPersons(verifiedReports);
+      // Show all reports (backend filters out rejected and auto_hidden)
+      setMissingPersons(response.data);
     } catch (error: any) {
       console.error('Error loading missing persons:', error);
       toast.error('Failed to load missing persons');
@@ -73,6 +69,28 @@ const MissingPersonSearchPage: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     loadMissingPersons();
+  };
+
+  const handleReportSpam = async (personId: string) => {
+    const reason = prompt('Why are you reporting this as spam or fake?');
+    if (!reason) return;
+
+    try {
+      const userId = localStorage.getItem('userId') || `anon_${Date.now()}`;
+      const response = await reportSpam(personId, {
+        reason,
+        reported_by: userId
+      });
+
+      if (response.auto_hidden) {
+        toast.success('Report flagged as spam and auto-hidden for review');
+        loadMissingPersons(); // Refresh list
+      } else {
+        toast.success(`Spam reported (${response.spam_count}/3 reports). Will be auto-hidden at 3 reports.`);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to report spam');
+    }
   };
 
   return (
@@ -232,14 +250,27 @@ const MissingPersonSearchPage: React.FC = () => {
                         <h3 className="text-lg font-bold text-gray-900">{person.full_name}</h3>
                         <p className="text-sm text-gray-500">Case: {person.case_number}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        person.priority === 'critical' ? 'bg-red-100 text-red-700' :
-                        person.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                        person.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {person.priority.toUpperCase()}
-                      </span>
+                      <div className="flex flex-col gap-1 items-end">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          person.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                          person.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                          person.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {person.priority.toUpperCase()}
+                        </span>
+                        {person.verification_status === 'verified' ? (
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700 flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Verified
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" />
+                            Unverified
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-2 text-sm text-gray-600 mb-4">
@@ -294,13 +325,37 @@ const MissingPersonSearchPage: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedPerson.full_name}</h2>
-                  <p className="text-sm text-gray-500">Case: {selectedPerson.case_number}</p>
+                <div className="flex-1">
+                  <div className="flex items-start gap-3 mb-2">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">{selectedPerson.full_name}</h2>
+                      <p className="text-sm text-gray-500">Case: {selectedPerson.case_number}</p>
+                    </div>
+                    {selectedPerson.verification_status === 'verified' ? (
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" />
+                        Officially Verified
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        User Reported - Not Verified
+                      </span>
+                    )}
+                  </div>
+                  {selectedPerson.verification_status === 'unverified' && (
+                    <button
+                      onClick={() => handleReportSpam(selectedPerson._id)}
+                      className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
+                    >
+                      <Flag className="w-3 h-3" />
+                      Report as Spam/Fake
+                    </button>
+                  )}
                 </div>
                 <button
                   onClick={() => setSelectedPerson(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 ml-4"
                 >
                   ✕
                 </button>

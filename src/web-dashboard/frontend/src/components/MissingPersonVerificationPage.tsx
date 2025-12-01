@@ -81,7 +81,7 @@ const MissingPersonVerificationPage: React.FC = () => {
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Missing Person Report Verification</h1>
-          <p className="text-gray-600 mt-1">Review and verify pending missing person reports</p>
+          <p className="text-gray-600 mt-1">Review unverified and spam-flagged reports</p>
         </div>
 
         {loading ? (
@@ -92,7 +92,7 @@ const MissingPersonVerificationPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">All Caught Up!</h3>
-            <p className="text-gray-600">No pending reports to review at this time.</p>
+            <p className="text-gray-600">No unverified or spam-flagged reports to review.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -100,7 +100,7 @@ const MissingPersonVerificationPage: React.FC = () => {
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-900 font-medium">
-                  📋 {pendingReports.length} report{pendingReports.length !== 1 ? 's' : ''} awaiting verification
+                  📋 {pendingReports.length} report{pendingReports.length !== 1 ? 's' : ''} to review (unverified + spam-flagged)
                 </p>
               </div>
 
@@ -117,11 +117,23 @@ const MissingPersonVerificationPage: React.FC = () => {
                       <h3 className="text-lg font-bold text-gray-900">{report.full_name}</h3>
                       <p className="text-sm text-gray-500">Case: {report.case_number}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      report.data_source === 'ai_extracted' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {report.data_source === 'ai_extracted' ? '✨ AI Extracted' : '📝 Manual'}
-                    </span>
+                    <div className="flex flex-col gap-1 items-end">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        report.data_source === 'ai_extracted' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {report.data_source === 'ai_extracted' ? '✨ AI Extracted' : '📝 Manual'}
+                      </span>
+                      {report.verification_status === 'unverified' && (
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                          Unverified
+                        </span>
+                      )}
+                      {report.auto_hidden && (
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          Auto-Hidden ({report.spam_reports?.length || 0} spam reports)
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2 text-sm">
@@ -337,6 +349,31 @@ const MissingPersonVerificationPage: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Community Policing - Spam Reports */}
+                  {selectedReport.spam_reports && selectedReport.spam_reports.length > 0 && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-orange-900 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5" />
+                        Community Spam Reports ({selectedReport.spam_reports.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {selectedReport.spam_reports.map((spam, idx) => (
+                          <div key={idx} className="text-sm text-orange-800 bg-white p-2 rounded">
+                            <p><strong>Reason:</strong> {spam.reason}</p>
+                            <p className="text-xs text-orange-600 mt-1">
+                              Reported: {new Date(spam.timestamp).toLocaleString()}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      {selectedReport.auto_hidden && (
+                        <p className="text-xs text-orange-900 mt-2 font-medium">
+                          ⚠️ This report has been auto-hidden from public view due to multiple spam reports.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-4 border-t">
                     <button
@@ -349,7 +386,7 @@ const MissingPersonVerificationPage: React.FC = () => {
                       ) : (
                         <>
                           <CheckCircle className="w-5 h-5" />
-                          Approve & Publish
+                          Verify Report
                         </>
                       )}
                     </button>

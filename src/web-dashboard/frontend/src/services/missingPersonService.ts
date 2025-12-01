@@ -13,7 +13,9 @@ import {
   VerificationAction,
   AddSightingRequest,
   AddUpdateRequest,
-  UpdateStatusRequest
+  UpdateStatusRequest,
+  ReportSpamRequest,
+  ReportSpamResponse
 } from '../types/missingPerson';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -218,5 +220,16 @@ export const deleteMissingPerson = async (
  */
 export const getStatistics = async (): Promise<StatsResponse> => {
   const response = await axios.get(`${API_URL}/stats`);
+  return response.data;
+};
+
+/**
+ * Report spam (Community Policing)
+ */
+export const reportSpam = async (
+  id: string,
+  spamData: ReportSpamRequest
+): Promise<ReportSpamResponse> => {
+  const response = await axios.post(`${API_URL}/${id}/spam`, spamData);
   return response.data;
 };
