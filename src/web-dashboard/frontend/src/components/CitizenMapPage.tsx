@@ -233,22 +233,23 @@ const CitizenMapPage: React.FC = () => {
       requestParams.append('type', 'requests');
       const requestsResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${requestParams.toString()}`
-      ).catch(() => ({ data: { success: false, data: { requests: [] } } }));
+      ).catch(() => ({ data: { requests: [] } }));
 
       // Fetch Supabase CONTRIBUTIONS (volunteers offering help)
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
       const contributionsResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${contributionParams.toString()}`
-      ).catch(() => ({ data: { success: false, data: { contributions: [] } } }));
+      ).catch(() => ({ data: { contributions: [] } }));
 
       // Fetch MongoDB help requests (user incident reports)
       const mongoResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      const supabaseRequests = requestsResponse.data.success ? (requestsResponse.data.data.requests || []) : [];
-      const supabaseContributions = contributionsResponse.data.success ? (contributionsResponse.data.data.contributions || []) : [];
+      // API returns data directly: { requests: [...], contributions: [...], meta: {...} }
+      const supabaseRequests = requestsResponse.data.requests || [];
+      const supabaseContributions = contributionsResponse.data.contributions || [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
 
       // Map Supabase help requests (relief camps)
