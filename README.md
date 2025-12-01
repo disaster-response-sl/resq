@@ -384,14 +384,6 @@ Sri Lanka faces critical gaps in disaster response:
 
 ### Recent Updates (November 2025 - Production Deployment)
 
-#### UI/UX Enhancements
-- ✅ **Dashboard Redesign** - Soft pastel color scheme with overlapping risk assessment cards
-- ✅ **Mobile Optimization** - Emergency contacts and stats display in 2 columns on mobile
-- ✅ **Navbar Visibility** - "ResQ Hub" and subtitle now visible on mobile screens
-- ✅ **Location Accuracy** - Shows precise address: "St Mary's Road, Kochchikade, Gampaha District"
-- ✅ **Debounced Search** - Relief Tracker radius slider prevents notification spam (800ms delay)
-- ✅ **Risk Level Images** - Visual indicators (lowRisk.png, mediumRisk.png, highRisk.png)
-
 #### LankaRouteWatch Features
 - ✅ **Location Search** - Nominatim autocomplete for start/end locations (replacing district dropdowns)
 - ✅ **Road Hazard Display** - Shows detailed reports when no safe routes available
@@ -625,7 +617,6 @@ The platform implements a sophisticated dual authentication system to handle dif
 ```
 GET /public-data-api?type=requests&urgency=emergency&lat=6.9271&lng=79.8612&radius_km=30&sort=distance
 ```
-
 ## 🚀 Quick Start
 
 ### Prerequisites
