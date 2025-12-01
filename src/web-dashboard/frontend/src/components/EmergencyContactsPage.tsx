@@ -77,21 +77,30 @@ const EmergencyContactsPage: React.FC = () => {
         ? disastersResponse.data.data.filter((d: any) => d.status === 'active').length 
         : 0;
 
-      // Fetch relief camps count
-      const reliefResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?limit=1000`);
-      const reliefCount = reliefResponse.data.success 
+      // HYBRID DATA: Fetch relief camps count from Supabase (requests + contributions) and MongoDB
+      const reliefResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?type=all&limit=1000`);
+      const supabaseRequestsCount = reliefResponse.data.success 
         ? (reliefResponse.data.data.requests?.length || 0) 
         : 0;
+      const supabaseContributionsCount = reliefResponse.data.success 
+        ? (reliefResponse.data.data.contributions?.length || 0) 
+        : 0;
+
+      // Also count MongoDB help requests
+      const mongoHelpResponse = await axios.get(`${API_BASE_URL}/api/public/user-reports?status=pending&limit=1000`);
+      const mongoHelpCount = mongoHelpResponse.data.success ? mongoHelpResponse.data.data.length : 0;
+
+      const totalReliefCount = supabaseRequestsCount + supabaseContributionsCount + mongoHelpCount;
 
       setStats({
         total_sos: sosCount,
         total_missing: 282, // Mock data - would need missing persons API
         total_rescued: 180, // Mock data - would need rescue tracking API
         total_active_disasters: activeDisasters,
-        total_relief_camps: reliefCount
+        total_relief_camps: totalReliefCount
       });
 
-      console.log(`✅ Loaded emergency stats: ${sosCount} SOS, ${activeDisasters} disasters, ${reliefCount} relief camps`);
+      console.log(`✅ Loaded emergency stats: ${sosCount} SOS, ${activeDisasters} disasters, ${totalReliefCount} relief locations (${supabaseRequestsCount} requests + ${supabaseContributionsCount} contributions + ${mongoHelpCount} MongoDB)`);
     } catch (error) {
       console.error('Error fetching emergency stats:', error);
     }

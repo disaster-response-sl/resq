@@ -217,11 +217,11 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchReliefCamps = async () => {
     try {
-      // Fetch real relief camp data from Supabase Public API
+      // HYBRID DATA MODEL: Fetch Supabase (requests + contributions) AND MongoDB help requests
       const params = new URLSearchParams();
-      params.append('type', 'requests'); // Get help requests (relief camps)
-      params.append('status', 'pending'); // Only active camps
-      params.append('limit', '100');
+      params.append('type', 'all'); // Get BOTH requests AND contributions
+      params.append('status', 'all'); // Get all statuses
+      params.append('limit', '500');
       
       if (userLocation) {
         params.append('lat', userLocation.lat.toString());
@@ -230,29 +230,80 @@ const CitizenMapPage: React.FC = () => {
         params.append('sort', 'distance');
       }
 
-      const response = await axios.get(
+      // Fetch Supabase relief data (both help requests and volunteer contributions)
+      const supabaseResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${params.toString()}`
-      );
+      ).catch(() => ({ data: { success: false, data: { requests: [], contributions: [] } } }));
 
-      if (response.data.success && response.data.data) {
-        const camps = (response.data.data.requests || []).map((item: any) => ({
-          id: item.id,
-          full_name: item.full_name,
-          address: item.address,
-          latitude: item.latitude,
-          longitude: item.longitude,
-          establishment_type: item.establishment_type,
-          num_men: item.num_men,
-          num_women: item.num_women,
-          num_children: item.num_children,
-          urgency: item.urgency,
-          status: item.status,
-          assistance_types: item.assistance_types || [],
-          distance_km: item.distance_km
-        }));
-        setReliefCamps(camps);
-        console.log(`Loaded ${camps.length} relief camps from Supabase`);
-      }
+      // Fetch MongoDB help requests (user incident reports)
+      const mongoResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
+      ).catch(() => ({ data: { success: false, data: [] } }));
+
+      const supabaseRequests = supabaseResponse.data.success ? (supabaseResponse.data.data.requests || []) : [];
+      const supabaseContributions = supabaseResponse.data.success ? (supabaseResponse.data.data.contributions || []) : [];
+      const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
+
+      // Map Supabase help requests (relief camps)
+      const requestCamps = supabaseRequests.map((item: any) => ({
+        id: item.id,
+        full_name: item.full_name,
+        address: item.address,
+        latitude: item.latitude,
+        longitude: item.longitude,
+        establishment_type: item.establishment_type,
+        num_men: item.num_men,
+        num_women: item.num_women,
+        num_children: item.num_children,
+        urgency: item.urgency,
+        status: item.status,
+        assistance_types: item.assistance_types || [],
+        distance_km: item.distance_km,
+        source: 'supabase_request'
+      }));
+
+      // Map Supabase contributions (volunteers offering help)
+      const contributionCamps = supabaseContributions.map((contrib: any) => ({
+        id: contrib.id,
+        full_name: `💚 ${contrib.full_name} (Volunteer)`,
+        address: contrib.address,
+        latitude: contrib.latitude,
+        longitude: contrib.longitude,
+        establishment_type: 'Volunteer Contribution',
+        urgency: 'low',
+        status: contrib.status || 'available',
+        assistance_types: [...(contrib.goods_types || []), ...(contrib.services_types || []), ...(contrib.labor_types || [])],
+        distance_km: contrib.distance_km,
+        source: 'supabase_contribution'
+      }));
+
+      // Map MongoDB help requests to relief camp format
+      const mongoHelpAsCamps = mongoHelp.map((help: any) => {
+        const typeLabels: any = {
+          food: 'Food Shortage',
+          shelter: 'Shelter Needed',
+          medical: 'Medical Emergency',
+          danger: 'Danger Alert'
+        };
+        
+        return {
+          id: help._id,
+          full_name: typeLabels[help.type] || 'Help Request',
+          address: help.description || 'No description',
+          latitude: help.location.lat,
+          longitude: help.location.lng,
+          establishment_type: typeLabels[help.type] || 'Help Needed',
+          urgency: help.type === 'medical' ? 'emergency' : 'high',
+          status: help.status,
+          assistance_types: [help.type],
+          source: 'mongodb'
+        };
+      });
+
+      // Merge ALL sources
+      const allCamps = [...requestCamps, ...contributionCamps, ...mongoHelpAsCamps];
+      setReliefCamps(allCamps);
+      console.log(`✅ HYBRID Relief Map: ${requestCamps.length} Supabase requests + ${contributionCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${allCamps.length} total`);
     } catch (error) {
       console.error('Relief camps fetch error:', error);
       // Don't show error toast - relief camps are optional
