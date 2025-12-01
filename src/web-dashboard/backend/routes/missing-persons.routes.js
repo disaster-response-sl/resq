@@ -155,22 +155,72 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/missing-persons - Create new missing person report
-router.post('/', authenticateToken, async (req, res) => {
+// Now accepts both authenticated and unauthenticated submissions
+router.post('/', async (req, res) => {
   try {
+    // Check if user is authenticated (optional)
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    let userId = null;
+    if (token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+        const decoded = jwt.verify(token, jwtSecret);
+        userId = decoded._id || decoded.citizenId || decoded.individualId;
+      } catch (err) {
+        // Token invalid, continue as unauthenticated
+        console.log('[MISSING PERSON] Unauthenticated submission');
+      }
+    }
+    
+    // If phone is provided but not authenticated, create shadow account
+    const ShadowAuthService = require('../services/shadow-auth.service');
+    let citizenToken = null;
+    
+    if (!userId && req.body.reporter_phone && req.body.reporter_name) {
+      try {
+        const citizen = await ShadowAuthService.findOrCreateCitizen(
+          req.body.reporter_phone,
+          req.body.reporter_name,
+          { email: req.body.reporter_email }
+        );
+        userId = citizen._id;
+        citizenToken = ShadowAuthService.generateToken(citizen);
+        await ShadowAuthService.incrementActivity(citizen._id, 'missing_person');
+        
+        console.log('[MISSING PERSON] Shadow account created for:', citizen.name);
+      } catch (err) {
+        console.error('[MISSING PERSON] Shadow account creation failed:', err);
+      }
+    }
+    
     const missingPersonData = {
       ...req.body,
-      created_by: req.user._id,
-      last_modified_by: req.user._id
+      created_by: userId,
+      last_modified_by: userId
     };
     
     const missingPerson = new MissingPerson(missingPersonData);
     await missingPerson.save();
     
-    res.status(201).json({
+    const response = {
       success: true,
       message: 'Missing person report created successfully',
       data: missingPerson
-    });
+    };
+    
+    // Include auth token if shadow account was created
+    if (citizenToken) {
+      response.auth = {
+        token: citizenToken,
+        expiresIn: '30d',
+        message: 'Account created for updates and notifications'
+      };
+    }
+    
+    res.status(201).json(response);
   } catch (error) {
     console.error('Error creating missing person report:', error);
     res.status(500).json({

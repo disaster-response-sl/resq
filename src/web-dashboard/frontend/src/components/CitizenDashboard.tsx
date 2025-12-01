@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation, Users } from 'lucide-react';
 import axios from 'axios';
 import CitizenNavbar from './CitizenNavbar';
+import CitizenSOSDashboard from './CitizenSOSDashboard';
 import Footer from './Footer';
+import { citizenAuthService } from '../services/citizenAuthService';
 
 interface Location {
   lat: number;
@@ -269,52 +271,52 @@ const CitizenDashboard: React.FC = () => {
         {/* Quick Actions - Mobile Optimized */}
         <div className="mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3">Emergency Actions</h2>
-          <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
+          <div className="grid grid-cols-5 gap-1.5 md:gap-4 md:grid-cols-3 lg:grid-cols-5">
             <button
               onClick={() => navigate('/citizen/emergency-contacts')}
-              className="bg-red-600 hover:bg-red-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
+              className="bg-red-600 hover:bg-red-700 text-white p-2 md:p-6 rounded-lg md:rounded-xl shadow-lg transition-all transform hover:scale-105 relative flex flex-col items-center justify-center"
             >
-              <Phone className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
-              <h3 className="text-xs md:text-xl font-bold">Emergency Contacts</h3>
+              <Phone className="h-5 w-5 md:h-12 md:w-12 mb-1 md:mb-3" />
+              <h3 className="text-[9px] md:text-xl font-bold leading-tight text-center">Emergency</h3>
               <p className="text-[10px] md:text-sm text-red-100 mt-0.5 md:mt-1 hidden md:block">117, 119, 110, 108 & DDMCU</p>
             </button>
 
             <button
               onClick={() => navigate('/citizen/route-watch')}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 relative"
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 md:p-6 rounded-lg md:rounded-xl shadow-lg transition-all transform hover:scale-105 relative flex flex-col items-center justify-center"
             >
-              <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-yellow-400 text-blue-900 text-[8px] md:text-xs font-bold px-1.5 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg animate-pulse">
+              <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-yellow-400 text-blue-900 text-[6px] md:text-xs font-bold px-1 md:px-3 py-0.5 md:py-1 rounded-full shadow-lg animate-pulse">
                 NEW
               </div>
-              <Navigation className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
-              <h3 className="text-xs md:text-xl font-bold leading-tight">LankaRoute<br className="md:hidden" />Watch</h3>
+              <Navigation className="h-5 w-5 md:h-12 md:w-12 mb-1 md:mb-3" />
+              <h3 className="text-[9px] md:text-xl font-bold leading-tight text-center">LankaRoute</h3>
               <p className="text-[10px] md:text-sm text-blue-100 mt-0.5 md:mt-1 hidden md:block">Road conditions & safe routes</p>
             </button>
 
             <button
               onClick={() => navigate('/citizen/sos')}
-              className="bg-red-500 hover:bg-red-600 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white p-2 md:p-6 rounded-lg md:rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center"
             >
-              <AlertTriangle className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
-              <h3 className="text-xs md:text-xl font-bold">SOS Emergency</h3>
+              <AlertTriangle className="h-5 w-5 md:h-12 md:w-12 mb-1 md:mb-3" />
+              <h3 className="text-[9px] md:text-xl font-bold leading-tight text-center">SOS</h3>
               <p className="text-[10px] md:text-sm text-red-100 mt-0.5 md:mt-1 hidden md:block">Send distress signal</p>
             </button>
 
             <button
               onClick={() => navigate('/citizen/relief-tracker')}
-              className="bg-purple-600 hover:bg-purple-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-purple-600 hover:bg-purple-700 text-white p-2 md:p-6 rounded-lg md:rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center"
             >
-              <Package className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
-              <h3 className="text-xs md:text-xl font-bold">Relief Tracker</h3>
+              <Package className="h-5 w-5 md:h-12 md:w-12 mb-1 md:mb-3" />
+              <h3 className="text-[9px] md:text-xl font-bold leading-tight text-center">Relief</h3>
               <p className="text-[10px] md:text-sm text-purple-100 mt-0.5 md:mt-1 hidden md:block">Find help or volunteer</p>
             </button>
 
             <button
               onClick={() => navigate('/missing-persons/search')}
-              className="bg-amber-600 hover:bg-amber-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+              className="bg-amber-600 hover:bg-amber-700 text-white p-2 md:p-6 rounded-lg md:rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center"
             >
-              <Users className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
-              <h3 className="text-xs md:text-xl font-bold">Missing Persons</h3>
+              <Users className="h-5 w-5 md:h-12 md:w-12 mb-1 md:mb-3" />
+              <h3 className="text-[9px] md:text-xl font-bold leading-tight text-center">Missing</h3>
               <p className="text-[10px] md:text-sm text-amber-100 mt-0.5 md:mt-1 hidden md:block">Report or search</p>
             </button>
           </div>
@@ -554,6 +556,14 @@ const CitizenDashboard: React.FC = () => {
             </a>
           </div>
         </div>
+
+        {/* My SOS Section - Only show if user is logged in */}
+        {citizenAuthService.isAuthenticated() && (
+          <div className="mt-8">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">My SOS Signals</h2>
+            <CitizenSOSDashboard />
+          </div>
+        )}
       </div>
       
       <Footer />

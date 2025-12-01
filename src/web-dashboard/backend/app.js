@@ -134,6 +134,9 @@ const missingPersonsRoutes = require('./routes/missing-persons.routes');
 const externalDataRoutes = require('./routes/external-data.routes');
 const reportsRoutes = require('./routes/reports.routes');
 const routesRoutes = require('./routes/routes.js');
+const sosCitizenRoutes = require('./routes/sos-citizen.routes');
+const sosEnhancedRoutes = require('./routes/sos-enhanced.routes');
+const civilianResponderRoutes = require('./routes/civilian-responder.routes');
 
 // Import services
 const SosEscalationService = require('./services/sos-escalation.service');
@@ -141,6 +144,7 @@ const SosEscalationService = require('./services/sos-escalation.service');
 // Use user & mobile routes (with rate limiting for auth)
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/mobile', authLimiter, mobileAuthRoutes);
+app.use('/api/citizen-auth', authLimiter, require('./routes/citizen-auth.routes')); // Citizen authentication
 app.use('/api/public', publicRoutes); // Public citizen routes - no auth required
 app.use('/api/map', mapRoutes);
 app.use('/api/resources', resourceRoutes);
@@ -168,6 +172,10 @@ app.use('/api/missing-persons', missingPersonsRoutes);
 app.use('/api/external', externalDataRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/public', routesRoutes); // LankaRouteWatch routes
+app.use('/api/sos/citizen', sosCitizenRoutes); // Citizen SOS (no auth required)
+app.use('/api/sos', require('./routes/sos-messaging.routes')); // SOS messaging routes
+app.use('/api/sos', sosEnhancedRoutes); // Enhanced SOS routes
+app.use('/api/civilian-responder', civilianResponderRoutes); // Civilian responder routes
 
 // Geocoding proxy to avoid CORS issues with Nominatim
 app.get('/api/geocode/reverse', async (req, res) => {
@@ -302,9 +310,19 @@ mongoose.connect(mongoUri)
     console.log("Falling back to default URI:", mongoUri);
   });
 
-// Start the server
-app.listen(PORT, '0.0.0.0', () => {
+// Start the server with Socket.io
+const http = require('http');
+const server = http.createServer(app);
+
+// Initialize Socket.io for real-time notifications
+const socketService = require('./services/socket.service');
+socketService.initialize(server);
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Server accessible at: http://localhost:${PORT}`);
   console.log(`Server accessible at: http://127.0.0.1:${PORT}`);
+  console.log(`Socket.io ready for real-time notifications`);
 });
+
+

@@ -626,9 +626,17 @@ const Dashboard: React.FC = () => {
                     <p className="text-xs text-gray-500">{getTimeAgo(activity.timestamp)}</p>
                   </div>
 
-                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                  <Link
+                    to={
+                      activity.type === 'sos' ? '/sos' :
+                      activity.type === 'disaster' ? '/disasters' :
+                      activity.type === 'report' ? '/reports' :
+                      '/resources'
+                    }
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
                     View Details
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}

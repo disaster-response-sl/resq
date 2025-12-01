@@ -15,6 +15,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
     "axios": "^1.11.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.1",
@@ -27,7 +28,11 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.5",
-    "nodemon": "^3.1.10"
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
   }
 }

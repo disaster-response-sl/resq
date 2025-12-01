@@ -61,15 +61,17 @@ export const extractDataFromPoster = async (imageFile: File): Promise<Extraction
 
 /**
  * STEP 2: Submit missing person report (SAVES to MongoDB)
+ * No authentication required - creates shadow account if needed
  */
 export const submitMissingPerson = async (
-  token: string,
+  token: string | null,
   data: CreateMissingPersonRequest
 ): Promise<MissingPersonResponse> => {
+  const config = token ? { headers: getAuthHeaders(token) } : {};
   const response = await axios.post(
-    `${API_URL}/submit`,
+    API_URL,
     data,
-    { headers: getAuthHeaders(token) }
+    config
   );
   return response.data;
 };

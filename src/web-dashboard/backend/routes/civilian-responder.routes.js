@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const CivilianResponder = require('../../models/CivilianResponder');
-const { authenticateToken } = require('../../middleware/auth');
+const CivilianResponder = require('../models/CivilianResponder');
+const { authenticateToken } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 

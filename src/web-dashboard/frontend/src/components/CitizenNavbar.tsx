@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, AlertTriangle, Package, Map, MessageSquare, Users, Navigation } from 'lucide-react';
+import { Menu, X, Phone, AlertTriangle, Package, Map, MessageSquare, Users, Navigation, LogIn, LogOut, UserCircle } from 'lucide-react';
+import { citizenAuthService, CitizenUser } from '../services/citizenAuthService';
+import toast from 'react-hot-toast';
 
 const CitizenNavbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<CitizenUser | null>(null);
 
   const navItems = [
     { path: '/citizen', label: 'Home', icon: Map },
@@ -19,8 +22,21 @@ const CitizenNavbar: React.FC = () => {
     { path: '/citizen/volunteer', label: 'Volunteer', icon: Users },
   ];
 
+  useEffect(() => {
+    // Check if user is logged in
+    const currentUser = citizenAuthService.getUser();
+    setUser(currentUser);
+  }, [location.pathname]); // Re-check on route change
+
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleLogout = () => {
+    citizenAuthService.logout();
+    setUser(null);
+    toast.success('Logged out successfully');
+    navigate('/citizen');
   };
 
   return (
@@ -64,13 +80,40 @@ const CitizenNavbar: React.FC = () => {
             })}
           </div>
 
-          {/* Admin Login Button (Desktop) */}
-          <button
-            onClick={() => navigate('/login')}
-            className="hidden md:block bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-colors"
-          >
-            Admin Login
-          </button>
+          {/* User Auth Buttons (Desktop) */}
+          <div className="hidden md:flex items-center space-x-2">
+            {user ? (
+              <>
+                <div className="flex items-center space-x-2 text-blue-100 mr-2">
+                  <UserCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">{user.name}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-1 bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/citizen/login')}
+                  className="flex items-center space-x-1 bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/20 transition-colors"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </button>
+                <button
+                  onClick={() => navigate('/citizen/signup')}
+                  className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-colors"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -109,15 +152,48 @@ const CitizenNavbar: React.FC = () => {
                   </button>
                 );
               })}
-              <button
-                onClick={() => {
-                  navigate('/login');
-                  setMobileMenuOpen(false);
-                }}
-                className="bg-white text-blue-600 px-4 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors text-center"
-              >
-                Admin/Responder Login
-              </button>
+              
+              {/* Mobile Auth Buttons */}
+              {user ? (
+                <>
+                  <div className="flex items-center space-x-2 px-4 py-3 bg-blue-800 rounded-lg text-white">
+                    <UserCircle className="h-5 w-5" />
+                    <span className="font-medium">{user.name}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center space-x-2 bg-white text-blue-600 px-4 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate('/citizen/login');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center space-x-2 bg-white/10 text-white px-4 py-3 rounded-lg font-semibold hover:bg-white/20 transition-colors"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/citizen/signup');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="bg-white text-blue-600 px-4 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors text-center"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

@@ -193,6 +193,11 @@ export interface MissingPersonResponse {
   message?: string;
   data: MissingPerson;
   error?: string;
+  auth?: {
+    token: string;
+    expiresIn: string;
+    message?: string;
+  };
 }
 
 export interface MissingPersonListResponse {

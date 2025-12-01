@@ -154,16 +154,15 @@ const ReportMissingPersonPage: React.FC = () => {
   // STEP 2: Submit to MongoDB (SOURCE OF TRUTH)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!token) {
-      toast.error('Please login to submit a report');
-      navigate('/login');
-      return;
-    }
 
     // Validation
     if (!formData.full_name || !formData.reporter_phone || !formData.circumstances) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    if (!formData.reporter_name) {
+      toast.error('Please provide your name');
       return;
     }
 
@@ -181,10 +180,18 @@ const ReportMissingPersonPage: React.FC = () => {
       
       console.log('✅ Report submitted:', response.data.case_number);
       
-      toast.success(
-        `Report submitted successfully! Case Number: ${response.data.case_number}. Now publicly visible as unverified.`,
-        { duration: 5000 }
-      );
+      // If shadow account was created, show token info
+      if (response.auth?.token) {
+        toast.success(
+          `Report submitted! Case: ${response.data.case_number}. An account was created for you to track updates.`,
+          { duration: 6000 }
+        );
+      } else {
+        toast.success(
+          `Report submitted successfully! Case Number: ${response.data.case_number}.`,
+          { duration: 5000 }
+        );
+      }
       
       setStep('submitted');
     } catch (error: any) {
@@ -255,16 +262,16 @@ const ReportMissingPersonPage: React.FC = () => {
           </div>
         </div>
 
-        {/* STEP 1: Upload & Extract */}
+        {/* STEP 1: Upload Photo (Optional) */}
         {step === 'upload' && (
           <div className="bg-white rounded-lg shadow-md p-8">
             <div className="text-center mb-6">
               <Upload className="w-16 h-16 text-blue-600 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-gray-900 mb-2">
-                Upload Missing Person Poster (Optional)
+                Upload Photo (Optional)
               </h2>
               <p className="text-gray-600">
-                Our AI will extract details automatically to speed up the process
+                Add a photo of the missing person to help with identification
               </p>
             </div>
 
@@ -309,31 +316,14 @@ const ReportMissingPersonPage: React.FC = () => {
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="mt-6 flex gap-4">
-              <button
-                onClick={handleExtractData}
-                disabled={!imageFile || extracting}
-                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {extracting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Extracting Data...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    Extract Data with AI
-                  </>
-                )}
-              </button>
-              
+            {/* Action Button */}
+            <div className="mt-6">
               <button
                 onClick={handleSkipExtraction}
-                className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300"
+                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
               >
-                Skip & Enter Manually
+                <CheckCircle className="w-5 h-5" />
+                Continue to Form
               </button>
             </div>
 
@@ -341,12 +331,12 @@ const ReportMissingPersonPage: React.FC = () => {
             <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
               <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-900">
-                <p className="font-medium mb-1">How it works:</p>
+                <p className="font-medium mb-1">What happens next:</p>
                 <ul className="list-disc list-inside space-y-1 text-blue-800">
-                  <li>Upload a missing person poster image</li>
-                  <li>Our AI extracts name, age, location, and contact details</li>
-                  <li>Review and edit the extracted information</li>
-                  <li>Submit for admin verification before publishing</li>
+                  <li>You'll fill in the missing person details manually</li>
+                  <li>Photo will be attached to help with identification</li>
+                  <li>You can skip the photo and add it later if needed</li>
+                  <li>Report will be reviewed before publishing</li>
                 </ul>
               </div>
             </div>

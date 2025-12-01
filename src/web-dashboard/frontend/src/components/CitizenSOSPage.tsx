@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, MapPin, AlertCircle, ArrowLeft, CheckCircle, ChevronDown, ChevronUp, User, Users, Home } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { citizenAuthService } from '../services/citizenAuthService';
 
 interface Location {
   lat: number;
@@ -90,6 +91,12 @@ const CitizenSOSPage: React.FC = () => {
     setSending(true);
 
     try {
+      // Get token if user is logged in
+      const token = citizenAuthService.getToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      console.log('[CITIZEN SOS] Token:', token ? 'Present' : 'Not found');
+      console.log('[CITIZEN SOS] Sending with headers:', headers);
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos`,
         {
@@ -134,7 +141,8 @@ const CitizenSOSPage: React.FC = () => {
             hasPower,
             batteryPercent: batteryPercent ? parseInt(batteryPercent) : undefined,
           },
-        }
+        },
+        { headers }
       );
 
       if (response.data.success) {

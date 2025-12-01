@@ -25,10 +25,14 @@ Comprehensive disaster response platform powered by **verified government and pr
 
 ### 🌊 Core Features
 
-#### For Citizens (Public Access - No Login Required)
+#### For Citizens (Public Access + Optional Authentication)
 - ✅ **Real-Time Flood Monitoring** - Live water levels from 39 DMC gauging stations (15-min updates)
 - ✅ **Interactive Risk Map** - Leaflet-powered map with flood alerts, relief camps, and user location with precise geocoding
-- ✅ **Emergency SOS** - One-tap distress signal with GPS location (no authentication required)
+- ✅ **Emergency SOS** - One-tap distress signal with GPS location (works without login, enhanced features when authenticated)
+- ✅ **Citizen Authentication** - JWT-based signup/login system with shadow accounts for emergency submissions
+- ✅ **My SOS Dashboard** - Track your submitted SOS signals, view responder updates, and communicate in real-time
+- ✅ **Real-Time Messaging** - Direct chat with responders about your emergency via Socket.io
+- ✅ **SOS Status Updates** - Mark your emergency as resolved or false alarm, send status updates to responders
 - ✅ **Incident Reporting** - Submit reports with photos and location data
 - ✅ **Relief Demand & Supply Tracker** - Find nearby help within 5-200km radius with debounced search
 - ✅ **Volunteer Registration** - Comprehensive form to offer goods, services, or labor
@@ -39,7 +43,11 @@ Comprehensive disaster response platform powered by **verified government and pr
 - ✅ **Location Services** - Accurate reverse geocoding showing street address, city, and district
 
 #### For Admins & Responders (Authenticated Access)
-- ✅ **SOS Dashboard** - Real-time emergency signal monitoring with auto-escalation
+- ✅ **SOS Dashboard** - Real-time emergency signal monitoring with auto-escalation and 30-second auto-refresh
+- ✅ **Responder-Citizen Messaging** - Communicate directly with citizens about their emergencies via Socket.io
+- ✅ **Role-Based SOS Filtering** - Admins see all SOS, responders see active emergencies, civilians filtered by allowed levels
+- ✅ **SOS Signal Management** - Accept, respond to, and update status of emergency signals
+- ✅ **Message History** - View complete conversation history for each SOS
 - ✅ **Disaster Management** - Create, track, and manage disaster events
 - ✅ **Live Disaster Heat Map** - Real-time DMC flood data visualization with interactive markers
 - ✅ **Resource Management** - Allocate and track emergency supplies
@@ -291,20 +299,39 @@ Sri Lanka faces critical gaps in disaster response:
 
 #### Authentication & Access Control
 - 👥 **Role-Based Authentication**
-  - Individual ID + OTP login
-  - JWT token-based sessions
-  - 24-hour token expiration
-  - Admin vs Responder permissions
-  - Secure logout
+  - Individual ID + OTP login for admins/responders
+  - JWT-based citizen authentication (signup/login)
+  - JWT token-based sessions (30-day expiration)
+  - Admin vs Responder vs Citizen permissions
+  - Shadow account system for emergency SOS without registration
+  - Secure logout with token cleanup
 
-#### Emergency Management
+#### Emergency Management & Real-Time Communication
 - 🚨 **SOS Dashboard** - Real-time emergency monitoring
   - Live signal feed from MongoDB
+  - Auto-refresh every 30 seconds
   - Auto-escalation every 5 minutes
-  - Priority sorting (High → Medium → Low)
-  - Status management (Pending → Assigned → Resolved)
+  - Priority sorting (Critical → High → Medium → Low)
+  - Status management (Pending → Acknowledged → Responding → Resolved)
   - GPS coordinates display
   - Responder assignment workflow
+  - Role-based filtering (admins see all, responders see active only)
+  
+- 💬 **Real-Time Messaging System** (Socket.io)
+  - Bidirectional chat between citizens and responders
+  - Message history for each SOS signal
+  - Real-time notifications via WebSocket
+  - Sender identification (citizen/responder/admin)
+  - Message timestamps and read status
+  - Auto-scroll to latest messages
+  
+- 📱 **Citizen SOS Dashboard**
+  - View all personal SOS submissions
+  - Track responder responses in real-time
+  - Send messages to assigned responders
+  - Update SOS status (resolved/false alarm)
+  - 30-second auto-refresh
+  - Click to expand message details
   
 - 📝 **Reports Dashboard** - Citizen incident management
   - Review submitted reports with photos
@@ -392,6 +419,113 @@ Sri Lanka faces critical gaps in disaster response:
 - ✅ **Volunteer System** - Complete CRUD workflow for relief contributions
 - ✅ **Admin Map Fix** - Uses live DMC flood data instead of MongoDB
 
+## 🔐 Authentication & Messaging System
+
+### Dual Authentication Architecture
+
+The platform implements a sophisticated dual authentication system to handle different user types:
+
+#### 1. **Citizen Authentication** (JWT-based)
+- **Signup**: Email/phone + password with bcrypt hashing
+- **Login**: Identifier (email or phone) + password
+- **Token**: 30-day JWT with citizenId, phone, email, name, role, account_type
+- **Storage**: localStorage (`citizen_token`, `citizen_user`)
+- **Shadow Accounts**: Emergency SOS submissions create shadow accounts for follow-up
+- **Features**:
+  - No authentication required for emergency SOS
+  - Optional login to track SOS history
+  - Real-time messaging with responders
+  - Personal SOS dashboard
+
+#### 2. **Admin/Responder Authentication** (Individual ID + OTP)
+- **Login**: Individual ID + OTP code
+- **Mock SLUDI**: Simulated eSignet authentication for development
+- **Token**: JWT with individualId, name, email, role (admin/responder)
+- **Storage**: localStorage (`access_token`, `user`)
+- **Features**:
+  - Role-based dashboard access
+  - SOS management and assignment
+  - Real-time communication with citizens
+
+### Real-Time Messaging System (Socket.io)
+
+#### Architecture
+- **Server**: Socket.io 4.8.1 integrated with Express.js backend
+- **Client**: Socket.io-client with room-based communication
+- **Persistence**: Messages stored in SOS `victim_status_updates` array
+- **Real-Time Events**:
+  - `join-sos-room` - Connect to specific SOS conversation
+  - `new-message` - Receive real-time message notifications
+  - `responder-update` - Status changes and assignments
+  - `location-update` - Responder location tracking
+
+#### Message Flow
+1. **Citizen sends message**: 
+   - POST `/api/sos/:id/messages` with JWT token
+   - Backend validates authentication, saves to MongoDB
+   - Socket.io emits `new-message` event to `sos_${sosId}` room
+   - All connected parties receive instant notification
+
+2. **Responder responds**:
+   - Same endpoint, different JWT token
+   - Message tagged with sender_role (citizen/responder/admin)
+   - Real-time delivery to citizen's dashboard
+
+3. **Message History**:
+   - GET `/api/sos/:id/messages` retrieves full conversation
+   - Sorted by timestamp
+   - Sender identification and role display
+
+#### API Endpoints
+
+**Messaging:**
+- `POST /api/sos/:id/messages` - Send message (requires authentication)
+- `GET /api/sos/:id/messages` - Get conversation history
+- `PUT /api/sos/:id/status` - Update SOS status
+
+**Citizen SOS:**
+- `POST /api/public/sos` - Submit SOS (optional auth via Bearer token)
+- `GET /api/sos/citizen/my-sos` - Get citizen's SOS history (requires citizen token)
+- `POST /api/citizen-auth/signup` - Create citizen account
+- `POST /api/citizen-auth/login` - Citizen login
+
+**Admin/Responder SOS:**
+- `GET /api/admin/sos/dashboard` - Admin dashboard with stats and pagination
+- `GET /api/sos/public/nearby` - Responder view of all active SOS
+
+### Technical Implementation Details
+
+#### Token Structure (Citizen):
+```json
+{
+  "citizenId": "692d6bf9a91455d306199e87",
+  "phone": "0771234567",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "role": "citizen",
+  "account_type": "verified",
+  "iat": 1733054400,
+  "exp": 1735646400
+}
+```
+
+#### Message Schema:
+```json
+{
+  "message": "Responder: Help is on the way, ETA 15 minutes",
+  "update_type": "chat_message",
+  "timestamp": "2025-12-01T18:30:00.000Z",
+  "sender_id": "responder001",
+  "sender_role": "responder",
+  "sender_name": "John Smith"
+}
+```
+
+#### Socket.io Rooms:
+- Room naming: `sos_${sosId}` (e.g., `sos_674d5a2b1c9d440017e3e4b8`)
+- Multiple users can join same room
+- Real-time broadcast to all room participants
+
 ## 🛠️ Technology Stack
 
 ### Frontend
@@ -411,12 +545,20 @@ Sri Lanka faces critical gaps in disaster response:
 - **Runtime**: Node.js 20.x
 - **Framework**: Express.js 5.1.0
 - **Database**: MongoDB 8.11.0 with Mongoose ODM
-- **Authentication**: JWT tokens + Mock SLUDI (Individual ID + OTP)
+- **Authentication**: 
+  - JWT tokens with bcrypt password hashing
+  - Dual auth system: Admin/Responder (Individual ID + OTP) + Citizen (email/phone + password)
+  - Shadow account system for emergency submissions without registration
+  - 30-day token expiration
+- **Real-Time Communication**: Socket.io 4.8.1 for bidirectional messaging
 - **AI Integration**: Google Gemini AI API for safety chatbot
 - **HTTP Client**: Axios for external API calls
-- **Security**: Helmet, express-rate-limit, CORS
-- **Middleware**: body-parser, dotenv, express-sanitizer
-- **Services**: SOS Auto-Escalation (5-min intervals)
+- **Security**: Helmet, express-rate-limit, CORS, JWT verification
+- **Middleware**: body-parser, dotenv, express-sanitizer, authenticateToken
+- **Services**: 
+  - SOS Auto-Escalation (5-min intervals)
+  - Socket.io Service for real-time notifications
+  - Message persistence in SOS victim_status_updates
 
 ### Production APIs & External Services
 - **DMC Flood API**: Real-time water level monitoring (39 stations, 15-min updates)

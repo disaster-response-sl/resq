@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const SosSignal = require('../../models/SosSignal');
-const SosResponse = require('../../models/SosResponse');
-const CivilianResponder = require('../../models/CivilianResponder');
-const MissingPerson = require('../../models/MissingPerson');
-const { authenticateToken } = require('../../middleware/auth');
+const SosSignal = require('../models/SosSignal');
+const SosResponse = require('../models/SosResponse');
+const CivilianResponder = require('../models/CivilianResponder');
+const MissingPerson = require('../models/MissingPerson');
+const { authenticateToken } = require('../middleware/auth');
 
 // Utility function to calculate distance
 function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -20,62 +20,71 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 
 /**
  * GET /api/sos/public/nearby
- * Public endpoint - Civilians can see nearby SOS signals
+ * Public endpoint - ALL verified responders see ALL active SOS signals
+ * No admin assignment needed - responders can self-assign
  */
 router.get('/public/nearby', authenticateToken, async (req, res) => {
   try {
-    const { lat, lng, radius_km = 10 } = req.query;
+    const { lat, lng, radius_km = 10000 } = req.query; // Default to 10,000km (entire country)
     
-    if (!lat || !lng) {
-      return res.status(400).json({
-        success: false,
-        message: 'Location (lat, lng) is required'
-      });
-    }
+    const userLat = lat ? parseFloat(lat) : null;
+    const userLng = lng ? parseFloat(lng) : null;
     
-    const userLat = parseFloat(lat);
-    const userLng = parseFloat(lng);
-    const radius = parseFloat(radius_km);
-    
-    // Get all active public SOS signals
+    // Get all active SOS signals (NO admin assignment needed)
     const sosSignals = await SosSignal.find({
-      public_visibility: true,
       status: { $in: ['pending', 'acknowledged', 'responding'] },
       'victim_safe_confirmation.is_safe': { $ne: true }
     })
     .sort({ priority: -1, created_at: -1 })
     .lean();
     
-    // Filter by distance
-    const nearbySOS = sosSignals
-      .map(sos => {
+    // Calculate distance for each SOS if location provided
+    let sosWithDistance = sosSignals;
+    if (userLat && userLng) {
+      sosWithDistance = sosSignals.map(sos => {
         const distance = calculateDistance(userLat, userLng, sos.location.lat, sos.location.lng);
         return { ...sos, distance_km: distance };
-      })
-      .filter(sos => sos.distance_km <= radius)
-      .sort((a, b) => a.distance_km - b.distance_km);
+      });
+      
+      // Apply radius filter only if specified
+      const radius = parseFloat(radius_km);
+      if (radius < 10000) {
+        sosWithDistance = sosWithDistance.filter(sos => sos.distance_km <= radius);
+      }
+      
+      // Sort by distance
+      sosWithDistance.sort((a, b) => a.distance_km - b.distance_km);
+    } else {
+      // No location, just add null distance
+      sosWithDistance = sosSignals.map(sos => ({ ...sos, distance_km: null }));
+    }
     
     // Check if user is a civilian responder
     const civilianResponder = await CivilianResponder.findOne({ user_id: req.user.individualId });
     
     // Filter by allowed levels if civilian responder
-    let filteredSOS = nearbySOS;
-    if (civilianResponder && civilianResponder.verification_status === 'verified') {
-      filteredSOS = nearbySOS.filter(sos => 
+    // But if user is a regular responder (role === 'responder'), show all SOS
+    let filteredSOS = sosWithDistance;
+    if (req.user.role !== 'responder' && civilianResponder && civilianResponder.verification_status === 'verified') {
+      // Civilian responder - filter by allowed levels
+      filteredSOS = sosWithDistance.filter(sos => 
         civilianResponder.allowed_sos_levels.includes(sos.sos_level)
       );
     }
+    // Otherwise (regular responder or admin) - show all SOS
     
     res.json({
       success: true,
       data: filteredSOS,
       count: filteredSOS.length,
+      total_active: sosSignals.length,
       user_is_civilian_responder: !!civilianResponder,
       civilian_verification_status: civilianResponder?.verification_status || null,
-      allowed_levels: civilianResponder?.allowed_sos_levels || ['level_1']
+      allowed_levels: civilianResponder?.allowed_sos_levels || ['level_1'],
+      message: 'All verified responders can see and self-assign to any SOS alert'
     });
   } catch (error) {
-    console.error('Error fetching nearby SOS:', error);
+    console.error('Error fetching SOS signals:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching SOS signals',
@@ -141,13 +150,9 @@ router.post('/:id/accept', authenticateToken, async (req, res) => {
       });
     }
     
-    // Check if already assigned
-    if (sos.assigned_responder && sos.status !== 'pending') {
-      return res.status(400).json({
-        success: false,
-        message: 'This SOS has already been assigned to another responder'
-      });
-    }
+    // Allow multiple responders (no longer block if already assigned)
+    // First responder becomes primary, others can also help
+    const isFirstResponder = !sos.assigned_responder;
     
     // Create SOS Response
     const response = new SosResponse({
@@ -174,14 +179,20 @@ router.post('/:id/accept', authenticateToken, async (req, res) => {
     await response.save();
     
     // Update SOS signal
-    sos.assigned_responder = req.user.individualId;
+    if (isFirstResponder) {
+      sos.assigned_responder = req.user.individualId;
+      sos.response_time = new Date();
+    }
     sos.status = 'acknowledged';
     sos.active_response_id = response._id;
-    sos.response_time = new Date();
     
     // Add status update for victim
+    const statusMessage = isFirstResponder 
+      ? `${responder.full_name} from Verified Civilian Responder is on the way!`
+      : `Additional help: ${responder.full_name} is also responding!`;
+    
     sos.victim_status_updates.push({
-      message: `${responder.full_name} from Verified Civilian Responder is on the way!`,
+      message: statusMessage,
       update_type: 'responder_assigned',
       timestamp: new Date()
     });
@@ -273,21 +284,35 @@ router.put('/response/:responseId/status', authenticateToken, async (req, res) =
     // Update SOS signal status
     const sos = await SosSignal.findById(response.sos_signal_id);
     if (sos) {
+      let statusMessage = '';
+      
       if (status === 'en_route') {
         sos.status = 'responding';
+        statusMessage = `Responder is on the way to your location`;
         sos.victim_status_updates.push({
-          message: `Responder is on the way to your location`,
+          message: statusMessage,
           update_type: 'responder_en_route',
           timestamp: new Date()
         });
       } else if (status === 'arrived') {
+        statusMessage = `Responder has arrived at your location`;
         sos.victim_status_updates.push({
-          message: `Responder has arrived at your location`,
+          message: statusMessage,
           update_type: 'responder_arrived',
           timestamp: new Date()
         });
       }
       await sos.save();
+      
+      // Send real-time notification via Socket.io
+      const socketService = require('../services/socket.service');
+      socketService.notifyResponderUpdate(sos._id.toString(), {
+        status,
+        message: statusMessage,
+        responder_location: response.responder_location,
+        distance_to_victim_km: response.distance_to_victim_km,
+        estimated_arrival_time: response.estimated_arrival_time
+      });
     }
     
     res.json({
@@ -355,6 +380,14 @@ router.post('/response/:responseId/chat', authenticateToken, async (req, res) =>
         timestamp: new Date()
       });
       await sos.save();
+      
+      // Send real-time notification via Socket.io
+      const socketService = require('../services/socket.service');
+      socketService.notifyChatMessage(sos._id.toString(), {
+        sender: req.user.name,
+        message,
+        timestamp: new Date()
+      });
     }
     
     res.json({

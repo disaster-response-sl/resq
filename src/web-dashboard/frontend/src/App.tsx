@@ -19,6 +19,8 @@ import ReliefDataDashboard from './components/ReliefDataDashboard';
 import ReportsDashboard from './components/ReportsDashboard';
 import AdminIncidentReportsPage from './components/AdminIncidentReportsPage';
 import CitizenDashboard from './components/CitizenDashboard';
+import CitizenLoginPage from './components/CitizenLoginPage';
+import CitizenSignupPage from './components/CitizenSignupPage';
 import ReportMissingPersonPage from './components/ReportMissingPersonPage';
 import MissingPersonSearchPage from './components/MissingPersonSearchPage';
 import MissingPersonVerificationPage from './components/MissingPersonVerificationPage';
@@ -31,8 +33,8 @@ import EmergencyContactsPage from './components/EmergencyContactsPage';
 import VolunteerFormPage from './components/VolunteerFormPage';
 import LankaRouteWatchPage from './components/LankaRouteWatchPage';
 import ReportRoadIssuePage from './components/ReportRoadIssuePage';
-import SafeRoutesPage from './components/SafeRoutesPage';
-import RouteMapPage from './components/RouteMapPage';
+import EnhancedSafeRoutesPage from './components/EnhancedSafeRoutesPage';
+import EnhancedRouteMapPage from './components/EnhancedRouteMapPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -160,16 +162,14 @@ function App() {
               />
               <Route 
                 path="/missing-persons/report" 
-                element={
-                  <ProtectedRoute>
-                    <ReportMissingPersonPage />
-                  </ProtectedRoute>
-                } 
+                element={<ReportMissingPersonPage />}
               />
               <Route path="/missing-persons/search" element={<MissingPersonSearchPage />} />
               
               {/* Public Citizen Routes - No Authentication Required */}
               <Route path="/citizen" element={<CitizenDashboard />} />
+              <Route path="/citizen/login" element={<CitizenLoginPage />} />
+              <Route path="/citizen/signup" element={<CitizenSignupPage />} />
               <Route path="/citizen/sos" element={<CitizenSOSPage />} />
               <Route path="/citizen/report" element={<CitizenReportPage />} />
               <Route path="/citizen/chat" element={<CitizenChatPage />} />
@@ -179,8 +179,8 @@ function App() {
               <Route path="/citizen/volunteer" element={<VolunteerFormPage />} />
           <Route path="/citizen/route-watch" element={<LankaRouteWatchPage />} />
           <Route path="/citizen/report-road" element={<ReportRoadIssuePage />} />
-          <Route path="/citizen/safe-routes" element={<SafeRoutesPage />} />
-          <Route path="/citizen/route-map" element={<RouteMapPage />} />              {/* Redirect root to citizen dashboard */}
+          <Route path="/citizen/safe-routes" element={<EnhancedSafeRoutesPage />} />
+          <Route path="/citizen/route-map" element={<EnhancedRouteMapPage />} />              {/* Redirect root to citizen dashboard */}
               <Route path="/" element={<Navigate to="/citizen" replace />} />
               <Route path="*" element={<Navigate to="/citizen" replace />} />
             </Routes>

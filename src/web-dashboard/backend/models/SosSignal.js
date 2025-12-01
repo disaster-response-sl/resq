@@ -114,6 +114,12 @@ const SosSignalSchema = new mongoose.Schema({
     timestamp: {
       type: Date,
       default: Date.now
+    },
+    sender_id: String,
+    sender_name: String,
+    sender_role: {
+      type: String,
+      enum: ['citizen', 'responder', 'admin']
     }
   }],
   
