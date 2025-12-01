@@ -74,28 +74,49 @@ const ReliefTrackerPage: React.FC = () => {
       setLoading(true);
       
       // HYBRID DATA MODEL: Fetch Supabase (requests + contributions) AND MongoDB help requests
-      const params = new URLSearchParams();
-      params.append('type', 'all'); // Get BOTH requests AND contributions
-      params.append('status', 'all'); // Get all statuses
-      params.append('limit', '500');
-      params.append('lat', userLocation.lat.toString());
-      params.append('lng', userLocation.lng.toString());
-      params.append('radius_km', debouncedRadius);
-      params.append('sort', 'distance');
+      const baseParams = new URLSearchParams();
+      baseParams.append('limit', '500');
+      baseParams.append('lat', userLocation.lat.toString());
+      baseParams.append('lng', userLocation.lng.toString());
+      baseParams.append('radius_km', debouncedRadius);
+      baseParams.append('sort', 'distance');
 
-      // Fetch Supabase relief data (both help requests and volunteer contributions)
-      const supabaseResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${params.toString()}`
-      ).catch(() => ({ data: { success: false, data: { requests: [], contributions: [] } } }));
+      // Fetch Supabase REQUESTS (people asking for help)
+      const requestParams = new URLSearchParams(baseParams);
+      requestParams.append('type', 'requests');
+      const requestsResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${requestParams.toString()}`
+      ).catch((err) => {
+        console.error('Supabase requests fetch error:', err);
+        return { data: { success: false, data: { requests: [] } } };
+      });
+
+      // Fetch Supabase CONTRIBUTIONS (volunteers offering help)
+      const contributionParams = new URLSearchParams(baseParams);
+      contributionParams.append('type', 'contributions');
+      const contributionsResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${contributionParams.toString()}`
+      ).catch((err) => {
+        console.error('Supabase contributions fetch error:', err);
+        return { data: { success: false, data: { contributions: [] } } };
+      });
 
       // Fetch MongoDB help requests - all pending reports (food, shelter, medical, danger)
       const mongoResponse = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      const supabaseRequests = supabaseResponse.data.success ? (supabaseResponse.data.data.requests || []) : [];
-      const supabaseContributions = supabaseResponse.data.success ? (supabaseResponse.data.data.contributions || []) : [];
+      const supabaseRequests = requestsResponse.data.success ? (requestsResponse.data.data.requests || []) : [];
+      const supabaseContributions = contributionsResponse.data.success ? (contributionsResponse.data.data.contributions || []) : [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
+
+      console.log('📊 Data fetched:', {
+        supabaseRequests: supabaseRequests.length,
+        supabaseContributions: supabaseContributions.length,
+        mongoHelp: mongoHelp.length,
+        requestsSuccess: requestsResponse.data.success,
+        contributionsSuccess: contributionsResponse.data.success
+      });
 
       // Map Supabase contributions (people offering help)
       const contributionsCamps = supabaseContributions.map((contrib: any) => ({
