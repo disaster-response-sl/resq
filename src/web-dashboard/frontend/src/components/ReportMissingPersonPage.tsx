@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Loader2, CheckCircle, AlertTriangle, MapPin, Phone, User, Info } from 'lucide-react';
+import { ArrowLeft, Upload, Loader2, CheckCircle, MapPin, Phone, User, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { extractDataFromPoster, submitMissingPerson } from '../services/missingPersonService';
-import { CreateMissingPersonRequest, ExtractedData } from '../types/missingPerson';
+import { submitMissingPerson } from '../services/missingPersonService';
+import { CreateMissingPersonRequest } from '../types/missingPerson';
 
 const ReportMissingPersonPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,12 +12,8 @@ const ReportMissingPersonPage: React.FC = () => {
   
   // State Management
   const [step, setStep] = useState<'upload' | 'review' | 'submitted'>('upload');
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [extracting, setExtracting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
-  const [useManualEntry, setUseManualEntry] = useState(false);
   
   // Form Data
   const [formData, setFormData] = useState<CreateMissingPersonRequest>({
@@ -92,8 +88,6 @@ const ReportMissingPersonPage: React.FC = () => {
       toast.error('Image size must be less than 10MB');
       return;
     }
-
-    setImageFile(file);
     
     // Create preview
     const reader = new FileReader();
@@ -101,54 +95,6 @@ const ReportMissingPersonPage: React.FC = () => {
       setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-  };
-
-  // STEP 1: Extract data from poster (PROCESSOR - does not save)
-  const handleExtractData = async () => {
-    if (!imageFile) {
-      toast.error('Please select an image first');
-      return;
-    }
-
-    setExtracting(true);
-    
-    try {
-      const result = await extractDataFromPoster(imageFile);
-      
-      if (result.success && result.extracted_data) {
-        setExtractedData(result.extracted_data);
-        
-        // Pre-fill form with extracted data
-        setFormData(prev => ({
-          ...prev,
-          full_name: result.extracted_data!.name || prev.full_name,
-          age: result.extracted_data!.age || prev.age,
-          last_seen_location: {
-            ...prev.last_seen_location,
-            address: result.extracted_data!.lastSeenLocation || prev.last_seen_location.address
-          },
-          description: result.extracted_data!.extractedText || prev.description,
-          reporter_phone: result.extracted_data!.extractedContacts?.[0]?.phone || prev.reporter_phone,
-          reporter_relationship: result.extracted_data!.extractedContacts?.[0]?.relation || prev.reporter_relationship,
-          data_source: 'ai_extracted'
-        }));
-        
-        toast.success(`Data extracted! Confidence: ${(result.confidence! * 100).toFixed(0)}%`);
-        setStep('review');
-      } else {
-        // Fallback to manual entry
-        toast.error(result.message || 'Extraction failed. Please enter details manually.');
-        setUseManualEntry(true);
-        setStep('review');
-      }
-    } catch (error: any) {
-      console.error('Extraction error:', error);
-      toast.error('Failed to extract data. Please enter manually.');
-      setUseManualEntry(true);
-      setStep('review');
-    } finally {
-      setExtracting(false);
-    }
   };
 
   // STEP 2: Submit to MongoDB (SOURCE OF TRUTH)
@@ -171,8 +117,7 @@ const ReportMissingPersonPage: React.FC = () => {
     try {
       const submitData: CreateMissingPersonRequest = {
         ...formData,
-        extracted_data: extractedData || undefined,
-        data_source: extractedData ? 'ai_extracted' : 'manual',
+        data_source: 'manual',
         photo_urls: imagePreview ? [imagePreview] : []
       };
 
@@ -204,7 +149,6 @@ const ReportMissingPersonPage: React.FC = () => {
 
   // Skip extraction and go directly to manual entry
   const handleSkipExtraction = () => {
-    setUseManualEntry(true);
     setFormData(prev => ({ ...prev, data_source: 'manual' }));
     setStep('review');
   };
@@ -286,7 +230,6 @@ const ReportMissingPersonPage: React.FC = () => {
                   />
                   <button
                     onClick={() => {
-                      setImageFile(null);
                       setImagePreview('');
                     }}
                     className="text-red-600 hover:text-red-700 text-sm"
@@ -348,24 +291,14 @@ const ReportMissingPersonPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8 space-y-6">
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">
-                {extractedData ? '✨ AI-Extracted Data (Please Review)' : '📝 Manual Entry'}
+                📝 Report Missing Person
               </h2>
-              {extractedData && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-green-800">
-                    <strong>Confidence: {(extractedData.confidence * 100).toFixed(0)}%</strong>
-                    {' '}- Please verify all information before submitting
-                  </p>
-                </div>
-              )}
-              {useManualEntry && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-yellow-800">
-                    <AlertTriangle className="w-4 h-4 inline mr-1" />
-                    Manual entry mode - Fill in all details carefully
-                  </p>
-                </div>
-              )}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-blue-800">
+                  <Info className="w-4 h-4 inline mr-1" />
+                  Fill in all details carefully. Fields marked with * are required.
+                </p>
+              </div>
             </div>
 
             {/* Basic Information */}
