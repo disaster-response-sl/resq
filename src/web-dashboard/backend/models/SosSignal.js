@@ -80,6 +80,75 @@ const SosSignalSchema = new mongoose.Schema({
     enum: ['medical', 'fire', 'accident', 'crime', 'natural_disaster', 'other'],
     default: 'other'
   },
+  
+  // SOS Level (for Civilian Responder filtering)
+  sos_level: {
+    type: String,
+    enum: ['level_1', 'level_2', 'level_3'],
+    default: 'level_1'
+    // level_1: Food/Water needed (Low risk)
+    // level_2: Medical Emergency (Medium risk)
+    // level_3: Drowning/Life-threatening (High risk)
+  },
+  
+  // Public Visibility (Allow civilians to see)
+  public_visibility: {
+    type: Boolean,
+    default: true // Changed from false - now civilians can see SOS
+  },
+  
+  // Active Response
+  active_response_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SosResponse',
+    default: null
+  },
+  
+  // Live Status Updates for Victim
+  victim_status_updates: [{
+    message: String,
+    update_type: {
+      type: String,
+      enum: ['responder_assigned', 'responder_en_route', 'responder_arrived', 'chat_message', 'system_update']
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  // "I Am Safe" Check-in
+  victim_safe_confirmation: {
+    is_safe: {
+      type: Boolean,
+      default: false
+    },
+    confirmed_at: {
+      type: Date
+    },
+    location: {
+      lat: Number,
+      lng: Number
+    }
+  },
+  
+  // Post-Rescue Handover
+  rescue_completed: {
+    type: Boolean,
+    default: false
+  },
+  transported_to_camp: {
+    type: Boolean,
+    default: false
+  },
+  relief_camp_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ReliefCamp'
+  },
+  relief_camp_name: {
+    type: String
+  },
+  
   created_at: {
     type: Date,
     default: Date.now

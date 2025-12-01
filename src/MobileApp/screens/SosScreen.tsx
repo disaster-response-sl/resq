@@ -100,10 +100,26 @@ const SosScreen = ({ navigation }: any) => {
         }
       });
       console.log('✅ SOS sent successfully');
+      // Store SOS ID for tracking
+      const sosId = err.response?.data?.data?._id;
+      if (sosId) {
+        await AsyncStorage.setItem('lastSOSId', sosId);
+      }
+      
       Alert.alert(
         t('sos.sosSuccess'),
         t('sos.sosSuccessMessage'),
         [
+          {
+            text: 'Track My SOS',
+            onPress: () => {
+              if (sosId) {
+                navigation.replace('SosLiveTracking', { sosId });
+              } else {
+                navigation.goBack();
+              }
+            }
+          },
           {
             text: t('common.ok'),
             onPress: () => navigation.goBack()
