@@ -11,9 +11,9 @@ const getApiBaseUrl = (): string => {
     return '/api';
   }
   
-  // Production fallback - if env var not set, this will fail intentionally
-  console.error('VITE_API_BASE_URL not set! Please configure production API URL.');
-  return 'https://YOUR_RENDER_APP.onrender.com/api'; // Replace with actual production URL
+  // Production fallback - if env var not set, use production backend
+  console.warn('VITE_API_BASE_URL not set! Using production backend.');
+  return 'https://resq-backend-3efi.onrender.com'; // Production backend URL
 };
 
 export const API_BASE_URL = getApiBaseUrl();
