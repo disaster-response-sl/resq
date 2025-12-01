@@ -63,11 +63,20 @@ router.post('/login', async (req, res) => {
     console.log('✅ Auth response received:', authResponse.response.authStatus);
     
     if (authResponse.response.authStatus) {
-      // Get user data for JWT payload
-      const userData = sludiService.mockUsers.find(u => u.individualId === individualId);
+      // Get user data from database for JWT payload
+      const User = require('../models/User');
+      const userData = await User.findOne({ individualId });
+      
+      if (!userData) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found in database",
+          error: "USER_NOT_FOUND"
+        });
+      }
       
       // Check if user has permission to access web dashboard (only responders and admins)
-      if (!userData || (userData.role !== 'responder' && userData.role !== 'admin')) {
+      if (userData.role !== 'responder' && userData.role !== 'admin') {
         return res.status(403).json({
           success: false,
           message: "Access denied. Only responders and administrators can access the web dashboard.",
