@@ -1,77 +1,88 @@
 // mock-sludi-service.js
+const User = require('../models/User');
+
 class MockSLUDIService {
   constructor() {
-    this.mockUsers = [
-      {
-        individualId: "citizen001",
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "0771234567",
-        role: "citizen",
-        location: { lat: 6.9271, lng: 79.8612 }
-      },
-      {
-        individualId: "responder001", 
-        name: "Jane Smith",
-        email: "jane@emergency.gov.lk",
-        phone: "0779876543",
-        role: "responder",
-        location: { lat: 6.9319, lng: 79.8478 }
-      },
-      {
-        individualId: "admin001",
-        name: "Admin User",
-        email: "admin@disaster.gov.lk", 
-        phone: "0771111111",
-        role: "admin",
-        location: { lat: 6.9271, lng: 79.8612 }
-      }
-    ];
+    // Users are now stored in MongoDB database
+    // Use seed-users.js script to populate initial users
   }
 
   // Mock authentication endpoint
   async authenticate(authRequest) {
     const { individualId, request } = authRequest;
     
-    // Simulate MOSIP response structure
-    const user = this.mockUsers.find(u => u.individualId === individualId);
-    
-    // IMPORTANT: This is a MOCK service for development/testing only
-    // In production, this should be replaced with actual SLUDI/eSignet integration
-    const MOCK_OTP = process.env.MOCK_OTP || "80888275Ab";
-    if (user && request.otp === MOCK_OTP) { // Mock OTP validation
+    try {
+      // Fetch user from database
+      const user = await User.findOne({ individualId, active: true });
+      
+      if (!user) {
+        return {
+          id: authRequest.id,
+          version: authRequest.version,
+          transactionID: authRequest.transactionID,
+          responseTime: new Date().toISOString(),
+          response: {
+            authStatus: false
+          },
+          errors: [{
+            errorCode: "IDA-AUTH-001",
+            message: "User not found"
+          }]
+        };
+      }
+      
+      // Verify password using bcrypt
+      const isPasswordValid = await user.comparePassword(request.otp);
+      
+      if (isPasswordValid) {
+        return {
+          id: authRequest.id,
+          version: authRequest.version,
+          transactionID: authRequest.transactionID,
+          responseTime: new Date().toISOString(),
+          response: {
+            authStatus: true,
+            authToken: this.generateMockToken(user)
+          },
+          errors: null
+        };
+      }
+      
       return {
         id: authRequest.id,
         version: authRequest.version,
         transactionID: authRequest.transactionID,
         responseTime: new Date().toISOString(),
         response: {
-          authStatus: true,
-          authToken: this.generateMockToken(user)
+          authStatus: false
         },
-        errors: null
+        errors: [{
+          errorCode: "IDA-AUTH-002",
+          message: "Invalid password"
+        }]
+      };
+    } catch (error) {
+      console.error('Authentication error:', error);
+      return {
+        id: authRequest.id,
+        version: authRequest.version,
+        transactionID: authRequest.transactionID,
+        responseTime: new Date().toISOString(),
+        response: {
+          authStatus: false
+        },
+        errors: [{
+          errorCode: "IDA-AUTH-500",
+          message: "Internal server error"
+        }]
       };
     }
-    
-    return {
-      id: authRequest.id,
-      version: authRequest.version, 
-      transactionID: authRequest.transactionID,
-      responseTime: new Date().toISOString(),
-      response: {
-        authStatus: false
-      },
-      errors: [{
-        errorCode: "IDA-AUTH-001",
-        message: "Authentication failed"
-      }]
-    };
   }
 
   // Mock eKYC endpoint
   async performKYC(kycRequest) {
     const { individualId, allowedKycAttributes } = kycRequest;
-    const user = this.mockUsers.find(u => u.individualId === individualId);
+    const user = await User.findOne({ individualId, active: true });
     
     if (user) {
       const kycData = {};
