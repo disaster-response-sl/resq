@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Package, Users, Truck, MapPin, Phone, Mail, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Phone, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 

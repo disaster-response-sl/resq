@@ -377,6 +377,195 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/missing-persons/extract - Extract data from poster image (HYBRID PROCESSOR)
+router.post('/extract', async (req, res) => {
+  try {
+    const axios = require('axios');
+    const FormData = require('form-data');
+    
+    // Note: This endpoint expects multipart/form-data with image file
+    // In a real implementation, use multer middleware to handle file uploads
+    
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+    
+    console.log('📸 Extracting data from missing person poster...');
+    
+    // Forward to extraction API
+    const formData = new FormData();
+    formData.append('image', req.files.image.data, {
+      filename: req.files.image.name,
+      contentType: req.files.image.mimetype
+    });
+    
+    const extractionResponse = await axios.post(
+      `${process.env.EXTRACTION_API_URL || 'https://flood-callback.asyncdot.com'}/missing-person/extract`,
+      formData,
+      {
+        headers: formData.getHeaders(),
+        timeout: 30000 // 30 second timeout
+      }
+    );
+    
+    console.log('✅ Extraction API response:', extractionResponse.data);
+    
+    // Return extracted data for frontend to review
+    // DO NOT save to database yet - that's the form's job
+    res.json({
+      success: true,
+      message: 'Data extracted successfully. Please review and submit.',
+      extracted_data: extractionResponse.data.data,
+      confidence: extractionResponse.data.data.confidence,
+      note: 'This data has NOT been saved yet. Review and submit the form to save.'
+    });
+    
+  } catch (error) {
+    console.error('❌ Extraction API error:', error.response?.data || error.message);
+    
+    // If extraction fails, allow manual entry
+    res.status(200).json({
+      success: false,
+      message: 'Could not extract data from image. Please enter details manually.',
+      error: error.response?.data?.message || error.message,
+      fallback_to_manual: true
+    });
+  }
+});
+
+// POST /api/missing-persons/submit - Submit missing person with extracted data
+router.post('/submit', authenticateToken, async (req, res) => {
+  try {
+    const { extracted_data, manual_data, image_url } = req.body;
+    
+    // Merge extracted and manual data (manual takes precedence)
+    const missingPersonData = {
+      ...manual_data,
+      extracted_data: extracted_data || null,
+      data_source: extracted_data ? 'ai_extracted' : 'manual',
+      verification_status: 'pending', // Always starts as pending
+      photo_urls: image_url ? [image_url] : [],
+      created_by: req.user._id,
+      last_modified_by: req.user._id,
+      public_visibility: false // Hide until verified
+    };
+    
+    const missingPerson = new MissingPerson(missingPersonData);
+    await missingPerson.save();
+    
+    console.log(`✅ Missing person report created: ${missingPerson.case_number} (Status: ${missingPerson.verification_status})`);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Missing person report submitted successfully. Awaiting verification by admin.',
+      data: missingPerson
+    });
+  } catch (error) {
+    console.error('❌ Error submitting missing person:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting missing person report',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/missing-persons/:id/verify - Verify pending report (Admin/Responder only)
+router.put('/:id/verify', authenticateToken, async (req, res) => {
+  try {
+    const { action, rejection_reason } = req.body; // action: 'approve' or 'reject'
+    
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid action. Use "approve" or "reject"'
+      });
+    }
+    
+    const missingPerson = await MissingPerson.findById(req.params.id);
+    
+    if (!missingPerson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Missing person not found'
+      });
+    }
+    
+    if (missingPerson.verification_status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `This report has already been ${missingPerson.verification_status}`
+      });
+    }
+    
+    if (action === 'approve') {
+      missingPerson.verification_status = 'verified';
+      missingPerson.public_visibility = true; // Make visible after verification
+      missingPerson.verified_by = {
+        user_id: req.user._id,
+        username: req.user.username || req.user.full_name,
+        role: req.user.role,
+        verified_at: new Date()
+      };
+      
+      missingPerson.updates.push({
+        message: 'Report verified and published',
+        added_by: req.user.username || req.user.full_name,
+        update_type: 'status_change'
+      });
+      
+      console.log(`✅ Missing person ${missingPerson.case_number} VERIFIED by ${req.user.username}`);
+    } else {
+      missingPerson.verification_status = 'rejected';
+      missingPerson.rejection_reason = rejection_reason || 'No reason provided';
+      missingPerson.public_visibility = false;
+      
+      console.log(`❌ Missing person ${missingPerson.case_number} REJECTED by ${req.user.username}`);
+    }
+    
+    missingPerson.last_modified_by = req.user._id;
+    await missingPerson.save();
+    
+    res.json({
+      success: true,
+      message: `Report ${action}d successfully`,
+      data: missingPerson
+    });
+  } catch (error) {
+    console.error('Error verifying missing person:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying report',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/missing-persons/pending/list - Get pending reports (Admin/Responder only)
+router.get('/pending/list', authenticateToken, async (req, res) => {
+  try {
+    const pendingReports = await MissingPerson.find({ verification_status: 'pending' })
+      .sort({ created_at: -1 })
+      .limit(50);
+    
+    res.json({
+      success: true,
+      data: pendingReports,
+      count: pendingReports.length
+    });
+  } catch (error) {
+    console.error('Error fetching pending reports:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching pending reports',
+      error: error.message
+    });
+  }
+});
+
 // Helper function to calculate distance between two coordinates
 function calculateDistance(lat1, lng1, lat2, lng2) {
   const R = 6371; // Earth's radius in km

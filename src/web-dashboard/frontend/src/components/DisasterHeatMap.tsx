@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import axios from 'axios';
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 import { Filter, Loader2, AlertTriangle } from 'lucide-react';
 import MainLayout from './MainLayout';
 
@@ -295,8 +295,6 @@ const DisasterHeatMap: React.FC = () => {
       if (filters.status) params.append('status', filters.status);
       if (filters.priority) params.append('priority', filters.priority);
 
-      const queryString = params.toString();
-
       // HYBRID: Fetch both MongoDB reports and external DMC flood data
       const [disastersRes, floodsRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/api/public/disasters`),
@@ -336,8 +334,14 @@ const DisasterHeatMap: React.FC = () => {
       console.log(`✅ HYBRID Heat Map: ${mongoReports.length} MongoDB reports + ${dmcFloods.length} DMC floods = ${mergedReports.length} total`);
 
       setReports(mergedReports);
-      setHeatmapData(heatmapRes.data.data || []);
-      setResourceData(resourceRes.data.data || []);
+      // Generate heatmap data from merged reports
+      const heatmapPoints = mergedReports.map((r: any) => ({
+        lat: r.location.lat,
+        lng: r.location.lng,
+        intensity: r.priority === 'high' ? 1.0 : r.priority === 'medium' ? 0.6 : 0.3
+      }));
+      setHeatmapData(heatmapPoints);
+      setResourceData([]);
       setDisasterTypes(mongoDisasters ? [...new Set((mongoDisasters as Disaster[]).map((d: Disaster) => d.type))] : []);
     } catch (err) {
       console.error('Error fetching map data:', err);

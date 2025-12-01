@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, MapPin, AlertTriangle, Users, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { disasterService, CreateDisasterRequest, Zone, Location } from '../services/disasterService';
+import { disasterService, CreateDisasterRequest, Zone } from '../services/disasterService';
 
 interface CreateDisasterFormProps {
   onClose: () => void;

@@ -51,11 +51,7 @@ const PaymentStatistics: React.FC = () => {
       setStatsData(prev => ({ ...prev, loading: true }));
 
       // Fetch donation statistics
-      const statsResponse = await getDonationStats(
-        localStorage.getItem('token') || '',
-        timeRange === '30d' ? undefined : undefined,
-        timeRange === '30d' ? undefined : undefined
-      );
+      const statsResponse = await getDonationStats();
 
       // Fetch recent donations
       const donationsResponse = await getDonations(localStorage.getItem('token') || '', {

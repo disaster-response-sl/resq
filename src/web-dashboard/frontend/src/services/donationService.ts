@@ -5,20 +5,25 @@ import { DonationStatsResponse, DonationListResponse, DonationQueryParams } from
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-export async function getDonationStats(token: string, startDate?: string, endDate?: string): Promise<DonationStatsResponse> {
+export async function getDonationStats(): Promise<DonationStatsResponse> {
   // Donation API disabled - return empty stats
   // Payment/donation features removed to focus on disaster response
   return {
     success: true,
     data: {
-      total_donations: 0,
-      total_amount: 0,
-      average_donation: 0,
-      total_donors: 0,
-      recent_donations: 0,
-      by_currency: {},
-      by_payment_method: {},
-      monthly_trend: []
+      summary: {
+        totalDonations: 0,
+        totalAmount: 0,
+        averageDonation: 0,
+        uniqueDonors: 0
+      },
+      statusBreakdown: {
+        PENDING: 0,
+        SUCCESS: 0,
+        FAILED: 0,
+        CANCELLED: 0
+      },
+      recentActivity: []
     }
   };
 }

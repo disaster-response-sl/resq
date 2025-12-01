@@ -372,15 +372,6 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchDashboardData]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
