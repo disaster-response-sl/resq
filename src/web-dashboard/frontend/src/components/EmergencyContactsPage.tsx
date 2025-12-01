@@ -78,12 +78,14 @@ const EmergencyContactsPage: React.FC = () => {
         : 0;
 
       // HYBRID DATA: Fetch relief camps count from Supabase (requests + contributions) and MongoDB
-      const reliefResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?type=all&limit=1000`);
-      const supabaseRequestsCount = reliefResponse.data.success 
-        ? (reliefResponse.data.data.requests?.length || 0) 
+      const requestsResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?type=requests&limit=1000`);
+      const supabaseRequestsCount = requestsResponse.data.success 
+        ? (requestsResponse.data.data.requests?.length || 0) 
         : 0;
-      const supabaseContributionsCount = reliefResponse.data.success 
-        ? (reliefResponse.data.data.contributions?.length || 0) 
+      
+      const contributionsResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?type=contributions&limit=1000`);
+      const supabaseContributionsCount = contributionsResponse.data.success 
+        ? (contributionsResponse.data.data.contributions?.length || 0) 
         : 0;
 
       // Also count MongoDB help requests
