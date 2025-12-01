@@ -65,7 +65,11 @@ router.get('/search', async (req, res) => {
   try {
     const { q, lat, lng, radius_km = 50 } = req.query;
     
-    let query = { status: 'missing', public_visibility: true };
+    let query = { 
+      status: 'missing', 
+      verification_status: { $ne: 'rejected' },
+      auto_hidden: { $ne: true }
+    };
     
     // Text search
     if (q) {
@@ -151,22 +155,72 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/missing-persons - Create new missing person report
-router.post('/', authenticateToken, async (req, res) => {
+// Now accepts both authenticated and unauthenticated submissions
+router.post('/', async (req, res) => {
   try {
+    // Check if user is authenticated (optional)
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    let userId = null;
+    if (token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+        const decoded = jwt.verify(token, jwtSecret);
+        userId = decoded._id || decoded.citizenId || decoded.individualId;
+      } catch (err) {
+        // Token invalid, continue as unauthenticated
+        console.log('[MISSING PERSON] Unauthenticated submission');
+      }
+    }
+    
+    // If phone is provided but not authenticated, create shadow account
+    const ShadowAuthService = require('../services/shadow-auth.service');
+    let citizenToken = null;
+    
+    if (!userId && req.body.reporter_phone && req.body.reporter_name) {
+      try {
+        const citizen = await ShadowAuthService.findOrCreateCitizen(
+          req.body.reporter_phone,
+          req.body.reporter_name,
+          { email: req.body.reporter_email }
+        );
+        userId = citizen._id;
+        citizenToken = ShadowAuthService.generateToken(citizen);
+        await ShadowAuthService.incrementActivity(citizen._id, 'missing_person');
+        
+        console.log('[MISSING PERSON] Shadow account created for:', citizen.name);
+      } catch (err) {
+        console.error('[MISSING PERSON] Shadow account creation failed:', err);
+      }
+    }
+    
     const missingPersonData = {
       ...req.body,
-      created_by: req.user._id,
-      last_modified_by: req.user._id
+      created_by: userId,
+      last_modified_by: userId
     };
     
     const missingPerson = new MissingPerson(missingPersonData);
     await missingPerson.save();
     
-    res.status(201).json({
+    const response = {
       success: true,
       message: 'Missing person report created successfully',
       data: missingPerson
-    });
+    };
+    
+    // Include auth token if shadow account was created
+    if (citizenToken) {
+      response.auth = {
+        token: citizenToken,
+        expiresIn: '30d',
+        message: 'Account created for updates and notifications'
+      };
+    }
+    
+    res.status(201).json(response);
   } catch (error) {
     console.error('Error creating missing person report:', error);
     res.status(500).json({
@@ -372,6 +426,256 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting missing person',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/missing-persons/extract - Extract data from poster image (HYBRID PROCESSOR)
+router.post('/extract', async (req, res) => {
+  try {
+    const axios = require('axios');
+    const FormData = require('form-data');
+    
+    // Note: This endpoint expects multipart/form-data with image file
+    // In a real implementation, use multer middleware to handle file uploads
+    
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+    
+    console.log('📸 Extracting data from missing person poster...');
+    
+    // Forward to extraction API
+    const formData = new FormData();
+    formData.append('image', req.files.image.data, {
+      filename: req.files.image.name,
+      contentType: req.files.image.mimetype
+    });
+    
+    const extractionResponse = await axios.post(
+      `${process.env.EXTRACTION_API_URL || 'https://flood-callback.asyncdot.com'}/missing-person/extract`,
+      formData,
+      {
+        headers: formData.getHeaders(),
+        timeout: 30000 // 30 second timeout
+      }
+    );
+    
+    console.log('✅ Extraction API response:', extractionResponse.data);
+    
+    // Return extracted data for frontend to review
+    // DO NOT save to database yet - that's the form's job
+    res.json({
+      success: true,
+      message: 'Data extracted successfully. Please review and submit.',
+      extracted_data: extractionResponse.data.data,
+      confidence: extractionResponse.data.data.confidence,
+      note: 'This data has NOT been saved yet. Review and submit the form to save.'
+    });
+    
+  } catch (error) {
+    console.error('❌ Extraction API error:', error.response?.data || error.message);
+    
+    // If extraction fails, allow manual entry
+    res.status(200).json({
+      success: false,
+      message: 'Could not extract data from image. Please enter details manually.',
+      error: error.response?.data?.message || error.message,
+      fallback_to_manual: true
+    });
+  }
+});
+
+// POST /api/missing-persons/submit - Submit missing person with extracted data
+router.post('/submit', authenticateToken, async (req, res) => {
+  try {
+    const { extracted_data, manual_data, image_url } = req.body;
+    
+    // Merge extracted and manual data (manual takes precedence)
+    const missingPersonData = {
+      ...manual_data,
+      extracted_data: extracted_data || null,
+      data_source: extracted_data ? 'ai_extracted' : 'manual',
+      verification_status: 'unverified', // Trust but Verify - public immediately
+      photo_urls: image_url ? [image_url] : [],
+      created_by: req.user._id,
+      last_modified_by: req.user._id,
+      public_visibility: true // Public immediately with unverified badge
+    };
+    
+    const missingPerson = new MissingPerson(missingPersonData);
+    await missingPerson.save();
+    
+    console.log(`✅ Missing person report created: ${missingPerson.case_number} (Status: ${missingPerson.verification_status})`);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Missing person report submitted successfully and is now publicly visible as unverified.',
+      data: missingPerson
+    });
+  } catch (error) {
+    console.error('❌ Error submitting missing person:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting missing person report',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/missing-persons/:id/verify - Verify pending report (Admin/Responder only)
+router.put('/:id/verify', authenticateToken, async (req, res) => {
+  try {
+    const { action, rejection_reason } = req.body; // action: 'approve' or 'reject'
+    
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid action. Use "approve" or "reject"'
+      });
+    }
+    
+    const missingPerson = await MissingPerson.findById(req.params.id);
+    
+    if (!missingPerson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Missing person not found'
+      });
+    }
+    
+    if (missingPerson.verification_status !== 'unverified') {
+      return res.status(400).json({
+        success: false,
+        message: `This report has already been ${missingPerson.verification_status}`
+      });
+    }
+    
+    if (action === 'approve') {
+      missingPerson.verification_status = 'verified';
+      missingPerson.verified_by = {
+        user_id: req.user._id,
+        username: req.user.username || req.user.full_name,
+        role: req.user.role,
+        verified_at: new Date()
+      };
+      
+      missingPerson.updates.push({
+        message: 'Report verified and published',
+        added_by: req.user.username || req.user.full_name,
+        update_type: 'status_change'
+      });
+      
+      console.log(`✅ Missing person ${missingPerson.case_number} VERIFIED by ${req.user.username}`);
+    } else {
+      missingPerson.verification_status = 'rejected';
+      missingPerson.rejection_reason = rejection_reason || 'No reason provided';
+      missingPerson.public_visibility = false; // Hide rejected reports
+      
+      console.log(`❌ Missing person ${missingPerson.case_number} REJECTED by ${req.user.username}`);
+    }
+    
+    missingPerson.last_modified_by = req.user._id;
+    await missingPerson.save();
+    
+    res.json({
+      success: true,
+      message: `Report ${action}d successfully`,
+      data: missingPerson
+    });
+  } catch (error) {
+    console.error('Error verifying missing person:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying report',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/missing-persons/pending/list - Get unverified and spam-flagged reports (Admin/Responder only)
+router.get('/pending/list', authenticateToken, async (req, res) => {
+  try {
+    const pendingReports = await MissingPerson.find({ 
+      $or: [
+        { verification_status: 'unverified' },
+        { auto_hidden: true }
+      ]
+    })
+      .sort({ created_at: -1 })
+      .limit(50);
+    
+    res.json({
+      success: true,
+      data: pendingReports,
+      count: pendingReports.length
+    });
+  } catch (error) {
+    console.error('Error fetching pending reports:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching pending reports',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/missing-persons/:id/spam - Report spam (Community Policing)
+router.post('/:id/spam', async (req, res) => {
+  try {
+    const { reason, reported_by } = req.body;
+    
+    const missingPerson = await MissingPerson.findById(req.params.id);
+    
+    if (!missingPerson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Missing person not found'
+      });
+    }
+    
+    // Check if already reported by this user/IP
+    const alreadyReported = missingPerson.spam_reports.some(
+      report => report.reported_by === reported_by
+    );
+    
+    if (alreadyReported) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already reported this as spam'
+      });
+    }
+    
+    // Add spam report
+    missingPerson.spam_reports.push({
+      reported_by,
+      reason: reason || 'Spam or fake report',
+      timestamp: new Date()
+    });
+    
+    // Auto-hide if 3 or more spam reports
+    if (missingPerson.spam_reports.length >= 3 && !missingPerson.auto_hidden) {
+      missingPerson.auto_hidden = true;
+      console.log(`⚠️ Auto-hiding report ${missingPerson.case_number} due to ${missingPerson.spam_reports.length} spam reports`);
+    }
+    
+    await missingPerson.save();
+    
+    res.json({
+      success: true,
+      message: 'Spam report submitted successfully',
+      spam_count: missingPerson.spam_reports.length,
+      auto_hidden: missingPerson.auto_hidden
+    });
+  } catch (error) {
+    console.error('Error reporting spam:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reporting spam',
       error: error.message
     });
   }

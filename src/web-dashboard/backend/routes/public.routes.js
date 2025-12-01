@@ -1,5 +1,6 @@
 // routes/public.routes.js - Public routes for citizen access without authentication
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const SosSignal = require('../models/SosSignal');
 const Disaster = require('../models/Disaster');
 const Report = require('../models/Report');
@@ -34,7 +35,7 @@ RESPONSE FORMAT:
 // POST /api/public/sos - Send SOS signal (no auth required for emergencies)
 router.post('/sos', async (req, res) => {
   try {
-    const { location, message, priority } = req.body;
+    const { location, message, priority, contact, locationDetails, emergencyDetails, currentSituation, resources } = req.body;
     
     console.log('Public SOS request received:', { location, message, priority });
 
@@ -45,23 +46,48 @@ router.post('/sos', async (req, res) => {
       });
     }
 
+    // Try to get user_id from token if provided
+    let userId = 'anonymous';
+    const authHeader = req.headers.authorization;
+    console.log('[PUBLIC SOS] Auth header:', authHeader ? 'Present' : 'Missing');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        console.log('[PUBLIC SOS] Token decoded:', decoded);
+        userId = decoded.citizenId || decoded.individualId || decoded.id || 'anonymous';
+        console.log('[PUBLIC SOS] Authenticated user:', userId);
+      } catch (err) {
+        console.log('[PUBLIC SOS] Token verification failed:', err.message);
+      }
+    } else {
+      console.log('[PUBLIC SOS] No token provided, using anonymous');
+    }
+
     const sos = new SosSignal({
-      user_id: 'anonymous', // Anonymous user for public SOS
+      user_id: userId,
       location,
       message: message || 'Emergency SOS - Need immediate assistance',
       priority: priority || 'high',
-      status: 'pending'
+      status: 'pending',
+      // Optional additional details
+      contact,
+      locationDetails,
+      emergencyDetails,
+      currentSituation,
+      resources
     });
 
     await sos.save();
-    console.log('Public SOS signal saved successfully');
+    console.log('Public SOS signal saved successfully with user_id:', userId);
 
     res.json({
       success: true,
       message: "SOS signal sent successfully. Emergency responders have been notified.",
       data: {
         id: sos._id,
-        timestamp: sos.timestamp
+        timestamp: sos.timestamp,
+        user_id: userId
       }
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ndxService } from '../services/ndxService';
-import { Database, Download, MapPin, Calendar, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { Database, Download, MapPin, Calendar, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ExchangeRequest {
@@ -134,15 +134,6 @@ const NDXDataExchange: React.FC = () => {
       case 'wind': return '💨';
       case 'landslide': return '🏔️';
       default: return '⚠️';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'approved': return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'pending': return <Clock className="w-4 h-4 text-yellow-600" />;
-      case 'rejected': return <AlertCircle className="w-4 h-4 text-red-600" />;
-      default: return <AlertCircle className="w-4 h-4 text-gray-600" />;
     }
   };
 

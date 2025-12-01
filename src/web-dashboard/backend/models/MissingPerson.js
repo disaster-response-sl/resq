@@ -187,6 +187,36 @@ const MissingPersonSchema = new mongoose.Schema({
   found_condition: String,
   resolution_details: String,
   
+  // AI Extraction Fields (Hybrid Approach)
+  extracted_data: {
+    name: String,
+    age: Number,
+    lastSeenLocation: String,
+    extractedText: String,
+    confidence: Number,
+    extractedContacts: [{
+      phone: String,
+      relation: String
+    }]
+  },
+  data_source: {
+    type: String,
+    enum: ['manual', 'ai_extracted', 'api_import'],
+    default: 'manual'
+  },
+  verification_status: {
+    type: String,
+    enum: ['unverified', 'verified', 'rejected'],
+    default: 'unverified'
+  },
+  verified_by: {
+    user_id: String,
+    username: String,
+    role: String,
+    verified_at: Date
+  },
+  rejection_reason: String,
+  
   // System Fields
   created_by: {
     type: String,
@@ -200,6 +230,20 @@ const MissingPersonSchema = new mongoose.Schema({
   public_visibility: {
     type: Boolean,
     default: true // Whether to show in public missing persons list
+  },
+  
+  // Community Policing
+  spam_reports: [{
+    reported_by: String, // User ID or IP
+    reason: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  auto_hidden: {
+    type: Boolean,
+    default: false // Auto-hidden if 3+ spam reports
   },
   
   // Metadata

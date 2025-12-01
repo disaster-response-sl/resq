@@ -32,11 +32,11 @@ const Footer: React.FC = () => {
             <div className="space-y-2 text-sm">
               <div>
                 <p className="font-medium text-gray-200">Shalon Fernando</p>
-                <p className="text-xs text-gray-400">Lead Software Engineer & Full-Stack Architect</p>
+                <p className="text-xs text-gray-400">Lead Software Engineer</p>
               </div>
               <div>
                 <p className="font-medium text-gray-200">Gaindu</p>
-                <p className="text-xs text-gray-400">Mobile App Development</p>
+                <p className="text-xs text-gray-400">Web Dashboard Development</p>
               </div>
               <div>
                 <p className="font-medium text-gray-200">Lehan</p>

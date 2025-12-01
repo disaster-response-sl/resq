@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, ArrowLeft, Send, Bot, User } from 'lucide-react';
+import { ArrowLeft, Send, Bot, User } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 

@@ -257,9 +257,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
               {/* Missing Persons */}
               <Link
-                to="/missing-persons"
+                to="/missing-persons/search"
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                  location.pathname === '/missing-persons'
+                  location.pathname.startsWith('/missing-persons')
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
@@ -267,6 +267,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Users className="w-5 h-5 mr-3" />
                 Missing Persons
               </Link>
+              
+              {/* Missing Persons Verification (Admin/Responder Only) */}
+              {(user?.role === 'admin' || user?.role === 'responder') && (
+                <Link
+                  to="/admin/missing-persons/verify"
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    location.pathname === '/admin/missing-persons/verify'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <Users className="w-5 h-5 mr-3" />
+                  Verify Missing Persons
+                </Link>
+              )}
 
               {/* Relief Data */}
               <Link

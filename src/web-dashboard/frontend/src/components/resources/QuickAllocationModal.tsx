@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAllResources, allocateResource } from '../../services/resourceService';
 import { Resource } from '../../types/resource';
-import { X, Package, MapPin, Search, Plus, CheckCircle } from 'lucide-react';
+import { X, Package, MapPin, Search, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface QuickAllocationModalProps {

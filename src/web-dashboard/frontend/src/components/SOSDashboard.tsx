@@ -114,19 +114,31 @@ const SOSDashboard: React.FC<SOSDashboardProps> = ({ standalone = true }) => {
         throw new Error('No authentication token found');
       }
 
-      const queryParams = new URLSearchParams({
-        status: filters.status !== 'all' ? filters.status : '',
-        priority: filters.priority !== 'all' ? filters.priority : '',
-        timeRange: filters.timeRange,
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        sortBy,
-        sortOrder
-      });
+      const user = authService.getCurrentUser();
+      const isAdmin = user?.role === 'admin';
+      
+      let apiUrl: string;
+      let response: Response;
 
-      const apiUrl = `${API_BASE_URL}/api/admin/sos/dashboard?${queryParams}`;
+      if (isAdmin) {
+        // Admin endpoint - has full features and dashboard stats
+        const queryParams = new URLSearchParams({
+          status: filters.status !== 'all' ? filters.status : '',
+          priority: filters.priority !== 'all' ? filters.priority : '',
+          timeRange: filters.timeRange,
+          page: pagination.page.toString(),
+          limit: pagination.limit.toString(),
+          sortBy,
+          sortOrder
+        });
 
-      const response = await fetch(apiUrl, {
+        apiUrl = `${API_BASE_URL}/api/admin/sos/dashboard?${queryParams}`;
+      } else {
+        // Responder endpoint - public nearby SOS
+        apiUrl = `${API_BASE_URL}/api/sos/public/nearby`;
+      }
+
+      response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -140,13 +152,36 @@ const SOSDashboard: React.FC<SOSDashboardProps> = ({ standalone = true }) => {
       const data = await response.json();
       
       if (data.success) {
-        setSignals(data.data.signals || []);
-        setStats(data.data.stats || null);
-        setPagination(prev => ({
-          ...prev,
-          total: data.data.pagination?.total || 0,
-          totalPages: data.data.pagination?.totalPages || 0
-        }));
+        if (isAdmin) {
+          // Admin response structure
+          setSignals(data.data.signals || []);
+          setStats(data.data.stats || null);
+          setPagination(prev => ({
+            ...prev,
+            total: data.data.pagination?.total || 0,
+            totalPages: data.data.pagination?.totalPages || 0
+          }));
+        } else {
+          // Responder response structure - all SOS in data array
+          setSignals(data.data || []);
+          // Create basic stats from signals
+          const signals = data.data || [];
+          const basicStats = {
+            total: signals.length,
+            pending: signals.filter((s: SOSSignal) => s.status === 'pending').length,
+            acknowledged: signals.filter((s: SOSSignal) => s.status === 'acknowledged').length,
+            responding: signals.filter((s: SOSSignal) => s.status === 'responding').length,
+            resolved: signals.filter((s: SOSSignal) => s.status === 'resolved').length,
+            critical: signals.filter((s: SOSSignal) => s.priority === 'critical').length,
+            high: signals.filter((s: SOSSignal) => s.priority === 'high').length
+          };
+          setStats(basicStats);
+          setPagination(prev => ({
+            ...prev,
+            total: signals.length,
+            totalPages: Math.ceil(signals.length / prev.limit)
+          }));
+        }
       } else {
         throw new Error(data.message || 'Failed to fetch SOS dashboard data');
       }

@@ -34,7 +34,6 @@ interface Consent {
 }
 
 const DemoConsentSystem: React.FC = () => {
-  const [consents, setConsents] = useState<Consent[]>([]);
   const [filteredConsents, setFilteredConsents] = useState<Consent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConsents, setSelectedConsents] = useState<Set<string>>(new Set());
@@ -45,7 +44,6 @@ const DemoConsentSystem: React.FC = () => {
       setLoading(true);
       const response = await ndxService.getConsents();
       if (response.success) {
-        setConsents(response.consents || []);
         setFilteredConsents(response.consents || []);
       }
     } catch (error: unknown) {

@@ -10,18 +10,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.3.1",
     "@types/node": "^24.2.1",
     "axios": "^1.11.0",
     "jspdf": "^3.0.4",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
     "lucide-react": "^0.263.1",
+    "polyline-encoded": "^0.0.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^7.8.0",
-    "recharts": "^3.1.2"
+    "recharts": "^3.1.2",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

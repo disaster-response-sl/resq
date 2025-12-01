@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Heart, Users, AlertCircle, Search, Map as MapIcon, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Heart, Users, AlertCircle, Search, Map as MapIcon, ArrowLeft, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
