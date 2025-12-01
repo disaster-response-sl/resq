@@ -130,7 +130,7 @@ const CitizenNavbar: React.FC = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden pb-4 border-t border-blue-500">
+          <div className="lg:hidden pb-4 border-t border-blue-500 max-h-[calc(100vh-5rem)] overflow-y-auto">
             <div className="flex flex-col space-y-2 mt-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
