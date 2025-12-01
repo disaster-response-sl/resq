@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const fileUpload = require('express-fileupload');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
@@ -76,6 +77,13 @@ app.use(cors(corsOptions));
 // Body parsing middlewares
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// File upload middleware (for missing person poster images)
+app.use(fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max file size
+  abortOnLimit: true,
+  createParentPath: true
+}));
 
 // Manual sanitization for NoSQL injection (Express 5 compatible)
 app.use((req, res, next) => {

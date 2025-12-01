@@ -19,6 +19,9 @@ import ReliefDataDashboard from './components/ReliefDataDashboard';
 import ReportsDashboard from './components/ReportsDashboard';
 import AdminIncidentReportsPage from './components/AdminIncidentReportsPage';
 import CitizenDashboard from './components/CitizenDashboard';
+import ReportMissingPersonPage from './components/ReportMissingPersonPage';
+import MissingPersonSearchPage from './components/MissingPersonSearchPage';
+import MissingPersonVerificationPage from './components/MissingPersonVerificationPage';
 import CitizenSOSPage from './components/CitizenSOSPage';
 import CitizenReportPage from './components/CitizenReportPage';
 import CitizenChatPage from './components/CitizenChatPage';
@@ -145,6 +148,26 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Missing Persons Routes */}
+              <Route 
+                path="/admin/missing-persons/verify" 
+                element={
+                  <ProtectedRoute>
+                    <MissingPersonVerificationPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/missing-persons/report" 
+                element={
+                  <ProtectedRoute>
+                    <ReportMissingPersonPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/missing-persons/search" element={<MissingPersonSearchPage />} />
+              
               {/* Public Citizen Routes - No Authentication Required */}
               <Route path="/citizen" element={<CitizenDashboard />} />
               <Route path="/citizen/sos" element={<CitizenSOSPage />} />

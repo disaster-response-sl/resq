@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation } from 'lucide-react';
+import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation, Users } from 'lucide-react';
 import axios from 'axios';
 import CitizenNavbar from './CitizenNavbar';
 import Footer from './Footer';
@@ -307,6 +307,15 @@ const CitizenDashboard: React.FC = () => {
               <Package className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
               <h3 className="text-xs md:text-xl font-bold">Relief Tracker</h3>
               <p className="text-[10px] md:text-sm text-purple-100 mt-0.5 md:mt-1 hidden md:block">Find help or volunteer</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/missing-persons/search')}
+              className="bg-amber-600 hover:bg-amber-700 text-white p-3 md:p-6 rounded-xl shadow-lg transition-all transform hover:scale-105"
+            >
+              <Users className="h-6 w-6 md:h-12 md:w-12 mx-auto mb-1 md:mb-3" />
+              <h3 className="text-xs md:text-xl font-bold">Missing Persons</h3>
+              <p className="text-[10px] md:text-sm text-amber-100 mt-0.5 md:mt-1 hidden md:block">Report or search</p>
             </button>
           </div>
         </div>
