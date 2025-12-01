@@ -81,24 +81,24 @@ const ReliefTrackerPage: React.FC = () => {
       baseParams.append('radius_km', debouncedRadius);
       baseParams.append('sort', 'distance');
 
-      // Fetch Supabase REQUESTS (people asking for help)
+      // Fetch Supabase REQUESTS from public API (no auth required)
       const requestParams = new URLSearchParams(baseParams);
       requestParams.append('type', 'requests');
       const requestsResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${requestParams.toString()}`
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
       ).catch((err) => {
-        console.error('Supabase requests fetch error:', err);
-        return { data: { requests: [] } };
+        console.error('❌ Supabase requests error:', err.message);
+        return { data: { requests: [], meta: {} } };
       });
 
-      // Fetch Supabase CONTRIBUTIONS (volunteers offering help)
+      // Fetch Supabase CONTRIBUTIONS from public API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
       const contributionsResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/relief-camps?${contributionParams.toString()}`
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
       ).catch((err) => {
-        console.error('Supabase contributions fetch error:', err);
-        return { data: { contributions: [] } };
+        console.error('❌ Supabase contributions error:', err.message);
+        return { data: { contributions: [], meta: {} } };
       });
 
       // Fetch MongoDB help requests - all pending reports (food, shelter, medical, danger)
@@ -106,7 +106,13 @@ const ReliefTrackerPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      // API returns data directly: { requests: [...], contributions: [...], meta: {...} }
+      // Direct Supabase API response: { requests: [...], contributions: [...], meta: {...} }
+      console.log('🔍 Raw API responses:', {
+        requestsResponse: requestsResponse.data,
+        contributionsResponse: contributionsResponse.data,
+        mongoResponse: mongoResponse.data
+      });
+
       const supabaseRequests = requestsResponse.data.requests || [];
       const supabaseContributions = contributionsResponse.data.contributions || [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];

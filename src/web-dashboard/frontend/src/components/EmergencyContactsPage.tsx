@@ -77,11 +77,15 @@ const EmergencyContactsPage: React.FC = () => {
         ? disastersResponse.data.data.filter((d: any) => d.status === 'active').length 
         : 0;
 
-      // HYBRID DATA: Fetch relief camps count from Supabase (requests + contributions) and MongoDB
-      const requestsResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?type=requests&limit=1000`);
+      // HYBRID DATA: Fetch relief camps count from public API
+      const requestsResponse = await axios.get(
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?type=requests&limit=1000`
+      ).catch(() => ({ data: { requests: [] } }));
       const supabaseRequestsCount = requestsResponse.data.requests?.length || 0;
       
-      const contributionsResponse = await axios.get(`${API_BASE_URL}/api/public/relief-camps?type=contributions&limit=1000`);
+      const contributionsResponse = await axios.get(
+        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?type=contributions&limit=1000`
+      ).catch(() => ({ data: { contributions: [] } }));
       const supabaseContributionsCount = contributionsResponse.data.contributions?.length || 0;
 
       // Also count MongoDB help requests
