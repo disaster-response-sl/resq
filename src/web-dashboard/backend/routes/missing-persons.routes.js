@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const MissingPerson = require('../models/MissingPerson');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
 // GET /api/missing-persons - Get all missing persons
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { status, priority, disaster_related, verification_status, limit = 100, skip = 0 } = req.query;
     
@@ -15,10 +15,12 @@ router.get('/', async (req, res) => {
     if (req.query.verification_status && req.user && req.user.role === 'admin') {
       // Admin can request specific verification status
       query.verification_status = req.query.verification_status;
+      console.log(`📋 Admin ${req.user.username || req.user._id} requesting reports with status: ${req.query.verification_status}`);
     } else {
       // Public view: only show verified and publicly visible posts
       query.verification_status = 'verified';
       query.public_visibility = true;
+      console.log('👤 Public user requesting verified reports only');
     }
     
     if (status) query.status = status;

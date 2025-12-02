@@ -135,31 +135,34 @@ const checkDuplicateSubmission = async (req, res, next) => {
       return next();
     }
 
-    // Check for similar submissions in last 24 hours
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Check for exact duplicates in last 1 hour only (less strict)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const duplicates = await MissingPerson.find({
-      full_name: new RegExp(full_name, 'i'),
+      full_name: new RegExp(`^${full_name}$`, 'i'), // Exact name match only
+      reporter_phone: reporter_phone, // Same reporter
       'last_seen_location.lat': {
-        $gte: last_seen_location.lat - 0.01,
-        $lte: last_seen_location.lat + 0.01
+        $gte: last_seen_location.lat - 0.001, // Smaller radius (~100m)
+        $lte: last_seen_location.lat + 0.001
       },
       'last_seen_location.lng': {
-        $gte: last_seen_location.lng - 0.01,
-        $lte: last_seen_location.lng + 0.01
+        $gte: last_seen_location.lng - 0.001,
+        $lte: last_seen_location.lng + 0.001
       },
-      created_at: { $gte: yesterday }
+      created_at: { $gte: oneHourAgo }
     });
 
     if (duplicates.length > 0) {
+      console.log('⚠️ Duplicate submission detected:', { full_name, reporter_phone });
       return res.status(409).json({
         success: false,
-        message: 'A similar missing person report was recently submitted. Please check existing reports.',
-        code: 'POSSIBLE_DUPLICATE',
+        message: 'You recently submitted a report for this person. Please wait before submitting again, or check your previous submission.',
+        code: 'DUPLICATE_SUBMISSION',
         existing_reports: duplicates.map(d => ({
           id: d._id,
           name: d.full_name,
           case_number: d.case_number,
-          status: d.verification_status
+          status: d.verification_status,
+          submitted_at: d.created_at
         }))
       });
     }

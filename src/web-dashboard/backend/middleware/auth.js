@@ -81,9 +81,42 @@ const requireResponder = (req, res, next) => {
   next();
 };
 
+// Optional authentication - attaches user if token is valid, but doesn't fail if missing
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    // No token provided, continue without user
+    req.user = null;
+    return next();
+  }
+
+  const jwtSecret = process.env.JWT_SECRET;
+  
+  if (!jwtSecret) {
+    console.error('❌ JWT_SECRET not configured in environment variables');
+    req.user = null;
+    return next();
+  }
+
+  jwt.verify(token, jwtSecret, (err, user) => {
+    if (err) {
+      // Invalid token, continue without user
+      req.user = null;
+      return next();
+    }
+    
+    // Valid token, attach user info
+    req.user = user;
+    next();
+  });
+};
+
 module.exports = {
   authenticateToken,
   authorizeRole,
   requireAdmin,
-  requireResponder
+  requireResponder,
+  optionalAuth
 };
