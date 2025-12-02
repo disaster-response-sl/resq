@@ -211,9 +211,11 @@ router.post('/',
         const decoded = jwt.verify(token, jwtSecret);
         userId = decoded._id || decoded.citizenId || decoded.individualId;
         userRole = decoded.role;
+        console.log('[MISSING PERSON] Authenticated user:', { userId, userRole, decoded });
       } catch (err) {
         // Token invalid, continue as unauthenticated
-        console.log('[MISSING PERSON] Unauthenticated submission');
+        console.log('[MISSING PERSON] Token verification failed:', err.message);
+        console.log('[MISSING PERSON] Continuing as unauthenticated submission');
       }
     }
     
@@ -251,8 +253,8 @@ router.post('/',
     
     const missingPersonData = {
       ...req.body,
-      created_by: userId,
-      last_modified_by: userId,
+      created_by: userId || 'anonymous',
+      last_modified_by: userId || 'anonymous',
       // Security fields
       verification_status: userRole === 'admin' ? 'verified' : 'pending',
       requires_admin_approval: userRole !== 'admin',
@@ -265,8 +267,8 @@ router.post('/',
       approval_history: [{
         action: 'submitted',
         performed_by: {
-          user_id: userId,
-          username: req.body.reporter_name,
+          user_id: userId || 'anonymous',
+          username: req.body.reporter_name || 'Anonymous',
           role: userRole || 'citizen'
         },
         timestamp: new Date()
@@ -274,9 +276,15 @@ router.post('/',
     };
     
     const missingPerson = new MissingPerson(missingPersonData);
-    await missingPerson.save();
     
-    console.log(`📝 Missing person report created: ${missingPerson._id} | Status: ${missingPerson.verification_status} | From IP: ${submittedFromIp}`);
+    try {
+      await missingPerson.save();
+      console.log(`📝 Missing person report created: ${missingPerson._id} | Status: ${missingPerson.verification_status} | From IP: ${submittedFromIp}`);
+    } catch (saveError) {
+      console.error('❌ MongoDB save error:', saveError.message);
+      console.error('Validation errors:', saveError.errors);
+      throw saveError;
+    }
     
     const response = {
       success: true,
