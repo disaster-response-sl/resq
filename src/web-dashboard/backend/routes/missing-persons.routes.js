@@ -229,12 +229,20 @@ router.post('/',
           { email: req.body.reporter_email }
         );
         userId = citizen._id;
-        citizenToken = ShadowAuthService.generateToken(citizen);
+        
+        // Try to generate token, but don't fail if JWT_SECRET is missing
+        try {
+          citizenToken = ShadowAuthService.generateToken(citizen);
+        } catch (tokenErr) {
+          console.warn('[MISSING PERSON] Could not generate citizen token (JWT_SECRET not configured)');
+        }
+        
         await ShadowAuthService.incrementActivity(citizen._id, 'missing_person');
         
         console.log('[MISSING PERSON] Shadow account created for:', citizen.name);
       } catch (err) {
         console.error('[MISSING PERSON] Shadow account creation failed:', err);
+        // Continue without user ID - allow anonymous submission
       }
     }
     
