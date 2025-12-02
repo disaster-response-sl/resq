@@ -1,234 +1,44 @@
 # 🚨 ResQ - National Disaster Response Platform
 
 [![Production Status](https://img.shields.io/badge/status-production%20deployed-brightgreen)](https://resq-five.vercel.app)
-[![Real-Time Data](https://img.shields.io/badge/data-live%20DMC%20API-blue)](https://lk-flood-api.vercel.app)
-[![Relief Coordination](https://img.shields.io/badge/relief-Supabase%20API-green)](https://supabase.com)
 [![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka-red)](https://www.dmc.gov.lk)
-[![Deployment](https://img.shields.io/badge/frontend-Vercel-black)](https://resq-five.vercel.app)
-[![Backend](https://img.shields.io/badge/backend-Render-purple)](https://resq-backend-3efi.onrender.com)
 
-> **🎯 Real-World Disaster Response Platform**  
-> **LIVE DEPLOYMENT:** [https://resq-five.vercel.app](https://resq-five.vercel.app)  
-> Production-ready emergency response system with **real-time flood monitoring**, **relief coordination**, and **volunteer management**.  
-> **39 DMC gauging stations** • **Live relief camps** • **Emergency SOS** • **Volunteer registration** • **No login required for citizens**
+ResQ (Rescue) is a production disaster-response platform for Sri Lanka — live flood monitoring, SOS reporting, relief coordination and admin dashboards. This repository contains the web frontend, mobile app, and backend services.
 
-## 🌐 Live Deployment
+Live deployment (primary):
+- Frontend: https://resq-five.vercel.app
+- Backend: https://resq-backend-3efi.onrender.com
 
-- **Frontend:** [https://resq-five.vercel.app](https://resq-five.vercel.app) (Vercel)
-- **Backend:** [https://resq-backend-3efi.onrender.com](https://resq-backend-3efi.onrender.com) (Render)
-- **Database:** MongoDB Atlas (Singapore Region)
-- **Status:** ✅ Production Ready
+Quick links:
+- Documentation: `./docs/`
+- Contributing guide: `CONTRIBUTING.md`
+- Issue templates: `.github/ISSUE_TEMPLATE/`
 
-## 🚀 Production Ready: 100% Real APIs
+Getting started (developer): see `CONTRIBUTING.md` for full setup and coding guidelines. Minimal steps:
 
-Comprehensive disaster response platform powered by **verified government and production data sources**.
+```powershell
+npm install
+cd src/web-dashboard/frontend
+npm install
+npm run dev      # start frontend (Vite)
+cd ../../backend
+npm install
+npm run dev      # start backend (nodemon / node)
+```
 
-### 🌊 Core Features
+Contributing
+- Please read `CONTRIBUTING.md` before opening issues or pull requests. It contains environment setup, lint/test commands, and PR guidelines.
 
-#### For Citizens (Public Access + Optional Authentication)
-- ✅ **Real-Time Flood Monitoring** - Live water levels from 39 DMC gauging stations (15-min updates)
-- ✅ **Interactive Risk Map** - Leaflet-powered map with flood alerts, relief camps, and user location with precise geocoding
-- ✅ **Emergency SOS** - One-tap distress signal with GPS location (works without login, enhanced features when authenticated)
-- ✅ **Citizen Authentication** - JWT-based signup/login system with shadow accounts for emergency submissions
-- ✅ **My SOS Dashboard** - Track your submitted SOS signals, view responder updates, and communicate in real-time
-- ✅ **Real-Time Messaging** - Direct chat with responders about your emergency via Socket.io
-- ✅ **SOS Status Updates** - Mark your emergency as resolved or false alarm, send status updates to responders
-- ✅ **Incident Reporting** - Submit reports with photos and location data
-- ✅ **Relief Demand & Supply Tracker** - Find nearby help within 5-200km radius with debounced search
-- ✅ **Volunteer Registration** - Comprehensive form to offer goods, services, or labor
-- ✅ **AI Safety Assistant** - Google Gemini-powered emergency guidance chatbot
-- ✅ **Recent Alerts Dashboard** - Real-time DMC flood alerts with severity levels
-- ✅ **LankaRouteWatch** - Plan safe routes with location search, road hazard reports, and risk assessment
-- ✅ **Emergency Contacts** - Quick access to DDMCU hotlines by district
-- ✅ **Location Services** - Accurate reverse geocoding showing street address, city, and district
+License
+- This project is licensed under the Apache License 2.0. Apache-2.0 is a permissive, widely-used open-source license that allows commercial use, modification, distribution and private use while protecting contributors with a patent grant. If you rely on third-party or government data/APIs, confirm their reuse terms separately.
 
-#### For Admins & Responders (Authenticated Access)
-- ✅ **SOS Dashboard** - Real-time emergency signal monitoring with auto-escalation and 30-second auto-refresh
-- ✅ **Responder-Citizen Messaging** - Communicate directly with citizens about their emergencies via Socket.io
-- ✅ **Role-Based SOS Filtering** - Admins see all SOS, responders see active emergencies, civilians filtered by allowed levels
-- ✅ **SOS Signal Management** - Accept, respond to, and update status of emergency signals
-- ✅ **Message History** - View complete conversation history for each SOS
-- ✅ **Disaster Management** - Create, track, and manage disaster events
-- ✅ **Live Disaster Heat Map** - Real-time DMC flood data visualization with interactive markers
-- ✅ **Resource Management** - Allocate and track emergency supplies
-- ✅ **Reports Dashboard** - Citizen incident report review and verification
-- ✅ **Relief Camp Dashboard** - Manage help requests and volunteer contributions
-- ✅ **Analytics & Metrics** - Comprehensive dashboard with emergency statistics
-- ✅ **Role-Based Access** - Individual ID + OTP authentication with JWT tokens
-- ✅ **Auto-Escalation** - SOS signals auto-escalate every 5 minutes if unassigned
+Support / Contact
+- Security issues: use `.github/ISSUE_TEMPLATE/security_disclosure.md` or email the maintainer at `shalonfernando52@gmail.com`.
+- General questions or PR/maintainer contact: `shalonfernando52@gmail.com`.
 
-### 🔌 Production APIs (Zero Mock Data)
+----
 
-#### 1. **DMC Flood Data API** 🌊
-- **Source**: [lk-flood-api.vercel.app](https://lk-flood-api.vercel.app)
-- **Documentation**: [docs/sriLankaFloodDataAPI.md](./docs/sriLankaFloodDataAPI.md)
-- **Data**: Official Sri Lanka Disaster Management Centre flood monitoring
-- **Coverage**: 39 gauging stations across all major rivers
-- **Update Frequency**: Every 15 minutes
-- **Endpoints Used**:
-  - `/alerts` - Active flood alerts (MAJOR, MINOR, ALERT status)
-  - `/levels/latest` - Latest water levels for all stations
-  - `/stations` - Station metadata with GPS coordinates
-- **Features**:
-  - Water level measurements (meters)
-  - Rising/Falling trends
-  - Alert status classification
-  - Rainfall data (mm)
-  - Historical readings
-
-#### 2. **Supabase Relief Coordination API** ⛺
-- **Source**: [Supabase Public Data API](https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api)
-- **Documentation**: [docs/publicDataAPI.md](./docs/publicDataAPI.md)
-- **Data**: Real-time relief camp locations and volunteer contributions
-- **Features**:
-  - Help Requests (people needing assistance)
-  - Volunteer Contributions (people offering support)
-  - Location-based search (radius filtering)
-  - Urgency levels (emergency, high, medium, low)
-  - Establishment types (School, Temple, Kitchen, etc.)
-  - Distance calculations (Haversine formula)
-- **Query Parameters**:
-  - `type` - requests, contributions, or all
-  - `status` - pending, resolved, available
-  - `urgency` - emergency, high, medium, low
-  - `lat`, `lng`, `radius_km` - Location-based filtering
-  - `search` - Text search across all fields
-  - `limit`, `offset` - Pagination
-- **CRUD Operations**:
-  - ✅ Create help requests (citizen reports)
-  - ✅ Create volunteer contributions (offer support)
-  - ✅ Read/Search relief data (public access)
-  - ✅ Update status (admin/responder access)
-
-### ❌ Removed Features (Production Focus)
-- ❌ **Payment/Donation System** - Streamlined to core disaster response
-- ❌ **Mock Government APIs** - NDX, PayDPI sandboxes removed
-- ❌ **SLUDI Authentication** - Simplified to Individual ID + OTP for admins
-- ❌ **Missing Persons Database** - Requires law enforcement integration (not available)
-
-📖 **[View API Documentation](./docs/)** | **[Deployment Guide](./PRODUCTION_DEPLOYMENT.md)**
-
----
-
-## 📋 Project Overview
-
-The National Disaster Response Platform is a comprehensive solution consisting of:
-- **Citizen Web App**: Public disaster information, emergency SOS, real-time maps (no login required)
-- **Mobile App**: React Native application for emergency reporting and real-time alerts
-- **Admin Dashboard**: Government interface for disaster management and resource allocation
-
-## 🧑‍🤝‍🧑 Role Types
-
-This platform supports three official user groups in line with Sri Lanka’s real disaster-response structure:
-
-### 👨‍💼 Admin Users
-
-High-level decision-makers who manage national or district disaster operations.
-
-Admins include:
-
-Disaster Management Centre (DMC) Headquarters Officers
-
-District Secretaries (GA)
-
-District Disaster Management Officers
-
-Divisional Secretaries (DS Officers)
-
-Ministry of Digital Economy / ICTA senior system officers
-
-Admin Capabilities:
-
-Create & update disasters
-
-Publish alerts to the public
-
-Assign responders to incidents
-
-Manage resources and supply distribution
-
-Access full analytics dashboard
-
-Monitor nationwide SOS feed
-
-### 🚑 Responder Users
-
-On-ground emergency teams responsible for handling SOS calls, verifying reports, and conducting rescue operations.
-
-Responders include:
-
-Sri Lanka Army Disaster Response Units
-
-Navy Flood Rescue Teams
-
-Air Force Medical / Airlift Response
-
-Sri Lanka Police Emergency Units
-
-Fire & Rescue Department
-
-Civil Security Department (CSD)
-
-Grama Niladhari (GN) officers
-
-Certified Red Cross / CERT-approved responders
-
-Responder Capabilities:
-
-View and prioritize SOS signals
-
-Update response status
-
-Access assigned tasks
-
-Verify on-site incident reports
-
-Report rescued individuals, cleared areas, and resource needs
-
-### 🧍 Citizen Users
-
-General public users.
-
-Citizen Capabilities:
-
-Submit SOS signals
-
-Report incidents (food, shelter, medical, danger)
-
-Upload photos & location
-
-Receive real-time alerts
-
-Access AI safety assistant
-
-## 🎯 Problem Statement
-
-Sri Lanka faces critical gaps in disaster response:
-- ❌ Outdated communication systems
-- ❌ Resource allocation bottlenecks  
-- ❌ Slow government notifications
-- ❌ Lack of citizen agency in reporting
-- ❌ Fragmented data across systems
-- ❌ No centralized volunteer coordination during disasters
-
-## ✨ Key Features & Updates
-
-### 🌐 Citizen Web Portal (Public Access - No Login Required)
-
-#### Emergency Response
-- 🚨 **Emergency SOS** - One-tap distress signal with GPS location and priority levels
-  - No authentication required
-  - Automatic GPS capture
-  - Priority levels: High, Medium, Low
-  - Optional message field
-  
-- 📝 **Incident Reporting** - Submit detailed reports with evidence
-  - Photo upload capability (up to 5MB)
-  - Location confirmation
-  - Report types: Food shortage, Shelter, Medical, Danger
-  - Status tracking
-
-#### Real-Time Information
+For more details (architecture, API docs, deployment), see the `docs/` folder.
 - 🌊 **Live Flood Monitoring** - Real-time water levels from 39 DMC gauging stations
   - 15-minute update intervals
   - Water level trends (Rising/Falling)
@@ -787,24 +597,12 @@ npm run dev
 
 ### Development Team
 - **Shalon Fernando** - Lead Software Engineer & Full-Stack Architect
-  - Backend API development (Express.js, MongoDB)
-  - Production deployment (Vercel, Render)
-  - CORS configuration and error handling
-  - Authentication system (JWT, Mock SLUDI)
-  - Mobile app development (React Native)
-  - Technical architecture and system design
   
-- **Gaindu** - Mobile App Development
-  - React Native implementation
-  - Mobile UI/UX design
+- **Gaindu** - Web Dashboard Development
   
 - **Lehan** - Web Dashboard Development
-  - React frontend development
-  - Admin dashboard features
   
 - **Pavith** - Web Dashboard Development
-  - React frontend development
-  - Responsive design implementation
 
 ### Recent Contributions
 - **Shalon**: Production deployment, UI/UX redesign, LankaRouteWatch implementation, location services, debouncing, CORS fixes, environment setup guides, real time api integration.
