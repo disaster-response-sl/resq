@@ -4,7 +4,7 @@ import { authService } from '../services/authService';
 import MainLayout from './MainLayout';
 import '../styles/AdminReviewDashboard.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 interface MissingPerson {
   _id: string;
