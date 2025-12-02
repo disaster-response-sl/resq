@@ -78,7 +78,7 @@ const MissingPersonSchema = new mongoose.Schema({
   },
   reporter_relationship: {
     type: String,
-    required: true
+    required: false // Optional - not all reporters may want to specify
   },
   reporter_phone: {
     type: String,
