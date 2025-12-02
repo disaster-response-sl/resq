@@ -365,11 +365,11 @@ const VolunteerFormPage: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap md:flex-nowrap gap-y-4 md:gap-y-0">
               <button
                 type="button"
                 onClick={() => navigate('/citizen/relief-tracker')}
-                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors w-full sm:w-auto"
               >
                 Cancel
               </button>
@@ -377,7 +377,7 @@ const VolunteerFormPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-2"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2 w-full sm:w-auto"
               >
                 {loading ? (
                   <>
