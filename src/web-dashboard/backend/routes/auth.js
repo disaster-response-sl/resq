@@ -84,12 +84,30 @@ router.post('/login', async (req, res) => {
         });
       }
       
+      // Create admin session for tracking
+      const AdminSession = require('../models/AdminSession');
+      const sessionToken = jwt.sign({ sessionId: Date.now() }, process.env.JWT_SECRET);
+      
+      const session = new AdminSession({
+        user_id: individualId,
+        individualId: individualId,
+        role: userData.role,
+        ip_address: req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        user_agent: req.headers['user-agent'],
+        session_token: sessionToken,
+        is_active: true
+      });
+      await session.save();
+      
+      console.log(`✅ Admin session created for ${individualId} from IP: ${session.ip_address}`);
+      
       // Generate JWT token with user info
       const appToken = jwt.sign(
         { 
           individualId: individualId,
           role: userData.role,
           name: userData.name,
+          sessionToken: sessionToken,
           sludiToken: authResponse.response.authToken
         },
         process.env.JWT_SECRET,
@@ -104,7 +122,11 @@ router.post('/login', async (req, res) => {
           name: userData.name,
           role: userData.role
         },
-        message: "Authentication successful"
+        message: "Authentication successful",
+        session: {
+          created_at: session.login_time,
+          expires_in: '24h'
+        }
       });
     } else {
       res.status(401).json({

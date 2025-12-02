@@ -6,9 +6,20 @@ const { authenticateToken } = require('../middleware/auth');
 // GET /api/missing-persons - Get all missing persons
 router.get('/', async (req, res) => {
   try {
-    const { status, priority, disaster_related, limit = 100, skip = 0 } = req.query;
+    const { status, priority, disaster_related, verification_status, limit = 100, skip = 0 } = req.query;
     
     let query = {};
+    
+    // Public users only see verified posts with public visibility
+    // Admins can filter by verification_status (including pending)
+    if (req.query.verification_status && req.user && req.user.role === 'admin') {
+      // Admin can request specific verification status
+      query.verification_status = req.query.verification_status;
+    } else {
+      // Public view: only show verified and publicly visible posts
+      query.verification_status = 'verified';
+      query.public_visibility = true;
+    }
     
     if (status) query.status = status;
     if (priority) query.priority = priority;
@@ -66,8 +77,10 @@ router.get('/search', async (req, res) => {
     const { q, lat, lng, radius_km = 50 } = req.query;
     
     let query = { 
-      status: 'missing', 
-      verification_status: { $ne: 'rejected' },
+      status: 'missing',
+      // Only show verified and publicly visible posts
+      verification_status: 'verified',
+      public_visibility: true,
       auto_hidden: { $ne: true }
     };
     
@@ -140,6 +153,16 @@ router.get('/:id', async (req, res) => {
       });
     }
     
+    // Public users can only see verified and publicly visible posts
+    // Admins can see all posts
+    const isAdmin = req.user && req.user.role === 'admin';
+    if (!isAdmin && (!missingPerson.public_visibility || missingPerson.verification_status !== 'verified')) {
+      return res.status(403).json({
+        success: false,
+        message: 'This report is not publicly accessible'
+      });
+    }
+    
     res.json({
       success: true,
       data: missingPerson
@@ -154,21 +177,40 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Import security middleware
+const { 
+  missingPersonSubmissionLimiter, 
+  checkDuplicateSubmission 
+} = require('../middleware/security');
+
 // POST /api/missing-persons - Create new missing person report
 // Now accepts both authenticated and unauthenticated submissions
-router.post('/', async (req, res) => {
+// WITH rate limiting and duplicate checking
+router.post('/', 
+  missingPersonSubmissionLimiter, 
+  checkDuplicateSubmission,
+  async (req, res) => {
   try {
     // Check if user is authenticated (optional)
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
     let userId = null;
+    let userRole = null;
     if (token) {
       try {
         const jwt = require('jsonwebtoken');
-        const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+        const jwtSecret = process.env.JWT_SECRET;
+        
+        if (!jwtSecret) {
+          return res.status(500).json({
+            success: false,
+            message: 'Server configuration error: JWT_SECRET not set'
+          });
+        }
         const decoded = jwt.verify(token, jwtSecret);
         userId = decoded._id || decoded.citizenId || decoded.individualId;
+        userRole = decoded.role;
       } catch (err) {
         // Token invalid, continue as unauthenticated
         console.log('[MISSING PERSON] Unauthenticated submission');
@@ -196,19 +238,45 @@ router.post('/', async (req, res) => {
       }
     }
     
+    // Capture IP and metadata
+    const submittedFromIp = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    
     const missingPersonData = {
       ...req.body,
       created_by: userId,
-      last_modified_by: userId
+      last_modified_by: userId,
+      // Security fields
+      verification_status: userRole === 'admin' ? 'verified' : 'pending',
+      requires_admin_approval: userRole !== 'admin',
+      public_visibility: userRole === 'admin', // Auto-approve admin submissions
+      submitted_from_ip: submittedFromIp,
+      submission_metadata: {
+        ...(req.body.submission_metadata || {}),
+        user_agent: req.headers['user-agent']
+      },
+      approval_history: [{
+        action: 'submitted',
+        performed_by: {
+          user_id: userId,
+          username: req.body.reporter_name,
+          role: userRole || 'citizen'
+        },
+        timestamp: new Date()
+      }]
     };
     
     const missingPerson = new MissingPerson(missingPersonData);
     await missingPerson.save();
     
+    console.log(`📝 Missing person report created: ${missingPerson._id} | Status: ${missingPerson.verification_status} | From IP: ${submittedFromIp}`);
+    
     const response = {
       success: true,
-      message: 'Missing person report created successfully',
-      data: missingPerson
+      message: userRole === 'admin' 
+        ? 'Missing person report created and auto-approved'
+        : 'Missing person report submitted successfully. Pending admin approval.',
+      data: missingPerson,
+      pending_approval: userRole !== 'admin'
     };
     
     // Include auth token if shadow account was created
@@ -676,6 +744,154 @@ router.post('/:id/spam', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error reporting spam',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/missing-persons/:id/approve - Approve missing person report (Admin only)
+router.post('/:id/approve', authenticateToken, async (req, res) => {
+  try {
+    const { verifyAdminSession, requireAdminRole, logAdminAction } = require('../middleware/security');
+    
+    // Verify admin role
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin role required to approve reports'
+      });
+    }
+
+    const missingPerson = await MissingPerson.findById(req.params.id);
+    
+    if (!missingPerson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Missing person not found'
+      });
+    }
+
+    if (missingPerson.verification_status === 'verified') {
+      return res.status(400).json({
+        success: false,
+        message: 'Report already verified'
+      });
+    }
+
+    // Approve the report
+    missingPerson.verification_status = 'verified';
+    missingPerson.public_visibility = true;
+    missingPerson.requires_admin_approval = false;
+    missingPerson.verified_by = {
+      user_id: req.user.individualId,
+      username: req.user.name,
+      role: req.user.role,
+      verified_at: new Date(),
+      verification_notes: req.body.notes || ''
+    };
+    missingPerson.approval_history.push({
+      action: 'approved',
+      performed_by: {
+        user_id: req.user.individualId,
+        username: req.user.name,
+        role: req.user.role
+      },
+      reason: req.body.notes || 'Verified by admin',
+      timestamp: new Date()
+    });
+
+    await missingPerson.save();
+    
+    // Log admin action
+    await logAdminAction(req, 'approve_missing_person', missingPerson._id, {
+      case_number: missingPerson.case_number,
+      person_name: missingPerson.full_name
+    });
+
+    console.log(`✅ Missing person approved: ${missingPerson.case_number} by ${req.user.individualId}`);
+
+    res.json({
+      success: true,
+      message: 'Missing person report approved successfully',
+      data: missingPerson
+    });
+  } catch (error) {
+    console.error('Error approving missing person:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error approving report',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/missing-persons/:id/reject - Reject missing person report (Admin only)
+router.post('/:id/reject', authenticateToken, async (req, res) => {
+  try {
+    const { logAdminAction } = require('../middleware/security');
+    
+    // Verify admin role
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin role required to reject reports'
+      });
+    }
+
+    const { reason } = req.body;
+    
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required'
+      });
+    }
+
+    const missingPerson = await MissingPerson.findById(req.params.id);
+    
+    if (!missingPerson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Missing person not found'
+      });
+    }
+
+    // Reject the report
+    missingPerson.verification_status = 'rejected';
+    missingPerson.public_visibility = false;
+    missingPerson.rejection_reason = reason;
+    missingPerson.approval_history.push({
+      action: 'rejected',
+      performed_by: {
+        user_id: req.user.individualId,
+        username: req.user.name,
+        role: req.user.role
+      },
+      reason: reason,
+      timestamp: new Date()
+    });
+
+    await missingPerson.save();
+    
+    // Log admin action
+    await logAdminAction(req, 'reject_missing_person', missingPerson._id, {
+      case_number: missingPerson.case_number,
+      person_name: missingPerson.full_name,
+      reason: reason
+    });
+
+    console.log(`❌ Missing person rejected: ${missingPerson.case_number} by ${req.user.individualId}`);
+
+    res.json({
+      success: true,
+      message: 'Missing person report rejected',
+      data: missingPerson
+    });
+  } catch (error) {
+    console.error('Error rejecting missing person:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error rejecting report',
       error: error.message
     });
   }

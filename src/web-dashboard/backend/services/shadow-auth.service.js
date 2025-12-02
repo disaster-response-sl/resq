@@ -68,7 +68,11 @@ class ShadowAuthService {
    * Token contains: citizenId, phone, name, role
    */
   static generateToken(citizen) {
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET not configured in environment variables');
+    }
     
     const payload = {
       citizenId: citizen._id,

@@ -27,3 +27,14 @@ yarn-error.log*
 node_modules/
 *.env
 .DS_Store
+
+# Security - Never commit password files
+*password*.txt
+*credentials*.txt
+*secret*.txt
+scripts/setup-secure-admin.js
+scripts/seed-users.js
+
+# Server logs may contain sensitive data
+server-log.txt
+*.log

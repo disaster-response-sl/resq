@@ -15,7 +15,15 @@ const authenticateToken = (req, res, next) => {
   }
 
   // Verify token
-  const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+  const jwtSecret = process.env.JWT_SECRET;
+  
+  if (!jwtSecret) {
+    console.error('❌ JWT_SECRET not configured in environment variables');
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error: JWT_SECRET not set'
+    });
+  }
   jwt.verify(token, jwtSecret, (err, user) => {
     if (err) {
       return res.status(403).json({

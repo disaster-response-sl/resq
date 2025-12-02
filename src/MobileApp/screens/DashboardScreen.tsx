@@ -300,7 +300,12 @@ const DashboardScreen = ({ navigation }: NavigationProps) => {
 
   const fetchWeatherData = async (lat: number, lng: number) => {
     try {
-      const API_KEY = 'ef2e48a91b8c1c679ab689747a5bc8a1';
+      // Use environment variable for API key - never hardcode credentials
+      const API_KEY = process.env.OPENWEATHER_API_KEY || '';
+      if (!API_KEY) {
+        console.warn('⚠️ OpenWeather API key not configured');
+        return;
+      }
       const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${API_KEY}&units=metric`
       );
