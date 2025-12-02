@@ -625,12 +625,11 @@ const ReportMissingPersonPage: React.FC = () => {
             
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-yellow-900">
-                <strong>Trust but Verify</strong><br />
-                • Your report is <strong>immediately public</strong> to maximize reach<br />
-                • It shows a yellow "User Reported - Not Verified" badge<br />
-                • Our team will review and verify within 24 hours<br />
-                • Once verified, it will show a green "Verified" badge<br />
-                • Community members can report spam if they see issues
+                <strong>Submission Received — Pending Review</strong><br />
+                • Your report has been submitted and is currently pending admin verification.<br />
+                • It will not be published publicly until an administrator verifies and approves it.<br />
+                • You will be notified once the report is approved and published.<br />
+                • Community members can flag spam or add sightings to help the investigation.
               </p>
             </div>
 
