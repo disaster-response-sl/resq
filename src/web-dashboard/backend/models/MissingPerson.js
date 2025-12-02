@@ -206,16 +206,27 @@ const MissingPersonSchema = new mongoose.Schema({
   },
   verification_status: {
     type: String,
-    enum: ['unverified', 'verified', 'rejected'],
-    default: 'unverified'
+    enum: ['pending', 'verified', 'rejected'],
+    default: 'pending'
   },
   verified_by: {
     user_id: String,
     username: String,
     role: String,
-    verified_at: Date
+    verified_at: Date,
+    verification_notes: String
   },
   rejection_reason: String,
+  requires_admin_approval: {
+    type: Boolean,
+    default: true // All new posts require admin approval
+  },
+  submitted_from_ip: String,
+  submission_metadata: {
+    user_agent: String,
+    submission_time: Date,
+    duplicate_check_passed: Boolean
+  },
   
   // System Fields
   created_by: {
@@ -229,8 +240,24 @@ const MissingPersonSchema = new mongoose.Schema({
   },
   public_visibility: {
     type: Boolean,
-    default: true // Whether to show in public missing persons list
+    default: false // Hidden until admin approval
   },
+  approval_history: [{
+    action: {
+      type: String,
+      enum: ['submitted', 'approved', 'rejected', 'hidden', 'unhidden']
+    },
+    performed_by: {
+      user_id: String,
+      username: String,
+      role: String
+    },
+    reason: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   
   // Community Policing
   spam_reports: [{
