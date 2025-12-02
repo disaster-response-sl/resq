@@ -123,7 +123,7 @@ export interface MissingPerson {
   // AI Extraction (Hybrid Approach)
   extracted_data?: ExtractedData;
   data_source: 'manual' | 'ai_extracted' | 'api_import';
-  verification_status: 'unverified' | 'verified' | 'rejected';
+  verification_status: 'pending' | 'verified' | 'rejected';
   verified_by?: VerifiedBy;
   rejection_reason?: string;
   
