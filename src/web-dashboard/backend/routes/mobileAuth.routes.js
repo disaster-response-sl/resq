@@ -81,7 +81,14 @@ router.post('/login', async (req, res) => {
         role: userData ? userData.role : 'Citizen'
       };
       
-      const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+      const jwtSecret = process.env.JWT_SECRET;
+      
+      if (!jwtSecret) {
+        return res.status(500).json({
+          success: false,
+          message: 'Server configuration error: JWT_SECRET not set'
+        });
+      }
       const appToken = jwt.sign(
         {
           _id: user._id,

@@ -200,7 +200,14 @@ router.post('/',
     if (token) {
       try {
         const jwt = require('jsonwebtoken');
-        const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+        const jwtSecret = process.env.JWT_SECRET;
+        
+        if (!jwtSecret) {
+          return res.status(500).json({
+            success: false,
+            message: 'Server configuration error: JWT_SECRET not set'
+          });
+        }
         const decoded = jwt.verify(token, jwtSecret);
         userId = decoded._id || decoded.citizenId || decoded.individualId;
         userRole = decoded.role;

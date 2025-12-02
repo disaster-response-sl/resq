@@ -34,3 +34,7 @@ node_modules/
 *secret*.txt
 scripts/setup-secure-admin.js
 scripts/seed-users.js
+
+# Server logs may contain sensitive data
+server-log.txt
+*.log
