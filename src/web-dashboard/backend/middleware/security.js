@@ -85,18 +85,30 @@ const verifyAdminSession = async (req, res, next) => {
 
 // Rate limiting for missing person submissions
 const missingPersonSubmissionLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // Max 5 submissions per hour per IP
+  windowMs: 15 * 60 * 1000, // 15 minutes (reduced from 1 hour)
+  max: 10, // Max 10 submissions per 15 min (increased from 5/hour)
   message: {
     success: false,
-    message: 'Too many submissions. Please try again later.',
-    code: 'RATE_LIMIT_EXCEEDED'
+    message: 'Too many submissions. Please try again in a few minutes.',
+    code: 'RATE_LIMIT_EXCEEDED',
+    retryAfter: 15 // minutes
   },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
     // Skip rate limiting for verified admins
     return req.user && req.user.role === 'admin';
+  },
+  // More lenient handler that provides clear feedback
+  handler: (req, res) => {
+    console.warn(`⚠️ Rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      success: false,
+      message: 'Too many missing person submissions. To prevent spam, please wait 15 minutes before submitting again.',
+      code: 'RATE_LIMIT_EXCEEDED',
+      retryAfter: 15,
+      tip: 'If you need to submit multiple reports, please contact an admin for assistance.'
+    });
   }
 });
 

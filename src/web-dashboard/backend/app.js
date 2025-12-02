@@ -291,23 +291,31 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).send(err.message || 'Internal server error');
 });
 
+// Environment validation
+console.log('\n🔍 Environment Check:');
+console.log('  MONGO_URI:', process.env.MONGO_URI ? '✅ Set' : '❌ Not set');
+console.log('  JWT_SECRET:', process.env.JWT_SECRET ? '✅ Set' : '⚠️ Not set (authentication will be limited)');
+console.log('  GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Set' : '⚠️ Not set');
+console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('');
+
 // MongoDB connection
 const PORT = process.env.PORT || 5000;
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/disaster-platform';
-console.log('Attempting to connect to MongoDB:', mongoUri);
+console.log('Attempting to connect to MongoDB:', mongoUri.replace(/:[^:@]+@/, ':****@')); // Hide password
 
 mongoose.connect(mongoUri)
   .then(() => {
-    console.log("MongoDB connected successfully");
+    console.log("✅ MongoDB connected successfully");
 
     // Start SOS escalation service after DB connection
     const escalationService = new SosEscalationService();
     escalationService.startScheduler(5); // Check every 5 minutes
   })
   .catch((err) => {
-    console.error("MongoDB connection error:", err);
+    console.error("❌ MongoDB connection error:", err.message);
     console.log("Using MONGO_URI:", process.env.MONGO_URI ? 'Set' : 'Not set');
-    console.log("Falling back to default URI:", mongoUri);
+    console.log("Falling back to default URI");
   });
 
 // Start the server with Socket.io
