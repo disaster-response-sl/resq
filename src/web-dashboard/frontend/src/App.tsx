@@ -18,6 +18,7 @@ import MissingPersonsDashboard from './components/MissingPersonsDashboard';
 import ReliefDataDashboard from './components/ReliefDataDashboard';
 import ReportsDashboard from './components/ReportsDashboard';
 import AdminIncidentReportsPage from './components/AdminIncidentReportsPage';
+import AdminReviewDashboard from './components/AdminReviewDashboard';
 import CitizenDashboard from './components/CitizenDashboard';
 import CitizenLoginPage from './components/CitizenLoginPage';
 import CitizenSignupPage from './components/CitizenSignupPage';
@@ -157,6 +158,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MissingPersonVerificationPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/missing-persons/review" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminReviewDashboard />
                   </ProtectedRoute>
                 } 
               />
