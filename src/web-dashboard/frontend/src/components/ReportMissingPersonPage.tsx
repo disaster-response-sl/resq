@@ -125,8 +125,13 @@ const ReportMissingPersonPage: React.FC = () => {
       
       console.log('✅ Report submitted:', response.data.case_number);
       
-      // If shadow account was created, show token info
-      if (response.auth?.token) {
+      // Show appropriate message based on status
+      if (response.data.verification_status === 'pending') {
+        toast.success(
+          `Report submitted for admin verification! Case Number: ${response.data.case_number}. Your report will be reviewed and published once approved by an administrator.`,
+          { duration: 8000 }
+        );
+      } else if (response.auth?.token) {
         toast.success(
           `Report submitted! Case: ${response.data.case_number}. An account was created for you to track updates.`,
           { duration: 6000 }
@@ -141,7 +146,17 @@ const ReportMissingPersonPage: React.FC = () => {
       setStep('submitted');
     } catch (error: any) {
       console.error('Submit error:', error);
-      toast.error(error.response?.data?.message || 'Failed to submit report');
+      
+      // Handle different error types
+      if (error.response?.status === 409) {
+        const errorData = error.response?.data;
+        toast.error(
+          errorData?.message || 'This report appears to be a duplicate. Please check existing reports.',
+          { duration: 7000 }
+        );
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to submit report');
+      }
     } finally {
       setSubmitting(false);
     }
