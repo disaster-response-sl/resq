@@ -42,12 +42,14 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Build
         run: npm run build
         env:
           VITE_API_BASE_URL: http://localhost:5000
+          VITE_PUBLIC_DATA_API_URL: https://api.floodsupport.org/default/sri-lanka-flood-relief-jm/v1.0
+          VITE_PUBLIC_DATA_API_KEY: dummy-key-for-build
 
   # Backend checks
   backend-check:
