@@ -195,6 +195,7 @@ const CitizenMapPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100&public_visibility=true`
       );
       if (response.data.success) {
+
         const rawSignals: any[] = response.data.data || [];
 
         // Helper: normalize location from various possible shapes
@@ -303,6 +304,7 @@ const CitizenMapPage: React.FC = () => {
           console.warn(`⚠️ ${failed.length} documents failed location parsing:`, failed);
         }
         console.log('SOS Signals Data:', normalized);
+
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);

@@ -277,12 +277,15 @@ router.get('/sos-signals', async (req, res) => {
     }
     // If no public_visibility param, show all
 
+
     const sosSignals = await SosSignal.find(query)
       .sort({ timestamp: -1 })
       .limit(parseInt(limit))
       .lean();
 
+
     console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB matching query:`, JSON.stringify(query));
+
 
     res.json({
       success: true,
