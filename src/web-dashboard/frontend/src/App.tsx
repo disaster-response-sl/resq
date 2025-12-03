@@ -30,6 +30,8 @@ import CitizenReportPage from './components/CitizenReportPage';
 import CitizenChatPage from './components/CitizenChatPage';
 import CitizenMapPage from './components/CitizenMapPage';
 import ReliefTrackerPage from './components/ReliefTrackerPage';
+import SOSEmergencyTrackerPage from './components/SOSEmergencyTrackerPage';
+import SubmitSOSEmergencyPage from './components/SubmitSOSEmergencyPage';
 import EmergencyContactsPage from './components/EmergencyContactsPage';
 import VolunteerFormPage from './components/VolunteerFormPage';
 import LankaRouteWatchPage from './components/LankaRouteWatchPage';
@@ -184,6 +186,8 @@ function App() {
               <Route path="/citizen/chat" element={<CitizenChatPage />} />
               <Route path="/citizen/map" element={<CitizenMapPage />} />
               <Route path="/citizen/relief-tracker" element={<ReliefTrackerPage />} />
+              <Route path="/citizen/sos-tracker" element={<SOSEmergencyTrackerPage />} />
+              <Route path="/citizen/submit-sos" element={<SubmitSOSEmergencyPage />} />
               <Route path="/citizen/emergency-contacts" element={<EmergencyContactsPage />} />
               <Route path="/citizen/volunteer" element={<VolunteerFormPage />} />
           <Route path="/citizen/route-watch" element={<LankaRouteWatchPage />} />

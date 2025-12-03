@@ -252,13 +252,20 @@ router.get('/volunteer', async (req, res) => {
 // GET /api/public/sos-signals - Get user-submitted SOS signals from MongoDB
 router.get('/sos-signals', async (req, res) => {
   try {
-    const { status, limit = 100 } = req.query;
+    const { status, limit = 100, public_visibility } = req.query;
 
-    console.log('📡 FETCHING MongoDB SOS signals...');
+    console.log('📡 FETCHING MongoDB SOS signals...', { status, public_visibility, limit });
 
     let query = {};
+    
+    // Filter by status if provided
     if (status) {
       query.status = status;
+    }
+    
+    // Filter by public_visibility if provided (default to true for public endpoint)
+    if (public_visibility === 'true' || public_visibility === true) {
+      query.public_visibility = true;
     }
 
     const sosSignals = await SosSignal.find(query)
@@ -266,7 +273,7 @@ router.get('/sos-signals', async (req, res) => {
       .limit(parseInt(limit))
       .lean();
 
-    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB`);
+    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB matching query:`, query);
 
     res.json({
       success: true,

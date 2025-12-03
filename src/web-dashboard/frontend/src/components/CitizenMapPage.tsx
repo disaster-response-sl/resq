@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Map as MapIcon, ArrowLeft, Droplets, AlertCircle } from 'lucide-react';
+import { Map as MapIcon, ArrowLeft, Droplets, AlertCircle, AlertTriangle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -100,12 +100,14 @@ const CitizenMapPage: React.FC = () => {
   const [floodData, setFloodData] = useState<FloodData[]>([]);
   const [reliefCamps, setReliefCamps] = useState<ReliefCamp[]>([]);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
+  const [externalSOSSignals, setExternalSOSSignals] = useState<any[]>([]);
   const [userReports, setUserReports] = useState<UserReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFloods, setShowFloods] = useState(true);
   const [showDisasters, setShowDisasters] = useState(true);
   const [showReliefCamps, setShowReliefCamps] = useState(true);
   const [showSOSSignals, setShowSOSSignals] = useState(true);
+  const [showExternalSOS, setShowExternalSOS] = useState(true);
   const [showUserReports, setShowUserReports] = useState(true);
 
   useEffect(() => {
@@ -114,6 +116,7 @@ const CitizenMapPage: React.FC = () => {
     fetchFloodData();
     fetchReliefCamps();
     fetchSOSSignals();
+    fetchExternalSOSSignals();
     fetchUserReports();
   }, []);
 
@@ -187,16 +190,48 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchSOSSignals = async () => {
     try {
-      // HYBRID DATA MODEL: Fetch MongoDB SOS signals from user submissions
+      // HYBRID DATA MODEL: Fetch all public MongoDB SOS signals
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?status=pending&limit=100`
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100&public_visibility=true`
       );
       if (response.data.success) {
-        setSOSSignals(response.data.data);
-        console.log(`✅ Loaded ${response.data.data.length} SOS signals from MongoDB`);
+        const validSignals = response.data.data.filter((sos: SOSSignal) => {
+          const hasValidLocation = sos.location && 
+                                  typeof sos.location.lat === 'number' && 
+                                  typeof sos.location.lng === 'number' &&
+                                  !isNaN(sos.location.lat) &&
+                                  !isNaN(sos.location.lng);
+          
+          if (!hasValidLocation) {
+            console.warn('⚠️ Invalid SOS signal location:', sos);
+          }
+          return hasValidLocation;
+        });
+        
+        setSOSSignals(validSignals);
+        console.log(`✅ Loaded ${validSignals.length} valid SOS signals from MongoDB (${response.data.data.length} total)`);
+        console.log('SOS Signals Data:', validSignals);
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);
+    }
+  };
+
+  const fetchExternalSOSSignals = async () => {
+    try {
+      // HYBRID DATA MODEL: Fetch external SOS Emergency API data
+      const { externalDataService } = await import('../services/externalDataService');
+      const response = await externalDataService.getPublicSOSEmergencyRequests({
+        limit: 100,
+      });
+      
+      if (response.success && response.data) {
+        setExternalSOSSignals(response.data);
+        console.log(`✅ Loaded ${response.data.length} SOS emergency requests from External API`);
+      }
+    } catch (error) {
+      // Silently fail - external API may not be available
+      console.log('External SOS API not available');
     }
   };
 
@@ -233,14 +268,24 @@ const CitizenMapPage: React.FC = () => {
       requestParams.append('type', 'requests');
       const requestsResponse = await axios.get(
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
-      ).catch(() => ({ data: { requests: [] } }));
+      ).catch((error) => {
+        if (error.response?.status === 401) {
+          console.log('ℹ️ Supabase relief requests API: Authentication not available');
+        }
+        return { data: { requests: [] } };
+      });
 
       // Fetch Supabase CONTRIBUTIONS from public API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
       const contributionsResponse = await axios.get(
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
-      ).catch(() => ({ data: { contributions: [] } }));
+      ).catch((error) => {
+        if (error.response?.status === 401) {
+          console.log('ℹ️ Supabase contributions API: Authentication not available');
+        }
+        return { data: { contributions: [] } };
+      });
 
       // Fetch MongoDB help requests (user incident reports)
       const mongoResponse = await axios.get(
@@ -438,7 +483,16 @@ const CitizenMapPage: React.FC = () => {
                 onChange={(e) => setShowSOSSignals(e.target.checked)}
                 className="w-4 h-4 text-blue-600"
               />
-              <span className="text-sm font-medium text-gray-700">SOS Signals</span>
+              <span className="text-sm font-medium text-gray-700">SOS Signals (Local)</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showExternalSOS}
+                onChange={(e) => setShowExternalSOS(e.target.checked)}
+                className="w-4 h-4 text-red-600"
+              />
+              <span className="text-sm font-medium text-gray-700">SOS Emergency (External)</span>
             </label>
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -463,6 +517,9 @@ const CitizenMapPage: React.FC = () => {
                 fetchDisasters();
                 fetchFloodData();
                 fetchReliefCamps();
+                fetchSOSSignals();
+                fetchExternalSOSSignals();
+                fetchUserReports();
                 toast.success('Map data refreshed');
               }}
               className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -619,7 +676,7 @@ const CitizenMapPage: React.FC = () => {
                     <div className="min-w-[200px]">
                       <h3 className="font-bold text-red-600 mb-2 flex items-center">
                         <AlertCircle className="h-4 w-4 mr-2" />
-                        SOS Signal
+                        SOS Signal (Local)
                       </h3>
                       <div className="space-y-1 text-sm">
                         <p>
@@ -656,6 +713,90 @@ const CitizenMapPage: React.FC = () => {
                   </Popup>
                 </Marker>
               ))}
+
+            {/* External SOS Emergency - HYBRID DATA MODEL: FloodSupport.org API */}
+            {showExternalSOS &&
+              externalSOSSignals
+                .filter((req) => req.latitude && req.longitude)
+                .map((req, index) => (
+                  <Marker
+                    key={`external-sos-${req.id || req.referenceNumber}-${index}`}
+                    position={[req.latitude, req.longitude]}
+                    icon={createCustomIcon('#dc2626', '⚠️')}
+                  >
+                    <Popup>
+                      <div className="min-w-[250px]">
+                        <h3 className="font-bold text-red-700 mb-2 flex items-center">
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          SOS Emergency (External)
+                        </h3>
+                        <div className="space-y-1 text-sm">
+                          <p>
+                            <span className="font-semibold">Name:</span> {req.fullName}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Phone:</span> {req.phoneNumber}
+                          </p>
+                          {req.emergencyType && (
+                            <p>
+                              <span className="font-semibold">Type:</span>{' '}
+                              <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800">
+                                {req.emergencyType.replace(/_/g, ' ')}
+                              </span>
+                            </p>
+                          )}
+                          {req.priority && (
+                            <p>
+                              <span className="font-semibold">Priority:</span>{' '}
+                              <span
+                                className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                  req.priority === 'HIGHLY_CRITICAL' || req.priority === 'CRITICAL'
+                                    ? 'bg-red-100 text-red-800'
+                                    : req.priority === 'HIGH'
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}
+                              >
+                                {req.priority}
+                              </span>
+                            </p>
+                          )}
+                          {req.numberOfPeople && (
+                            <p>
+                              <span className="font-semibold">People:</span> {req.numberOfPeople}
+                            </p>
+                          )}
+                          {req.waterLevel && (
+                            <p>
+                              <span className="font-semibold">Water Level:</span>{' '}
+                              <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                                {req.waterLevel}
+                              </span>
+                            </p>
+                          )}
+                          {req.district && (
+                            <p>
+                              <span className="font-semibold">District:</span> {req.district}
+                            </p>
+                          )}
+                          {req.description && (
+                            <p className="mt-2 text-xs text-gray-700 border-t pt-2">
+                              {req.description}
+                            </p>
+                          )}
+                          {req.referenceNumber && (
+                            <p className="text-xs text-gray-500 mt-2">Ref: {req.referenceNumber}</p>
+                          )}
+                          <div className="mt-2 pt-2 border-t border-gray-200">
+                            <span className="text-xs text-red-600 font-medium">
+                              🌐 FloodSupport.org API
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
 
             {/* User Reports - HYBRID DATA MODEL: MongoDB incident reports */}
             {showUserReports &&
