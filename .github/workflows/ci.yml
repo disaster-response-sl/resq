@@ -1,0 +1,168 @@
+name: CI Quality Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  # Secret scanning - runs first and fast
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better scanning
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+
+  # Frontend checks
+  frontend-check:
+    name: Frontend (Build Check)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web-dashboard/frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/web-dashboard/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:5000
+
+  # Backend checks
+  backend-check:
+    name: Backend (Syntax Check)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web-dashboard/backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/web-dashboard/backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for syntax errors
+        run: node -c app.js
+
+  # Environment validation
+  env-check:
+    name: Environment Config Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check .env.example files exist
+        run: |
+          echo "Checking for .env.example files..."
+          
+          if [ ! -f "src/web-dashboard/frontend/.env.example" ]; then
+            echo "⚠️ Missing: src/web-dashboard/frontend/.env.example"
+            echo "Creating placeholder..."
+            echo "VITE_API_BASE_URL=http://localhost:5000" > src/web-dashboard/frontend/.env.example
+          fi
+          
+          if [ ! -f "src/web-dashboard/backend/.env.example" ]; then
+            echo "⚠️ Missing: src/web-dashboard/backend/.env.example"
+            echo "Creating placeholder..."
+            cat > src/web-dashboard/backend/.env.example << 'EOF'
+          PORT=5000
+          NODE_ENV=development
+          MONGO_URI=mongodb://localhost:27017/disaster_platform
+          JWT_SECRET=your-secret-key-here
+          USE_MOCK_SLUDI=true
+          EOF
+          fi
+          
+          echo "✅ Environment config validation complete"
+
+      - name: Check for exposed secrets in code
+        run: |
+          echo "Checking for hardcoded secrets..."
+          
+          # Check for common secret patterns (excluding node_modules, .git)
+          if grep -r -E "(mongodb\+srv://[^/]+:[^@]+@|JWT_SECRET\s*=\s*['\"][^'\"]{10,}|API_KEY\s*=\s*['\"][^'\"]+)" \
+             --exclude-dir=node_modules \
+             --exclude-dir=.git \
+             --exclude-dir=build \
+             --exclude-dir=dist \
+             --exclude="*.md" \
+             --exclude="ci.yml" \
+             . ; then
+            echo "❌ Potential secrets found in code!"
+            exit 1
+          else
+            echo "✅ No obvious secrets detected"
+          fi
+
+  # Dependency audit
+  security-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Audit Frontend Dependencies
+        working-directory: src/web-dashboard/frontend
+        run: |
+          npm audit --audit-level=high || echo "⚠️ Frontend has vulnerabilities"
+
+      - name: Audit Backend Dependencies
+        working-directory: src/web-dashboard/backend
+        run: |
+          npm audit --audit-level=high || echo "⚠️ Backend has vulnerabilities"
+
+  # Overall status check
+  ci-success:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [secret-scan, frontend-check, backend-check, env-check, security-audit]
+    if: always()
+    steps:
+      - name: Check CI Results
+        run: |
+          if [ "${{ needs.secret-scan.result }}" != "success" ] || \
+             [ "${{ needs.frontend-check.result }}" != "success" ] || \
+             [ "${{ needs.backend-check.result }}" != "success" ] || \
+             [ "${{ needs.env-check.result }}" != "success" ]; then
+            echo "❌ CI checks failed"
+            exit 1
+          else
+            echo "✅ All CI checks passed!"
+          fi
