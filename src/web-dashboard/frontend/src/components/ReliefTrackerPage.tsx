@@ -837,11 +837,11 @@ const ReliefTrackerPage: React.FC = () => {
                     {/* Relief camp markers with clustering - showing ALL camps */}
                     <MarkerClusterGroup
                       chunkedLoading
-                      maxClusterRadius={60}
+                      maxClusterRadius={20}
                       spiderfyOnMaxZoom={true}
                       showCoverageOnHover={false}
                       zoomToBoundsOnClick={true}
-                      disableClusteringAtZoom={15}
+                      disableClusteringAtZoom={11}
                     >
                       {allCamps.map((camp) => (
                         <Marker

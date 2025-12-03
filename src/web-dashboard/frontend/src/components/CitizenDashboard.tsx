@@ -503,6 +503,41 @@ const CitizenDashboard: React.FC = () => {
           )}
         </div>
 
+        {/* SOS Emergency Services */}
+        <div className="mt-8 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 rounded-xl shadow-lg p-6 border border-red-100">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+                SOS Emergency Services
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">Report emergencies and track rescue operations</p>
+            </div>
+            <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+              🌐 LIVE
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => navigate('/citizen/submit-sos')}
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-start"
+            >
+              <AlertTriangle className="h-10 w-10 mb-3" />
+              <h4 className="text-lg font-bold mb-2">Submit Emergency Request</h4>
+              <p className="text-sm text-red-100">Report your emergency to FloodSupport.org rescue system</p>
+            </button>
+            
+            <button
+              onClick={() => navigate('/citizen/sos-tracker')}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-6 rounded-xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-start"
+            >
+              <MapPin className="h-10 w-10 mb-3" />
+              <h4 className="text-lg font-bold mb-2">Track Emergency Requests</h4>
+              <p className="text-sm text-blue-100">View real-time SOS emergency requests on map</p>
+            </button>
+          </div>
+        </div>
+
         {/* Emergency Contacts */}
         <div className="mt-8 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
