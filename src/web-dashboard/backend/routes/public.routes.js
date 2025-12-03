@@ -249,6 +249,43 @@ router.get('/volunteer', async (req, res) => {
   }
 });
 
+// DEBUG ENDPOINT - Get ALL SOS signals with location analysis
+router.get('/sos-signals-debug', async (req, res) => {
+  try {
+    const allSignals = await SosSignal.find({})
+      .sort({ timestamp: -1 })
+      .limit(100)
+      .lean();
+
+    const analysis = allSignals.map((signal, idx) => {
+      const locationFields = {
+        _id: signal._id,
+        has_location: !!signal.location,
+        location_lat: signal.location?.lat,
+        location_lng: signal.location?.lng,
+        has_latitude: signal.latitude !== undefined,
+        has_longitude: signal.longitude !== undefined,
+        has_coordinates: Array.isArray(signal.location?.coordinates),
+        coordinates_value: signal.location?.coordinates,
+        public_visibility: signal.public_visibility,
+        status: signal.status,
+        message: signal.message?.substring(0, 50),
+      };
+      return locationFields;
+    });
+
+    res.json({
+      success: true,
+      total: allSignals.length,
+      analysis,
+      raw_sample: allSignals.slice(0, 3) // First 3 full documents
+    });
+  } catch (error) {
+    console.error('❌ ERROR in debug endpoint:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // GET /api/public/sos-signals - Get user-submitted SOS signals from MongoDB
 router.get('/sos-signals', async (req, res) => {
   try {

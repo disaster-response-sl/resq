@@ -188,6 +188,19 @@ const CitizenMapPage: React.FC = () => {
     }
   };
 
+  // DEBUG: Expose function to check what backend returns
+  (window as any).debugSOSSignals = async () => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const response = await axios.get(`${API_BASE}/api/public/sos-signals-debug`);
+      console.log('🔍 DEBUG SOS SIGNALS:', response.data);
+      console.table(response.data.analysis);
+      return response.data;
+    } catch (err) {
+      console.error('Debug endpoint failed:', err);
+    }
+  };
+
   const fetchSOSSignals = async () => {
     try {
       // HYBRID DATA MODEL: Fetch all public MongoDB SOS signals
