@@ -473,19 +473,19 @@ const ReliefTrackerPage: React.FC = () => {
           </div>
 
           {/* Analytics Dashboard */}
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
               <div className="flex items-center space-x-3">
-                <BarChart3 className="h-7 w-7 text-blue-600" />
-                <h2 className="text-2xl font-bold text-gray-900">Relief Analytics</h2>
+                <BarChart3 className="h-6 md:h-7 w-6 md:w-7 text-blue-600" />
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Relief Analytics</h2>
               </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600">
                 <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
                 <span>Last updated: {lastRefresh.toLocaleTimeString()}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
               <div className="bg-red-50 rounded-lg p-4 border-2 border-red-200">
                 <div className="text-3xl font-bold text-red-600">{analytics.urgencyCounts.emergency}</div>
                 <div className="text-sm text-red-800">Emergency</div>
@@ -508,9 +508,9 @@ const ReliefTrackerPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-bold text-gray-900 mb-2">Top Establishments</h3>
+            <div className="mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+              <div className="bg-gray-50 rounded-lg p-3 md:p-4">
+                <h3 className="font-bold text-gray-900 mb-2 text-sm md:text-base">Top Establishments</h3>
                 <div className="space-y-1 text-sm">
                   {Object.entries(analytics.establishmentCounts)
                     .sort(([, a], [, b]) => b - a)
@@ -523,8 +523,8 @@ const ReliefTrackerPage: React.FC = () => {
                     ))}
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-bold text-gray-900 mb-2">Status Breakdown</h3>
+              <div className="bg-gray-50 rounded-lg p-3 md:p-4">
+                <h3 className="font-bold text-gray-900 mb-2 text-sm md:text-base">Status Breakdown</h3>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-700">⏳ Pending</span>
@@ -540,8 +540,8 @@ const ReliefTrackerPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-bold text-gray-900 mb-2">Special Indicators</h3>
+              <div className="bg-gray-50 rounded-lg p-3 md:p-4">
+                <h3 className="font-bold text-gray-900 mb-2 text-sm md:text-base">Special Indicators</h3>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-700">🚚 Pickup Required</span>
@@ -561,29 +561,29 @@ const ReliefTrackerPage: React.FC = () => {
           </div>
 
           {/* Find Nearby Help Section with Advanced Filters */}
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
               <div className="flex items-center space-x-3">
-                <Filter className="h-7 w-7 text-blue-600" />
-                <h2 className="text-2xl font-bold text-gray-900">Search & Filter</h2>
+                <Filter className="h-6 md:h-7 w-6 md:w-7 text-blue-600" />
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Search & Filter</h2>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
                     setAutoRefresh(!autoRefresh);
                     toast.success(autoRefresh ? 'Auto-refresh disabled' : 'Auto-refresh enabled (30s)');
                   }}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2 ${
+                  className={`px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition-colors flex items-center space-x-2 ${
                     autoRefresh ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
                   }`}
                 >
                   <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
-                  <span>Auto-Refresh</span>
+                  <span className="hidden sm:inline">Auto-Refresh</span>
                 </button>
                 <button
                   onClick={() => fetchReliefCamps()}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className="h-4 w-4" />
                 </button>
@@ -605,7 +605,7 @@ const ReliefTrackerPage: React.FC = () => {
             </div>
 
             {/* Filter Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   🏢 Establishment Type
@@ -743,11 +743,11 @@ const ReliefTrackerPage: React.FC = () => {
               </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <button
                 onClick={() => fetchReliefCamps()}
                 disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-sm md:text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Searching...' : '🔍 Find Nearby Shelters'}
               </button>
@@ -755,37 +755,37 @@ const ReliefTrackerPage: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   onClick={exportToCSV}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+                  className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                   title="Export to CSV"
                 >
                   <Download className="h-5 w-5" />
-                  <span className="hidden md:inline">CSV</span>
+                  <span>CSV</span>
                 </button>
                 <button
                   onClick={exportToJSON}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+                  className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                   title="Export to JSON"
                 >
                   <Download className="h-5 w-5" />
-                  <span className="hidden md:inline">JSON</span>
+                  <span>JSON</span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* Live Relief Camps Map */}
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-8">
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Live Relief Camps Map</h2>
-                  <p className="text-gray-600">
-                    Showing {reliefCamps.length} active relief camps • Updated in real-time
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Live Relief Camps Map</h2>
+                  <p className="text-sm md:text-base text-gray-600">
+                    Showing {allCamps.length} active relief camps • Updated in real-time
                   </p>
                 </div>
                 <button
                   onClick={() => navigate('/citizen/map')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-colors flex items-center justify-center space-x-2 w-full sm:w-auto"
                 >
                   <MapIcon className="h-5 w-5" />
                   <span>View Full Map</span>
@@ -798,12 +798,12 @@ const ReliefTrackerPage: React.FC = () => {
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
                   <p className="text-gray-600">Loading relief camps...</p>
                 </div>
-              ) : reliefCamps.length > 0 && userLocation ? (
-                <div className="mb-6">
+              ) : allCamps.length > 0 && userLocation ? (
+                <div className="mb-6 h-[400px] md:h-[600px] rounded-lg overflow-hidden">
                   <MapContainer
                     center={[userLocation.lat, userLocation.lng]}
                     zoom={10}
-                    style={{ height: '600px', width: '100%', borderRadius: '0.5rem' }}
+                    style={{ height: '100%', width: '100%' }}
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -834,9 +834,9 @@ const ReliefTrackerPage: React.FC = () => {
                       />
                     )}
 
-                    {/* Relief camp markers with clustering */}
+                    {/* Relief camp markers with clustering - showing ALL camps */}
                     <MarkerClusterGroup>
-                      {reliefCamps.map((camp) => (
+                      {allCamps.map((camp) => (
                         <Marker
                           key={camp.id}
                           position={[camp.latitude, camp.longitude]}
@@ -898,20 +898,20 @@ const ReliefTrackerPage: React.FC = () => {
 
               {loading ? null : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                    <p className="text-xs md:text-sm text-gray-600">
                       Showing <strong>{reliefCamps.length}</strong> of <strong>{totalCount}</strong> locations
-                      {searchText && <span> • Filtered by: "{searchText}"</span>}
+                      {searchText && <span className="block sm:inline"> • Filtered by: "{searchText}"</span>}
                     </p>
                     {reliefCamps.length > 0 && (
-                      <div className="flex gap-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 md:px-3 py-1 rounded-full">
                           {analytics.urgencyCounts.emergency} Emergency
                         </span>
-                        <span className="text-xs bg-orange-100 text-orange-800 px-3 py-1 rounded-full">
+                        <span className="text-xs bg-orange-100 text-orange-800 px-2 md:px-3 py-1 rounded-full">
                           {analytics.urgencyCounts.high} High
                         </span>
-                        <span className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                        <span className="text-xs bg-green-100 text-green-800 px-2 md:px-3 py-1 rounded-full">
                           {analytics.verifiedCount} Verified
                         </span>
                       </div>
@@ -926,7 +926,7 @@ const ReliefTrackerPage: React.FC = () => {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-h-[600px] overflow-y-auto">
                         {reliefCamps.slice(0, 50).map((camp) => (
                           <div
                             key={camp.id}
