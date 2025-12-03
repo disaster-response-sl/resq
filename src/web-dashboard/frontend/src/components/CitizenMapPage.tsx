@@ -828,9 +828,17 @@ const CitizenMapPage: React.FC = () => {
                         <p>
                           <span className="font-semibold">Message:</span> {sos.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(sos.timestamp).toLocaleString()}
-                        </p>
+                        {sos.timestamp && (
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(sos.timestamp).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        )}
                         <div className="mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
                         </div>
