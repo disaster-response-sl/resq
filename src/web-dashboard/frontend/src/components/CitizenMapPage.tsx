@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Map as MapIcon, ArrowLeft, Droplets, AlertCircle, AlertTriangle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
@@ -318,10 +319,6 @@ const CitizenMapPage: React.FC = () => {
 
         setSOSSignals(normalized);
         console.log(`✅ Loaded ${normalized.length} valid SOS signals from MongoDB (${rawSignals.length} total)`);
-        if (failed.length > 0) {
-          console.warn(`⚠️ ${failed.length} documents failed location parsing:`, failed);
-        }
-        console.log('SOS Signals Data:', normalized);
 
       }
     } catch (error) {
@@ -776,19 +773,26 @@ const CitizenMapPage: React.FC = () => {
                 </Marker>
               ))}
 
-            {/* SOS Signals - HYBRID DATA MODEL: MongoDB user submissions */}
-            {showSOSSignals &&
-              sosSignals
-                .filter(sos => 
-                  sos.location && 
-                  typeof sos.location.lat === 'number' && 
-                  typeof sos.location.lng === 'number' &&
-                  !isNaN(sos.location.lat) && 
-                  !isNaN(sos.location.lng) &&
-                  Math.abs(sos.location.lat) <= 90 && 
-                  Math.abs(sos.location.lng) <= 180
-                )
-                .map((sos) => (
+            {/* SOS Signals - HYBRID DATA MODEL: MongoDB user submissions - CLUSTERED for overlapping markers */}
+            {showSOSSignals && (
+              <MarkerClusterGroup
+                chunkedLoading
+                maxClusterRadius={50}
+                spiderfyOnMaxZoom={true}
+                showCoverageOnHover={true}
+                zoomToBoundsOnClick={true}
+              >
+                {sosSignals
+                  .filter(sos => 
+                    sos.location && 
+                    typeof sos.location.lat === 'number' && 
+                    typeof sos.location.lng === 'number' &&
+                    !isNaN(sos.location.lat) && 
+                    !isNaN(sos.location.lng) &&
+                    Math.abs(sos.location.lat) <= 90 && 
+                    Math.abs(sos.location.lng) <= 180
+                  )
+                  .map((sos) => (
                   <Marker
                     key={sos._id}
                     position={[sos.location.lat, sos.location.lng]}
@@ -834,7 +838,9 @@ const CitizenMapPage: React.FC = () => {
                     </div>
                   </Popup>
                 </Marker>
-                ))}
+                  ))}
+              </MarkerClusterGroup>
+            )}
 
             {/* External SOS Emergency - HYBRID DATA MODEL: FloodSupport.org API */}
             {showExternalSOS &&
