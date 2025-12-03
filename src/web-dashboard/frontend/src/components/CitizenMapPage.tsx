@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Map as MapIcon, ArrowLeft, Droplets, AlertCircle, AlertTriangle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { sriLankaFloodDataService, type WaterLevelReading } from '../services/sriLankaFloodDataService';
 
 // Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -160,31 +162,45 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchFloodData = async () => {
     try {
-      // Use the real Sri Lanka Flood Data API
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/flood-alerts`
-      );
+      // Use the official Sri Lanka Flood Data API (lk-flood-api.vercel.app)
+      const activeAlerts = await sriLankaFloodDataService.getActiveAlerts();
+      const stations = await sriLankaFloodDataService.getStations();
+      
+      // Combine alerts with station location data
+      const floods = activeAlerts.map((alert: WaterLevelReading) => {
+        const station = stations.find(s => s.name === alert.station_name);
+        return {
+          id: alert.station_name,
+          location: `${alert.station_name} - ${alert.river_name}`,
+          severity: alert.alert_status.toLowerCase(),
+          water_level: alert.water_level,
+          lat: station?.lat_lng[0] || 0,
+          lng: station?.lat_lng[1] || 0,
+          timestamp: alert.timestamp,
+          alert_status: alert.alert_status,
+          rising_or_falling: alert.rising_or_falling,
+          remarks: alert.remarks,
+          rainfall_mm: alert.rainfall_mm,
+          flood_score: alert.flood_score
+        };
+      }).filter(f => f.lat !== 0 && f.lng !== 0); // Filter out stations without location data
 
-      if (response.data.success && response.data.data) {
-        // Transform the data to our format
-        const floods = response.data.data.map((item: any) => ({
-          id: item.id || item.station_name,
-          location: `${item.station_name} - ${item.river_name}`,
-          severity: item.severity,
-          water_level: item.water_level || 0,
-          lat: item.lat,
-          lng: item.lng,
-          timestamp: item.timestamp,
-          alert_status: item.alert_status,
-          rising_or_falling: item.rising_or_falling,
-          remarks: item.remarks
-        }));
-        setFloodData(floods);
-        console.log(`Loaded ${floods.length} real-time flood alerts from DMC`);
-      }
+      setFloodData(floods);
+      console.log(`Loaded ${floods.length} real-time flood alerts from DMC (Sri Lanka Flood API)`);
     } catch (error) {
       console.error('Flood data fetch error:', error);
-      toast.error('Unable to fetch real-time flood data');
+      // Fallback to local backend if API fails
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/flood-alerts`
+        );
+        if (response.data.success && response.data.data) {
+          setFloodData(response.data.data);
+          console.log(`Loaded ${response.data.data.length} flood alerts from local backend`);
+        }
+      } catch (backendError) {
+        console.error('Backend flood data also failed:', backendError);
+      }
     }
   };
 
@@ -203,9 +219,9 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchSOSSignals = async () => {
     try {
-      // HYBRID DATA MODEL: Fetch all public MongoDB SOS signals
+      // HYBRID DATA MODEL: Fetch ALL MongoDB SOS signals for emergency response
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100&public_visibility=true`
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100`
       );
       if (response.data.success) {
         const validSignals = response.data.data.filter((sos: SOSSignal) => {
@@ -220,10 +236,9 @@ const CitizenMapPage: React.FC = () => {
           }
           return hasValidLocation;
         });
-        
+
         setSOSSignals(validSignals);
         console.log(`✅ Loaded ${validSignals.length} valid SOS signals from MongoDB (${response.data.data.length} total)`);
-        console.log('SOS Signals Data:', validSignals);
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);
@@ -668,23 +683,48 @@ const CitizenMapPage: React.FC = () => {
                         {flood.remarks && (
                           <p className="text-xs italic text-gray-600">{flood.remarks}</p>
                         )}
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(flood.timestamp).toLocaleString()}
-                        </p>
+                        {flood.timestamp && (
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(flood.timestamp).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </Popup>
                 </Marker>
               ))}
 
-            {/* SOS Signals - HYBRID DATA MODEL: MongoDB user submissions */}
-            {showSOSSignals &&
-              sosSignals.map((sos) => (
-                <Marker
-                  key={sos._id}
-                  position={[sos.location.lat, sos.location.lng]}
-                  icon={createCustomIcon('#ef4444', '🚨')}
-                >
+            {/* SOS Signals - HYBRID DATA MODEL: MongoDB user submissions - CLUSTERED for overlapping markers */}
+            {showSOSSignals && (
+              <MarkerClusterGroup
+                chunkedLoading
+                maxClusterRadius={50}
+                spiderfyOnMaxZoom={true}
+                showCoverageOnHover={true}
+                zoomToBoundsOnClick={true}
+              >
+                {sosSignals
+                  .filter(sos => 
+                    sos.location && 
+                    typeof sos.location.lat === 'number' && 
+                    typeof sos.location.lng === 'number' &&
+                    !isNaN(sos.location.lat) && 
+                    !isNaN(sos.location.lng) &&
+                    Math.abs(sos.location.lat) <= 90 && 
+                    Math.abs(sos.location.lng) <= 180
+                  )
+                  .map((sos) => (
+                  <Marker
+                    key={sos._id}
+                    position={[sos.location.lat, sos.location.lng]}
+                    icon={createCustomIcon('#ef4444', '🚨')}
+                  >
                   <Popup>
                     <div className="min-w-[200px]">
                       <h3 className="font-bold text-red-600 mb-2 flex items-center">
@@ -715,9 +755,17 @@ const CitizenMapPage: React.FC = () => {
                         <p>
                           <span className="font-semibold">Message:</span> {sos.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(sos.timestamp).toLocaleString()}
-                        </p>
+                        {sos.timestamp && (
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(sos.timestamp).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        )}
                         <div className="mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
                         </div>
@@ -725,7 +773,9 @@ const CitizenMapPage: React.FC = () => {
                     </div>
                   </Popup>
                 </Marker>
-              ))}
+                  ))}
+              </MarkerClusterGroup>
+            )}
 
             {/* External SOS Emergency - HYBRID DATA MODEL: FloodSupport.org API */}
             {showExternalSOS &&
@@ -848,9 +898,17 @@ const CitizenMapPage: React.FC = () => {
                         <p>
                           <span className="font-semibold">Description:</span> {report.description}
                         </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {new Date(report.timestamp).toLocaleString()}
-                        </p>
+                        {report.timestamp && (
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(report.timestamp).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        )}
                         <div className="mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
                         </div>
