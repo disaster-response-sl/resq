@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Users, AlertCircle, Map as MapIcon, ArrowLeft, ExternalLink, RefreshCw, Download, Layers, Filter, BarChart3, TrendingUp } from 'lucide-react';
+import { Heart, Users, AlertCircle, Map as MapIcon, ArrowLeft, ExternalLink, RefreshCw, Layers, Filter, BarChart3, TrendingUp } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import axios from 'axios';
@@ -361,44 +361,6 @@ const ReliefTrackerPage: React.FC = () => {
     return { urgencyCounts, establishmentCounts, statusCounts, verifiedCount, pickupRequiredCount };
   };
 
-  // Export to CSV
-  const exportToCSV = () => {
-    const headers = ['Name', 'Address', 'Latitude', 'Longitude', 'Type', 'Urgency', 'Status', 'Distance (km)', 'Verified', 'Assistance Types'];
-    const rows = reliefCamps.map(camp => [
-      camp.full_name,
-      camp.address,
-      camp.latitude,
-      camp.longitude,
-      camp.establishment_type,
-      camp.urgency,
-      camp.status,
-      camp.distance_km?.toFixed(2) || '0',
-      camp.verified ? 'Yes' : 'No',
-      camp.assistance_types.join('; ')
-    ]);
-
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relief-camps-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    toast.success('CSV exported successfully!');
-  };
-
-  // Export to JSON
-  const exportToJSON = () => {
-    const json = JSON.stringify(reliefCamps, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relief-camps-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    toast.success('JSON exported successfully!');
-  };
-
   // Load more camps
   const loadMore = () => {
     setOffset(prev => prev + limit);
@@ -747,29 +709,10 @@ const ReliefTrackerPage: React.FC = () => {
               <button
                 onClick={() => fetchReliefCamps()}
                 disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-sm md:text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-sm md:text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Searching...' : '🔍 Find Nearby Shelters'}
               </button>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={exportToCSV}
-                  className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
-                  title="Export to CSV"
-                >
-                  <Download className="h-5 w-5" />
-                  <span>CSV</span>
-                </button>
-                <button
-                  onClick={exportToJSON}
-                  className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
-                  title="Export to JSON"
-                >
-                  <Download className="h-5 w-5" />
-                  <span>JSON</span>
-                </button>
-              </div>
             </div>
           </div>
 

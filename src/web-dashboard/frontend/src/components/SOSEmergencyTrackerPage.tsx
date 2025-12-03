@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { 
   AlertTriangle, MapPin, Phone, Users, Clock, Activity,
-  Filter, RefreshCw, Download, Droplets, Home, Heart,
+  Filter, RefreshCw, Droplets, Home, Heart,
   Search
 } from 'lucide-react';
 import { externalDataService, SOSEmergencyRequest } from '../services/externalDataService';
@@ -125,66 +125,6 @@ const SOSEmergencyTrackerPage: React.FC = () => {
       byStatus: stats.byStatus || {},
       byPriority: stats.byPriority || {},
     };
-  };
-
-  const exportToCSV = () => {
-    if (requests.length === 0) {
-      toast.error('No data to export');
-      return;
-    }
-
-    const headers = [
-      'Reference Number',
-      'Name',
-      'Phone',
-      'Emergency Type',
-      'Priority',
-      'Status',
-      'District',
-      'Address',
-      'Number of People',
-      'Water Level',
-      'Created At',
-    ];
-
-    const rows = requests.map(req => [
-      req.referenceNumber || '',
-      req.fullName,
-      req.phoneNumber,
-      req.emergencyType,
-      req.priority || '',
-      req.status || '',
-      req.district || '',
-      req.address || '',
-      req.numberOfPeople || '',
-      req.waterLevel || '',
-      req.createdAt || '',
-    ]);
-
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `sos-emergency-requests-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    toast.success('CSV exported successfully');
-  };
-
-  const exportToJSON = () => {
-    if (requests.length === 0) {
-      toast.error('No data to export');
-      return;
-    }
-
-    const json = JSON.stringify(requests, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `sos-emergency-requests-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    toast.success('JSON exported successfully');
   };
 
   const getPriorityColor = (priority?: string) => {
@@ -439,22 +379,6 @@ const SOSEmergencyTrackerPage: React.FC = () => {
             >
               <Filter className="h-4 w-4" />
               Apply Filters
-            </button>
-
-            <button
-              onClick={exportToCSV}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Export CSV
-            </button>
-
-            <button
-              onClick={exportToJSON}
-              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Export JSON
             </button>
           </div>
         </div>

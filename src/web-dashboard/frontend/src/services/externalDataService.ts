@@ -215,7 +215,7 @@ export const externalDataService = {
       data,
       {
         headers: {
-          'api-key': PUBLIC_DATA_API_KEY,
+          'Authorization': `Bearer ${PUBLIC_DATA_API_KEY}`,
           'Content-Type': 'application/json',
         },
       }
@@ -241,7 +241,7 @@ export const externalDataService = {
       `${PUBLIC_DATA_API_URL}/sos`,
       {
         headers: {
-          'api-key': PUBLIC_DATA_API_KEY,
+          'Authorization': `Bearer ${PUBLIC_DATA_API_KEY}`,
         },
         params,
       }
@@ -263,7 +263,7 @@ export const externalDataService = {
         `${PUBLIC_DATA_API_URL}/sos`,
         {
           headers: {
-            'api-key': PUBLIC_DATA_API_KEY,
+            'Authorization': `Bearer ${PUBLIC_DATA_API_KEY}`,
           },
           params: {
             limit: 100,
