@@ -81,23 +81,31 @@ const ReliefTrackerPage: React.FC = () => {
       baseParams.append('radius_km', debouncedRadius);
       baseParams.append('sort', 'distance');
 
-      // Fetch Supabase REQUESTS from public API (no auth required)
+      // Fetch data from Sri Lanka Flood Relief Public Data API
+      const apiUrl = import.meta.env.VITE_PUBLIC_DATA_API_URL || 'https://api.floodsupport.org/default/sri-lanka-flood-relief-jm/v1.0';
+      const apiKey = import.meta.env.VITE_PUBLIC_DATA_API_KEY;
+
+      const apiHeaders = apiKey ? { 'api-key': apiKey } : {};
+
+      // Fetch REQUESTS from public API
       const requestParams = new URLSearchParams(baseParams);
       requestParams.append('type', 'requests');
       const requestsResponse = await axios.get(
-        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
+        `${apiUrl}/public-data-api?${requestParams.toString()}`,
+        { headers: apiHeaders }
       ).catch((err) => {
-        console.error('❌ Supabase requests error:', err.message);
+        console.error('❌ Public Data API requests error:', err.message);
         return { data: { requests: [], meta: {} } };
       });
 
-      // Fetch Supabase CONTRIBUTIONS from public API
+      // Fetch CONTRIBUTIONS from public API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
       const contributionsResponse = await axios.get(
-        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
+        `${apiUrl}/public-data-api?${contributionParams.toString()}`,
+        { headers: apiHeaders }
       ).catch((err) => {
-        console.error('❌ Supabase contributions error:', err.message);
+        console.error('❌ Public Data API contributions error:', err.message);
         return { data: { contributions: [], meta: {} } };
       });
 
@@ -106,27 +114,27 @@ const ReliefTrackerPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      // Direct Supabase API response: { requests: [...], contributions: [...], meta: {...} }
+      // Public Data API response: { requests: [...], contributions: [...], meta: {...} }
       console.log('🔍 Raw API responses:', {
         requestsResponse: requestsResponse.data,
         contributionsResponse: contributionsResponse.data,
         mongoResponse: mongoResponse.data
       });
 
-      const supabaseRequests = requestsResponse.data.requests || [];
-      const supabaseContributions = contributionsResponse.data.contributions || [];
+      const publicRequests = requestsResponse.data.requests || [];
+      const publicContributions = contributionsResponse.data.contributions || [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
 
       console.log('📊 Data fetched:', {
-        supabaseRequests: supabaseRequests.length,
-        supabaseContributions: supabaseContributions.length,
+        publicRequests: publicRequests.length,
+        publicContributions: publicContributions.length,
         mongoHelp: mongoHelp.length,
         requestsMeta: requestsResponse.data.meta,
         contributionsMeta: contributionsResponse.data.meta
       });
 
-      // Map Supabase contributions (people offering help)
-      const contributionsCamps = supabaseContributions.map((contrib: any) => ({
+      // Map public contributions (people offering help)
+      const contributionsCamps = publicContributions.map((contrib: any) => ({
         id: contrib.id,
         full_name: `💚 ${contrib.full_name} (Volunteer)`,
         address: contrib.address,
@@ -137,7 +145,7 @@ const ReliefTrackerPage: React.FC = () => {
         status: contrib.status || 'available',
         assistance_types: [...(contrib.goods_types || []), ...(contrib.services_types || []), ...(contrib.labor_types || [])],
         distance_km: contrib.distance_km,
-        source: 'supabase_contribution'
+        source: 'public_api_contribution'
       }));
 
       // Map MongoDB help requests to relief camp format
@@ -165,12 +173,12 @@ const ReliefTrackerPage: React.FC = () => {
 
       // Merge ALL sources
       const mergedCamps = [
-        ...supabaseRequests,
+        ...publicRequests,
         ...contributionsCamps,
         ...mongoHelpAsCamps
       ];
 
-      console.log(`✅ HYBRID Relief: ${supabaseRequests.length} Supabase requests + ${contributionsCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${mergedCamps.length} total`);
+      console.log(`✅ HYBRID Relief: ${publicRequests.length} Public API requests + ${contributionsCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${mergedCamps.length} total`);
 
       setReliefCamps(mergedCamps);
       toast.success(`Found ${mergedCamps.length} relief locations within ${debouncedRadius}km`);
