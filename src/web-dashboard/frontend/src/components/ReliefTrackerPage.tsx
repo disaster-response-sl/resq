@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { Heart, Users, AlertCircle, Map as MapIcon, ArrowLeft, ExternalLink, RefreshCw, Layers, Filter, BarChart3, TrendingUp } from 'lucide-react';
-
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import axios from 'axios';
@@ -205,7 +203,6 @@ const ReliefTrackerPage: React.FC = () => {
 
       const apiHeaders = apiKey ? { 'api-key': apiKey } : {};
 
-
       // Fetch REQUESTS from public API
       const requestParams = new URLSearchParams(baseParams);
       requestParams.append('type', 'requests');
@@ -364,7 +361,6 @@ const ReliefTrackerPage: React.FC = () => {
     return { urgencyCounts, establishmentCounts, statusCounts, verifiedCount, pickupRequiredCount };
   };
 
-
   // Load more camps
   const loadMore = () => {
     setOffset(prev => prev + limit);
@@ -449,7 +445,6 @@ const ReliefTrackerPage: React.FC = () => {
                 <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
                 <span>Last updated: {lastRefresh.toLocaleTimeString()}</span>
               </div>
-
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
@@ -524,10 +519,8 @@ const ReliefTrackerPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
-
 
           {/* Find Nearby Help Section with Advanced Filters */}
           <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-8">
@@ -716,12 +709,10 @@ const ReliefTrackerPage: React.FC = () => {
               <button
                 onClick={() => fetchReliefCamps()}
                 disabled={loading}
-
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-sm md:text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Searching...' : '🔍 Find Nearby Shelters'}
               </button>
-
             </div>
           </div>
 
@@ -789,13 +780,11 @@ const ReliefTrackerPage: React.FC = () => {
                     {/* Relief camp markers with clustering - showing ALL camps */}
                     <MarkerClusterGroup
                       chunkedLoading
-
                       maxClusterRadius={20}
                       spiderfyOnMaxZoom={true}
                       showCoverageOnHover={false}
                       zoomToBoundsOnClick={true}
                       disableClusteringAtZoom={11}
-
                     >
                       {allCamps.map((camp) => (
                         <Marker
