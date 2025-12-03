@@ -596,7 +596,7 @@ npm run dev
 ## 👥 Team
 
 ### Development Team
-- **Shalon Fernando** - Lead Software Engineer & Full-Stack Architect
+- **Shalon Fernando** - Lead Software Engineer & Full Stack Architect
   
 - **Gaindu** - Web Dashboard Development
   
