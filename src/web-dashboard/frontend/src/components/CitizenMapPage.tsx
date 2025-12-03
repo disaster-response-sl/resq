@@ -210,8 +210,10 @@ const CitizenMapPage: React.FC = () => {
       if (response.data.success) {
 
         const rawSignals: any[] = response.data.data || [];
+
         
         console.log(`📦 Backend returned ${rawSignals.length} documents total`);
+
 
         // Helper: normalize location from various possible shapes
         const normalizeLocation = (s: any, index: number): { lat: number; lng: number } | null => {
