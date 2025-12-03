@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Users, AlertCircle, Search, Map as MapIcon, ArrowLeft, ExternalLink, RefreshCw, Download, Layers, Filter, BarChart3, TrendingUp } from 'lucide-react';
+import { Heart, Users, AlertCircle, Map as MapIcon, ArrowLeft, ExternalLink, RefreshCw, Download, Layers, Filter, BarChart3, TrendingUp } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import axios from 'axios';
@@ -835,7 +835,14 @@ const ReliefTrackerPage: React.FC = () => {
                     )}
 
                     {/* Relief camp markers with clustering - showing ALL camps */}
-                    <MarkerClusterGroup>
+                    <MarkerClusterGroup
+                      chunkedLoading
+                      maxClusterRadius={60}
+                      spiderfyOnMaxZoom={true}
+                      showCoverageOnHover={false}
+                      zoomToBoundsOnClick={true}
+                      disableClusteringAtZoom={15}
+                    >
                       {allCamps.map((camp) => (
                         <Marker
                           key={camp.id}
