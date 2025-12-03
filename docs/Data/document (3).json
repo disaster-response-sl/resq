@@ -1,0 +1,757 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SOS Emergency API",
+    "description": "API for submitting and managing emergency requests during flood situations",
+    "contact": {},
+    "version": "v1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.floodsupport.org/default/sos-emergency-api/v1.0"
+    }
+  ],
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Public",
+      "description": "Public endpoints for submitting emergency requests"
+    },
+    {
+      "name": "Internal",
+      "description": "Internal endpoints requiring authentication"
+    }
+  ],
+  "paths": {
+    "/sos/public": {
+      "post": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Submit Emergency Request",
+        "description": "Submit a new emergency request without authentication",
+        "operationId": "submitEmergencyRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic emergency request",
+                  "value": {
+                    "fullName": "John Doe",
+                    "phoneNumber": "+94771234567",
+                    "latitude": 6.9271,
+                    "longitude": 79.8612,
+                    "emergencyType": "TRAPPED"
+                  }
+                },
+                "critical": {
+                  "summary": "Critical medical emergency",
+                  "value": {
+                    "fullName": "Jane Smith",
+                    "phoneNumber": "+94777654321",
+                    "latitude": 6.9271,
+                    "longitude": 79.8612,
+                    "emergencyType": "MEDICAL",
+                    "hasMedicalEmergency": true,
+                    "medicalDetails": "Heart condition, requires immediate attention",
+                    "waterLevel": "CHEST",
+                    "numberOfPeople": 3,
+                    "hasChildren": true
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Emergency request submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-throttling-tier": "Unlimited",
+        "x-throttling-limit": {
+          "requestCount": -1,
+          "unit": "MINUTE"
+        },
+        "x-auth-type": "Application & Application User"
+      }
+    },
+    "/sos": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Get Filtered Emergency Requests",
+        "description": "Retrieve emergency requests with filtering, pagination, and statistics.",
+        "operationId": "getEmergencyRequests",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by request status",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "$ref": "#/components/schemas/StatusEnum"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "description": "Filter by priority level",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "$ref": "#/components/schemas/PriorityEnum"
+            }
+          },
+          {
+            "name": "district",
+            "in": "query",
+            "description": "Filter by district name",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Colombo"
+          },
+          {
+            "name": "emergencyType",
+            "in": "query",
+            "description": "Filter by emergency type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "$ref": "#/components/schemas/EmergencyTypeEnum"
+            }
+          },
+          {
+            "name": "hasActionTaken",
+            "in": "query",
+            "description": "Filter by whether action has been taken",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "notVerified",
+            "in": "query",
+            "description": "Filter for unverified requests",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "assignedTo",
+            "in": "query",
+            "description": "Filter by assigned user ID (verifier or coordinator)",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "Filter by data source",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "$ref": "#/components/schemas/SourceEnum"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search in fullName and phoneNumber fields (partial match)",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "John"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results per page",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved filtered requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - JWT token missing or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-throttling-tier": "Unlimited",
+        "x-throttling-limit": {
+          "requestCount": -1,
+          "unit": "MINUTE"
+        },
+        "x-auth-type": "Application & Application User"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EmergencyRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "description": "Full name of the person in emergency",
+            "example": "John Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Primary contact phone number",
+            "example": "+94771234567"
+          },
+          "alternatePhone": {
+            "type": "string",
+            "description": "Alternative contact phone number",
+            "example": "+94712345678"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "GPS latitude coordinate",
+            "example": 6.9271
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "GPS longitude coordinate",
+            "example": 79.8612
+          },
+          "address": {
+            "type": "string",
+            "description": "Full address of the emergency location",
+            "example": "123 Main Street, Colombo"
+          },
+          "landmark": {
+            "type": "string",
+            "description": "Nearby landmark for easier location",
+            "example": "Near City Hospital"
+          },
+          "district": {
+            "type": "string",
+            "description": "District name",
+            "example": "Colombo"
+          },
+          "emergencyType": {
+            "$ref": "#/components/schemas/EmergencyTypeEnum"
+          },
+          "numberOfPeople": {
+            "type": "integer",
+            "description": "Number of people affected",
+            "example": 4,
+            "minimum": 1
+          },
+          "hasChildren": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether children are present"
+          },
+          "hasElderly": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether elderly people are present"
+          },
+          "hasDisabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether disabled people are present"
+          },
+          "hasMedicalEmergency": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether there is a medical emergency"
+          },
+          "medicalDetails": {
+            "type": "string",
+            "description": "Details about medical emergency",
+            "example": "Diabetic patient, insulin needed"
+          },
+          "waterLevel": {
+            "$ref": "#/components/schemas/WaterLevelEnum"
+          },
+          "buildingType": {
+            "type": "string",
+            "description": "Type of building",
+            "example": "Residential house"
+          },
+          "floorLevel": {
+            "type": "integer",
+            "description": "Floor level of trapped location",
+            "example": 2
+          },
+          "safeForHours": {
+            "type": "number",
+            "description": "Estimated hours safe in current location",
+            "example": 6
+          },
+          "description": {
+            "type": "string",
+            "description": "Additional description of the situation",
+            "example": "Water rising rapidly, need immediate rescue"
+          },
+          "hasFood": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether food is available"
+          },
+          "hasWater": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether drinking water is available"
+          },
+          "hasPowerBank": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether power bank is available"
+          },
+          "batteryPercentage": {
+            "type": "integer",
+            "description": "Current battery percentage",
+            "example": 45,
+            "maximum": 100,
+            "minimum": 0
+          },
+          "photoUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of uploaded photo"
+          },
+          "photoPublicId": {
+            "type": "string",
+            "description": "Public ID of photo in cloud storage"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the request",
+            "example": "PUBLIC"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title or summary of the emergency",
+            "example": "Family trapped on roof"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/PriorityEnum"
+          }
+        },
+        "required": [
+          "fullName",
+          "phoneNumber"
+        ]
+      },
+      "EmergencyResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Emergency request submitted successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 12345
+              },
+              "referenceNumber": {
+                "type": "string",
+                "example": "SOS-2024-12345"
+              },
+              "status": {
+                "$ref": "#/components/schemas/StatusEnum"
+              },
+              "priority": {
+                "$ref": "#/components/schemas/PriorityEnum"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2024-12-01T10:30:00Z"
+              }
+            }
+          }
+        }
+      },
+      "EmergencyListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmergencyItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Statistics"
+          }
+        }
+      },
+      "EmergencyItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 12345
+          },
+          "referenceNumber": {
+            "type": "string",
+            "example": "SOS-2024-12345"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+94771234567"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusEnum"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/PriorityEnum"
+          },
+          "emergencyType": {
+            "$ref": "#/components/schemas/EmergencyTypeEnum"
+          },
+          "district": {
+            "type": "string",
+            "example": "Colombo"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-12-01T10:30:00Z"
+          },
+          "notesCount": {
+            "type": "integer",
+            "example": 3
+          },
+          "verifier": {
+            "$ref": "#/components/schemas/User"
+          },
+          "coordinator": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 789
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Smith"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+94777654321"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "currentPage": {
+            "type": "integer",
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 10
+          },
+          "totalCount": {
+            "type": "integer",
+            "example": 487
+          },
+          "limit": {
+            "type": "integer",
+            "example": 50
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "example": true
+          },
+          "hasPrevPage": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "Statistics": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of requests",
+            "example": 487
+          },
+          "totalPeople": {
+            "type": "integer",
+            "description": "Total number of people affected",
+            "example": 1834
+          },
+          "missingPeopleCount": {
+            "type": "integer",
+            "description": "Number of missing people",
+            "example": 23
+          },
+          "byStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "PENDING": 120,
+              "IN_PROGRESS": 45,
+              "RESCUED": 200
+            }
+          },
+          "byPriority": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "CRITICAL": 30,
+              "HIGH": 80,
+              "MEDIUM": 250
+            }
+          }
+        }
+      },
+      "EmergencyTypeEnum": {
+        "type": "string",
+        "enum": [
+          "TRAPPED",
+          "MEDICAL",
+          "FOOD_WATER",
+          "RESCUE_NEEDED",
+          "SHELTER_NEEDED",
+          "MISSING_PERSON",
+          "RESCUE_ASSISTANCE_H",
+          "MEDICAL_ASSISTANCE_H",
+          "COOKED_FOOD_H",
+          "DRINKING_WATER_H",
+          "DRY_FOOD_H",
+          "SHELTER_H",
+          "CLOTHING_H",
+          "SANITARY_MATERIALS_H",
+          "OTHER"
+        ],
+        "example": "TRAPPED"
+      },
+      "WaterLevelEnum": {
+        "type": "string",
+        "enum": [
+          "ANKLE",
+          "KNEE",
+          "WAIST",
+          "CHEST",
+          "NECK",
+          "ROOF"
+        ],
+        "example": "WAIST"
+      },
+      "StatusEnum": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "ACKNOWLEDGED",
+          "IN_PROGRESS",
+          "RESCUED",
+          "VERIFIED",
+          "SECOND_VERIFICATION",
+          "CANNOT_CONTACT",
+          "COMPLETED",
+          "CANCELLED"
+        ],
+        "example": "PENDING"
+      },
+      "PriorityEnum": {
+        "type": "string",
+        "enum": [
+          "HIGHLY_CRITICAL",
+          "CRITICAL",
+          "HIGH",
+          "MEDIUM",
+          "LOW"
+        ],
+        "example": "HIGH"
+      },
+      "SourceEnum": {
+        "type": "string",
+        "enum": [
+          "WEB",
+          "PUBLIC"
+        ],
+        "example": "PUBLIC"
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "An error occurred"
+          },
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "description": "JWT token stored in HTTP-only cookie",
+        "name": "jwt",
+        "in": "cookie"
+      },
+      "default": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https:///authorize",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "x-wso2-disable-security": "false"
+}

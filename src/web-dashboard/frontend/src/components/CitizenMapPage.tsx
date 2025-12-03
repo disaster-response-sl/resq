@@ -190,13 +190,27 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchSOSSignals = async () => {
     try {
-      // HYBRID DATA MODEL: Fetch MongoDB SOS signals from user submissions
+      // HYBRID DATA MODEL: Fetch all public MongoDB SOS signals
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?status=pending&limit=100`
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100&public_visibility=true`
       );
       if (response.data.success) {
-        setSOSSignals(response.data.data);
-        console.log(`✅ Loaded ${response.data.data.length} SOS signals from MongoDB`);
+        const validSignals = response.data.data.filter((sos: SOSSignal) => {
+          const hasValidLocation = sos.location && 
+                                  typeof sos.location.lat === 'number' && 
+                                  typeof sos.location.lng === 'number' &&
+                                  !isNaN(sos.location.lat) &&
+                                  !isNaN(sos.location.lng);
+          
+          if (!hasValidLocation) {
+            console.warn('⚠️ Invalid SOS signal location:', sos);
+          }
+          return hasValidLocation;
+        });
+        
+        setSOSSignals(validSignals);
+        console.log(`✅ Loaded ${validSignals.length} valid SOS signals from MongoDB (${response.data.data.length} total)`);
+        console.log('SOS Signals Data:', validSignals);
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);
@@ -208,7 +222,6 @@ const CitizenMapPage: React.FC = () => {
       // HYBRID DATA MODEL: Fetch external SOS Emergency API data
       const { externalDataService } = await import('../services/externalDataService');
       const response = await externalDataService.getPublicSOSEmergencyRequests({
-        status: 'PENDING',
         limit: 100,
       });
       
@@ -217,7 +230,8 @@ const CitizenMapPage: React.FC = () => {
         console.log(`✅ Loaded ${response.data.length} SOS emergency requests from External API`);
       }
     } catch (error) {
-      console.error('External SOS signals fetch error:', error);
+      // Silently fail - external API may not be available
+      console.log('External SOS API not available');
     }
   };
 
@@ -254,14 +268,24 @@ const CitizenMapPage: React.FC = () => {
       requestParams.append('type', 'requests');
       const requestsResponse = await axios.get(
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
-      ).catch(() => ({ data: { requests: [] } }));
+      ).catch((error) => {
+        if (error.response?.status === 401) {
+          console.log('ℹ️ Supabase relief requests API: Authentication not available');
+        }
+        return { data: { requests: [] } };
+      });
 
       // Fetch Supabase CONTRIBUTIONS from public API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
       const contributionsResponse = await axios.get(
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
-      ).catch(() => ({ data: { contributions: [] } }));
+      ).catch((error) => {
+        if (error.response?.status === 401) {
+          console.log('ℹ️ Supabase contributions API: Authentication not available');
+        }
+        return { data: { contributions: [] } };
+      });
 
       // Fetch MongoDB help requests (user incident reports)
       const mongoResponse = await axios.get(
