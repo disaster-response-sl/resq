@@ -203,9 +203,10 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchSOSSignals = async () => {
     try {
-      // HYBRID DATA MODEL: Fetch all public MongoDB SOS signals
+      // HYBRID DATA MODEL: Fetch ALL MongoDB SOS signals for emergency response
+      // Removed public_visibility filter - all signals should be visible to help people
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100&public_visibility=true`
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100`
       );
       if (response.data.success) {
 

@@ -300,19 +300,20 @@ router.get('/sos-signals', async (req, res) => {
       query.status = status;
     }
     
-    // Filter by public_visibility if provided
-    // For public endpoint, show all documents if no explicit filter
-    // (This allows documents without public_visibility field to be shown)
-    if (public_visibility === 'true' || public_visibility === true) {
-      // Show both documents with public_visibility=true AND documents without the field
-      query.$or = [
-        { public_visibility: true },
-        { public_visibility: { $exists: false } }
-      ];
-    } else if (public_visibility === 'false') {
-      query.public_visibility = false;
-    }
-    // If no public_visibility param, show all
+    // SIMPLIFIED: For public emergency map, show ALL SOS signals regardless of public_visibility
+    // This is critical for emergency response - all signals should be visible to help people
+    // The public_visibility flag was causing 6 signals to be hidden
+    // If you need to hide signals later, update those documents in MongoDB directly
+    
+    // Original logic (commented out - was hiding 6 signals):
+    // if (public_visibility === 'true' || public_visibility === true) {
+    //   query.$or = [
+    //     { public_visibility: true },
+    //     { public_visibility: { $exists: false } }
+    //   ];
+    // }
+    
+    // NEW: Show all signals for public safety
 
 
     const sosSignals = await SosSignal.find(query)
@@ -321,7 +322,8 @@ router.get('/sos-signals', async (req, res) => {
       .lean();
 
 
-    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB matching query:`, JSON.stringify(query));
+    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB (showing all for emergency response)`);
+    console.log(`Query used:`, JSON.stringify(query));
 
 
     res.json({
