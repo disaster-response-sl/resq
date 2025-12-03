@@ -103,6 +103,22 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
+        {/* Open Source Callout */}
+        <div className="bg-green-900/10 border border-green-800/20 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-200">
+              ResQ is now fully open-source — we welcome contributions (frontend, backend, mobile, docs, UI/UX and more). 
+              <a
+                href="https://github.com/disaster-response-sl/resq"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-1 text-green-300 hover:text-green-200 underline"
+              >Contribute on GitHub</a>
+            </p>
+            <span className="text-xl">🚀</span>
+          </div>
+        </div>
+
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <div className="flex items-center space-x-2 text-sm">
