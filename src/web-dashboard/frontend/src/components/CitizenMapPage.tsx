@@ -220,7 +220,6 @@ const CitizenMapPage: React.FC = () => {
   const fetchSOSSignals = async () => {
     try {
       // HYBRID DATA MODEL: Fetch ALL MongoDB SOS signals for emergency response
-      // Removed public_visibility filter - all signals should be visible to help people
       const response = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100`
       );
@@ -238,9 +237,8 @@ const CitizenMapPage: React.FC = () => {
           return hasValidLocation;
         });
 
-        setSOSSignals(normalized);
-        console.log(`✅ Loaded ${normalized.length} valid SOS signals from MongoDB (${rawSignals.length} total)`);
-
+        setSOSSignals(validSignals);
+        console.log(`✅ Loaded ${validSignals.length} valid SOS signals from MongoDB (${response.data.data.length} total)`);
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);
