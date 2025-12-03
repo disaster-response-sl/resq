@@ -257,3 +257,5 @@ Emergency types are mapped to our assistance types, and water levels/priority ar
 Location Filter
 
 Only requests with valid GPS coordinates are displayed
+
+

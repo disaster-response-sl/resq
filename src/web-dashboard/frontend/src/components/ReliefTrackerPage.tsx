@@ -1,8 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Users, AlertCircle, Search, Map as MapIcon, ArrowLeft, ExternalLink } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default markers
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom marker icons for different urgency levels
+const createCustomIcon = (urgency: string) => {
+  const colors: Record<string, string> = {
+    emergency: '#dc2626',
+    high: '#f97316',
+    medium: '#3b82f6',
+    low: '#22c55e',
+  };
+  
+  return L.divIcon({
+    className: 'custom-icon',
+    html: `<div style="background-color: ${colors[urgency] || '#3b82f6'}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
 
 interface ReliefCamp {
   id: string;
@@ -316,7 +344,7 @@ const ReliefTrackerPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Live Relief Camps Map Preview */}
+          {/* Live Relief Camps Map */}
           <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
@@ -341,7 +369,88 @@ const ReliefTrackerPage: React.FC = () => {
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
                   <p className="text-gray-600">Loading relief camps...</p>
                 </div>
-              ) : (
+              ) : reliefCamps.length > 0 && userLocation ? (
+                <div className="mb-6">
+                  <MapContainer
+                    center={[userLocation.lat, userLocation.lng]}
+                    zoom={10}
+                    style={{ height: '500px', width: '100%', borderRadius: '0.5rem' }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    
+                    {/* User location marker */}
+                    {userLocation && (
+                      <Marker position={[userLocation.lat, userLocation.lng]}>
+                        <Popup>
+                          <div className="text-center">
+                            <strong>📍 Your Location</strong>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    )}
+
+                    {/* Search radius circle */}
+                    {userLocation && (
+                      <Circle
+                        center={[userLocation.lat, userLocation.lng]}
+                        radius={parseFloat(debouncedRadius) * 1000}
+                        pathOptions={{
+                          color: '#3b82f6',
+                          fillColor: '#3b82f6',
+                          fillOpacity: 0.1,
+                        }}
+                      />
+                    )}
+
+                    {/* Relief camp markers */}
+                    {reliefCamps.map((camp) => (
+                      <Marker
+                        key={camp.id}
+                        position={[camp.latitude, camp.longitude]}
+                        icon={createCustomIcon(camp.urgency)}
+                      >
+                        <Popup>
+                          <div className="min-w-[250px]">
+                            <h3 className="font-bold text-gray-900 mb-2">{camp.full_name}</h3>
+                            <p className="text-sm text-gray-700 mb-2">{camp.address}</p>
+                            <div className="space-y-1 text-xs text-gray-600">
+                              <div>📍 {camp.distance_km?.toFixed(1) || '0.0'} km away</div>
+                              <div>🏢 {camp.establishment_type}</div>
+                              <div>
+                                <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                  camp.urgency === 'emergency' ? 'bg-red-500 text-white' :
+                                  camp.urgency === 'high' ? 'bg-orange-500 text-white' :
+                                  camp.urgency === 'medium' ? 'bg-blue-500 text-white' :
+                                  'bg-green-500 text-white'
+                                }`}>
+                                  {camp.urgency.toUpperCase()}
+                                </span>
+                              </div>
+                              {(camp.num_men || camp.num_women || camp.num_children) && (
+                                <div className="flex items-center space-x-2 mt-2">
+                                  {camp.num_men && <span>👨 {camp.num_men}</span>}
+                                  {camp.num_women && <span>👩 {camp.num_women}</span>}
+                                  {camp.num_children && <span>👶 {camp.num_children}</span>}
+                                </div>
+                              )}
+                              {camp.assistance_types && camp.assistance_types.length > 0 && (
+                                <div className="mt-2">
+                                  <strong>Needs:</strong> {camp.assistance_types.slice(0, 3).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ))}
+                  </MapContainer>
+                </div>
+              ) : null}
+
+              {loading ? null : (
                 <div className="space-y-4">
                   {reliefCamps.length === 0 ? (
                     <div className="bg-gray-50 rounded-lg p-8 text-center">
