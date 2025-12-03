@@ -123,9 +123,9 @@ const MissingPersonVerificationPage: React.FC = () => {
                       }`}>
                         {report.data_source === 'ai_extracted' ? '✨ AI Extracted' : '📝 Manual'}
                       </span>
-                      {report.verification_status === 'unverified' && (
+                      {report.verification_status === 'pending' && (
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                          Unverified
+                          Pending Verification
                         </span>
                       )}
                       {report.auto_hidden && (

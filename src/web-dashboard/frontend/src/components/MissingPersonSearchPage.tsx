@@ -343,7 +343,7 @@ const MissingPersonSearchPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  {selectedPerson.verification_status === 'unverified' && (
+                  {selectedPerson.verification_status === 'pending' && (
                     <button
                       onClick={() => handleReportSpam(selectedPerson._id)}
                       className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
