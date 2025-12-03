@@ -263,17 +263,29 @@ router.get('/sos-signals', async (req, res) => {
       query.status = status;
     }
     
-    // Filter by public_visibility if provided (default to true for public endpoint)
+    // Filter by public_visibility if provided
+    // For public endpoint, show all documents if no explicit filter
+    // (This allows documents without public_visibility field to be shown)
     if (public_visibility === 'true' || public_visibility === true) {
-      query.public_visibility = true;
+      // Show both documents with public_visibility=true AND documents without the field
+      query.$or = [
+        { public_visibility: true },
+        { public_visibility: { $exists: false } }
+      ];
+    } else if (public_visibility === 'false') {
+      query.public_visibility = false;
     }
+    // If no public_visibility param, show all
+
 
     const sosSignals = await SosSignal.find(query)
       .sort({ timestamp: -1 })
       .limit(parseInt(limit))
       .lean();
 
-    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB matching query:`, query);
+
+    console.log(`✅ Found ${sosSignals.length} SOS signals in MongoDB matching query:`, JSON.stringify(query));
+
 
     res.json({
       success: true,

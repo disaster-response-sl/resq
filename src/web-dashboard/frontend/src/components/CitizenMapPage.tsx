@@ -195,22 +195,116 @@ const CitizenMapPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/sos-signals?limit=100&public_visibility=true`
       );
       if (response.data.success) {
-        const validSignals = response.data.data.filter((sos: SOSSignal) => {
-          const hasValidLocation = sos.location && 
-                                  typeof sos.location.lat === 'number' && 
-                                  typeof sos.location.lng === 'number' &&
-                                  !isNaN(sos.location.lat) &&
-                                  !isNaN(sos.location.lng);
-          
-          if (!hasValidLocation) {
-            console.warn('⚠️ Invalid SOS signal location:', sos);
+
+        const rawSignals: any[] = response.data.data || [];
+
+        // Helper: normalize location from various possible shapes
+        const normalizeLocation = (s: any, index: number): { lat: number; lng: number } | null => {
+          if (!s) return null;
+
+          // Try multiple field variations
+          const tryParse = (val: any): number | null => {
+            if (val === null || val === undefined || val === '') return null;
+            const parsed = parseFloat(String(val));
+            return isNaN(parsed) ? null : parsed;
+          };
+
+          // 1) location.lat / location.lng (numbers or numeric strings)
+          if (s.location) {
+            const lat = tryParse(s.location.lat);
+            const lng = tryParse(s.location.lng);
+            if (lat !== null && lng !== null && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+              return { lat, lng };
+            }
           }
-          return hasValidLocation;
+
+          // 2) top-level latitude / longitude
+          if (s.latitude !== undefined && s.longitude !== undefined) {
+            const lat = tryParse(s.latitude);
+            const lng = tryParse(s.longitude);
+            if (lat !== null && lng !== null && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+              return { lat, lng };
+            }
+          }
+
+          // 3) top-level lat / lng
+          if (s.lat !== undefined && s.lng !== undefined) {
+            const lat = tryParse(s.lat);
+            const lng = tryParse(s.lng);
+            if (lat !== null && lng !== null && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+              return { lat, lng };
+            }
+          }
+
+          // 4) GeoJSON: location.coordinates = [lng, lat] (standard) or [lat, lng]
+          if (s.location && Array.isArray(s.location.coordinates) && s.location.coordinates.length >= 2) {
+            const a = tryParse(s.location.coordinates[0]);
+            const b = tryParse(s.location.coordinates[1]);
+            if (a !== null && b !== null) {
+              // GeoJSON standard: [lng, lat]
+              if (Math.abs(a) <= 180 && Math.abs(b) <= 90) {
+                return { lat: b, lng: a };
+              }
+              // Fallback: [lat, lng]
+              if (Math.abs(a) <= 90 && Math.abs(b) <= 180) {
+                return { lat: a, lng: b };
+              }
+            }
+          }
+
+          // 5) geo.latitude / geo.longitude
+          if (s.geo) {
+            const lat = tryParse(s.geo.latitude);
+            const lng = tryParse(s.geo.longitude);
+            if (lat !== null && lng !== null && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+              return { lat, lng };
+            }
+          }
+
+          // 6) coordinates array at top level
+          if (Array.isArray(s.coordinates) && s.coordinates.length >= 2) {
+            const a = tryParse(s.coordinates[0]);
+            const b = tryParse(s.coordinates[1]);
+            if (a !== null && b !== null) {
+              if (Math.abs(a) <= 180 && Math.abs(b) <= 90) return { lat: b, lng: a };
+              if (Math.abs(a) <= 90 && Math.abs(b) <= 180) return { lat: a, lng: b };
+            }
+          }
+
+          // Log failure for debugging
+          console.warn(`⚠️ Document #${index} failed location parsing:`, {
+            _id: s._id,
+            location: s.location,
+            lat: s.lat,
+            lng: s.lng,
+            latitude: s.latitude,
+            longitude: s.longitude,
+            coordinates: s.coordinates,
+            geo: s.geo,
+          });
+
+          return null;
+        };
+
+        const normalized: SOSSignal[] = [];
+        const failed: any[] = [];
+
+        rawSignals.forEach((s, idx) => {
+          const loc = normalizeLocation(s, idx);
+          if (loc) {
+            normalized.push({ ...s, location: { lat: loc.lat, lng: loc.lng } } as SOSSignal);
+          } else {
+            failed.push(s);
+          }
         });
-        
-        setSOSSignals(validSignals);
-        console.log(`✅ Loaded ${validSignals.length} valid SOS signals from MongoDB (${response.data.data.length} total)`);
-        console.log('SOS Signals Data:', validSignals);
+
+        setSOSSignals(normalized);
+        console.log(`✅ Loaded ${normalized.length} valid SOS signals from MongoDB (${rawSignals.length} total)`);
+        if (failed.length > 0) {
+          console.warn(`⚠️ ${failed.length} documents failed location parsing:`, failed);
+        }
+        console.log('SOS Signals Data:', normalized);
+
       }
     } catch (error) {
       console.error('SOS signals fetch error:', error);
