@@ -214,6 +214,19 @@ const CitizenMapPage: React.FC = () => {
 
         
         console.log(`📦 Backend returned ${rawSignals.length} documents total`);
+        
+        // Debug: Show first document structure to understand location format
+        if (rawSignals.length > 0) {
+          console.log('🔍 FIRST DOCUMENT STRUCTURE:', {
+            fullDoc: rawSignals[0],
+            location: rawSignals[0].location,
+            locationKeys: rawSignals[0].location ? Object.keys(rawSignals[0].location) : 'NO LOCATION',
+            hasLat: rawSignals[0].location?.lat !== undefined,
+            hasLng: rawSignals[0].location?.lng !== undefined,
+            hasLatitude: rawSignals[0].latitude !== undefined,
+            hasLongitude: rawSignals[0].longitude !== undefined,
+          });
+        }
 
 
         // Helper: normalize location from various possible shapes
@@ -778,12 +791,41 @@ const CitizenMapPage: React.FC = () => {
 
             {/* SOS Signals - HYBRID DATA MODEL: MongoDB user submissions */}
             {showSOSSignals &&
-              sosSignals.map((sos) => (
-                <Marker
-                  key={sos._id}
-                  position={[sos.location.lat, sos.location.lng]}
-                  icon={createCustomIcon('#ef4444', '🚨')}
-                >
+              (() => {
+                const validSOS = sosSignals.filter(sos => 
+                  sos.location && 
+                  typeof sos.location.lat === 'number' && 
+                  typeof sos.location.lng === 'number' &&
+                  !isNaN(sos.location.lat) && 
+                  !isNaN(sos.location.lng) &&
+                  Math.abs(sos.location.lat) <= 90 && 
+                  Math.abs(sos.location.lng) <= 180
+                );
+                
+                console.log(`🗺️ MAP RENDER: ${validSOS.length} of ${sosSignals.length} SOS signals have valid coordinates`);
+                
+                if (validSOS.length < sosSignals.length) {
+                  const invalidSOS = sosSignals.filter(sos => 
+                    !sos.location || 
+                    typeof sos.location.lat !== 'number' || 
+                    typeof sos.location.lng !== 'number' ||
+                    isNaN(sos.location.lat) || 
+                    isNaN(sos.location.lng) ||
+                    Math.abs(sos.location.lat) > 90 || 
+                    Math.abs(sos.location.lng) > 180
+                  );
+                  console.warn('❌ Invalid SOS signals:', invalidSOS);
+                }
+                
+                return validSOS.map((sos) => {
+                  console.log('✅ Rendering marker for:', sos._id, 'at', [sos.location.lat, sos.location.lng]);
+                  
+                  return (
+                    <Marker
+                      key={sos._id}
+                      position={[sos.location.lat, sos.location.lng]}
+                      icon={createCustomIcon('#ef4444', '🚨')}
+                    >
                   <Popup>
                     <div className="min-w-[200px]">
                       <h3 className="font-bold text-red-600 mb-2 flex items-center">
@@ -824,7 +866,9 @@ const CitizenMapPage: React.FC = () => {
                     </div>
                   </Popup>
                 </Marker>
-              ))}
+                  );
+                });
+              })()}
 
             {/* External SOS Emergency - HYBRID DATA MODEL: FloodSupport.org API */}
             {showExternalSOS &&
