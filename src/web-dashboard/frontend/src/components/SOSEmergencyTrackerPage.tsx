@@ -428,10 +428,10 @@ const SOSEmergencyTrackerPage: React.FC = () => {
               
               <MarkerClusterGroup
                 chunkedLoading
-                maxClusterRadius={60}
+                maxClusterRadius={12}
                 spiderfyOnMaxZoom={true}
                 showCoverageOnHover={false}
-                disableClusteringAtZoom={15}
+                disableClusteringAtZoom={5}
               >
                 {allRequests
                   .filter(req => req.latitude && req.longitude)
