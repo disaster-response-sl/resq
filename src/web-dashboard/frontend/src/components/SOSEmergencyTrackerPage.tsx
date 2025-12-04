@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
+import { useNavigate } from 'react-router-dom';
 import { 
   AlertTriangle, MapPin, Phone, Users, Clock, Activity,
   Filter, RefreshCw, Droplets, Home, Heart,
-  Search
+  Search, ArrowLeft
 } from 'lucide-react';
 import { externalDataService, SOSEmergencyRequest } from '../services/externalDataService';
 import toast from 'react-hot-toast';
@@ -29,6 +30,7 @@ const MapCenterUpdater: React.FC<{ center: [number, number] }> = ({ center }) =>
 };
 
 const SOSEmergencyTrackerPage: React.FC = () => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<SOSEmergencyRequest[]>([]);
   const [allRequests, setAllRequests] = useState<SOSEmergencyRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -204,37 +206,46 @@ const SOSEmergencyTrackerPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 p-3 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-blue-100">
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 border border-blue-100">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+          >
+            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <AlertTriangle className="h-7 w-7 md:h-8 md:w-8 text-red-500" />
-                SOS Emergency Tracker
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2 md:gap-3">
+                <AlertTriangle className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-500" />
+                <span>SOS Emergency Tracker</span>
               </h1>
-              <p className="text-sm md:text-base text-gray-600 mt-2">
+              <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1 md:mt-2">
                 Real-time emergency requests from FloodSupport.org API
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={() => fetchSOSRequests(false)}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
               </button>
-              <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+              <label className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
                 <input
                   type="checkbox"
                   checked={autoRefresh}
                   onChange={(e) => setAutoRefresh(e.target.checked)}
                   className="rounded"
                 />
-                <span className="text-sm font-medium">Auto-refresh (30s)</span>
+                <span className="text-xs sm:text-sm font-medium">Auto-refresh</span>
               </label>
             </div>
           </div>
@@ -247,65 +258,65 @@ const SOSEmergencyTrackerPage: React.FC = () => {
 
         {/* Analytics Dashboard */}
         {analytics && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">Total Requests</p>
-                  <p className="text-3xl font-bold mt-1">{analytics.total}</p>
+                  <p className="text-blue-100 text-xs sm:text-sm">Total Requests</p>
+                  <p className="text-2xl sm:text-3xl font-bold mt-1">{analytics.total}</p>
                 </div>
-                <AlertTriangle className="h-10 w-10 text-blue-200" />
+                <AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10 text-blue-200" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">People Affected</p>
-                  <p className="text-3xl font-bold mt-1">{analytics.totalPeople}</p>
+                  <p className="text-purple-100 text-xs sm:text-sm">People Affected</p>
+                  <p className="text-2xl sm:text-3xl font-bold mt-1">{analytics.totalPeople}</p>
                 </div>
-                <Users className="h-10 w-10 text-purple-200" />
+                <Users className="h-8 w-8 sm:h-10 sm:w-10 text-purple-200" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm">Missing Persons</p>
-                  <p className="text-3xl font-bold mt-1">{analytics.missingPeople}</p>
+                  <p className="text-orange-100 text-xs sm:text-sm">Missing Persons</p>
+                  <p className="text-2xl sm:text-3xl font-bold mt-1">{analytics.missingPeople}</p>
                 </div>
-                <Search className="h-10 w-10 text-orange-200" />
+                <Search className="h-8 w-8 sm:h-10 sm:w-10 text-orange-200" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">Rescued</p>
-                  <p className="text-3xl font-bold mt-1">
+                  <p className="text-green-100 text-xs sm:text-sm">Rescued</p>
+                  <p className="text-2xl sm:text-3xl font-bold mt-1">
                     {analytics.byStatus?.RESCUED || 0}
                   </p>
                 </div>
-                <Activity className="h-10 w-10 text-green-200" />
+                <Activity className="h-8 w-8 sm:h-10 sm:w-10 text-green-200" />
               </div>
             </div>
           </div>
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Filters</h2>
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800">Filters</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">District</label>
               <select
                 value={districtFilter}
                 onChange={(e) => setDistrictFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Districts</option>
                 {districts.map(district => (
@@ -315,11 +326,11 @@ const SOSEmergencyTrackerPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Type</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Emergency Type</label>
               <select
                 value={emergencyTypeFilter}
                 onChange={(e) => setEmergencyTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Types</option>
                 {emergencyTypes.map(type => (
@@ -329,11 +340,11 @@ const SOSEmergencyTrackerPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Priority</label>
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Priorities</option>
                 <option value="HIGHLY_CRITICAL">Highly Critical</option>
@@ -345,11 +356,11 @@ const SOSEmergencyTrackerPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Status</option>
                 <option value="PENDING">Pending</option>
@@ -361,21 +372,21 @@ const SOSEmergencyTrackerPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Search</label>
               <input
                 type="text"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Name or phone..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 mt-4">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mt-3 sm:mt-4">
             <button
               onClick={handleFilterChange}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+              className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
             >
               <Filter className="h-4 w-4" />
               Apply Filters
@@ -384,13 +395,13 @@ const SOSEmergencyTrackerPage: React.FC = () => {
         </div>
 
         {/* Map */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-blue-600" />
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
             Emergency Locations Map
           </h2>
           
-          <div className="h-96 rounded-xl overflow-hidden border-2 border-gray-200">
+          <div className="h-64 sm:h-80 md:h-96 rounded-lg md:rounded-xl overflow-hidden border-2 border-gray-200">
             <MapContainer
               center={mapCenter}
               zoom={8}
@@ -487,8 +498,8 @@ const SOSEmergencyTrackerPage: React.FC = () => {
         </div>
 
         {/* Emergency List */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Emergency Requests</h2>
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Emergency Requests</h2>
           
           {loading && requests.length === 0 ? (
             <div className="text-center py-12">
@@ -501,11 +512,11 @@ const SOSEmergencyTrackerPage: React.FC = () => {
               <p className="text-gray-500">No emergency requests found</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {requests.map((req, index) => (
                 <div
                   key={`${req.id || req.referenceNumber}-${index}`}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">

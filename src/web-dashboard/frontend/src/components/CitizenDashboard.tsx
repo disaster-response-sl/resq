@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation, Users } from 'lucide-react';
+import { MapPin, Cloud, AlertTriangle, Package, Phone, Navigation, Users, BarChart3, TrendingUp } from 'lucide-react';
 import axios from 'axios';
 import CitizenNavbar from './CitizenNavbar';
 import CitizenSOSDashboard from './CitizenSOSDashboard';
@@ -501,6 +501,62 @@ const CitizenDashboard: React.FC = () => {
           ) : (
             <p className="text-gray-500 text-center py-4">No recent alerts</p>
           )}
+        </div>
+
+        {/* Flood Analytics Dashboard */}
+        <div className="mt-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl shadow-lg p-6 border border-indigo-100">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <BarChart3 className="h-6 w-6 text-indigo-600" />
+                Flood Analytics Dashboard
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">Comprehensive data insights and visualizations</p>
+            </div>
+            <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              LIVE DATA
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-600 mb-1">📊 District Analysis</p>
+              <p className="text-sm font-bold text-gray-800">Requests by District</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-600 mb-1">⚡ Urgency Matrix</p>
+              <p className="text-sm font-bold text-gray-800">District × Urgency</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-600 mb-1">📈 Totals</p>
+              <p className="text-sm font-bold text-gray-800">Assistance Stats</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-600 mb-1">🗺️ Geo Mapping</p>
+              <p className="text-sm font-bold text-gray-800">Scatter & Heatmaps</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-600 mb-1">🎯 AI Clustering</p>
+              <p className="text-sm font-bold text-gray-800">KMeans Analysis</p>
+            </div>
+          </div>
+
+          <a
+            href="https://flood-support-analytics.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <BarChart3 className="h-8 w-8" />
+              <div className="text-left">
+                <h4 className="text-lg font-bold">Open Analytics Platform</h4>
+                <p className="text-sm text-indigo-100">View detailed graphs, heatmaps, and AI-powered insights</p>
+              </div>
+            </div>
+            <div className="text-2xl group-hover:translate-x-1 transition-transform">→</div>
+          </a>
         </div>
 
         {/* SOS Emergency Services */}
