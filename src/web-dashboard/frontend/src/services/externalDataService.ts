@@ -259,21 +259,18 @@ export const externalDataService = {
     status?: string;
   }) => {
     try {
-      const response = await axios.get(
-        `${PUBLIC_DATA_API_URL}/sos`,
-        {
-          headers: {
-            'Authorization': `Bearer ${PUBLIC_DATA_API_KEY}`,
-          },
-          params: {
-            limit: 100,
-            ...params,
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch SOS emergency requests:', error);
+      const config: any = { params: { limit: 100, ...params } };
+      // Only add Authorization header if an API key is provided
+      if (PUBLIC_DATA_API_KEY && PUBLIC_DATA_API_KEY.trim().length > 0) {
+        config.headers = { Authorization: `Bearer ${PUBLIC_DATA_API_KEY}` };
+      }
+
+      const response = await axios.get(`${PUBLIC_DATA_API_URL}/sos`, config);
+      // Normalize to expected shape
+      return response.data || { success: true, data: [] };
+    } catch (error: any) {
+      // Helpful logging for debugging; return consistent empty shape so callers can continue
+      console.error('Failed to fetch SOS emergency requests:', error?.toString?.() || error);
       return { success: false, data: [], pagination: null, stats: null };
     }
   },

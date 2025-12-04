@@ -18,6 +18,7 @@ const CitizenReportPage: React.FC = () => {
   const [location, setLocation] = useState<Location | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   useEffect(() => {
     getCurrentLocation();
@@ -46,6 +47,11 @@ const CitizenReportPage: React.FC = () => {
   const handleSubmit = async () => {
     if (!description.trim()) {
       toast.error('Please provide a description of the incident');
+      return;
+    }
+
+    if (!privacyConsent) {
+      toast.error('Please accept the Privacy Policy to submit this report');
       return;
     }
 
@@ -233,6 +239,29 @@ const CitizenReportPage: React.FC = () => {
               <li>For medical emergencies, also call 1990</li>
               <li>False reports may result in penalties</li>
             </ul>
+          </div>
+
+          {/* Privacy Consent */}
+          <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6">
+            <input
+              type="checkbox"
+              id="privacy-consent"
+              checked={privacyConsent}
+              onChange={(e) => setPrivacyConsent(e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="privacy-consent" className="text-sm text-gray-700">
+              I agree to the{' '}
+              <a
+                href="https://github.com/disaster-response-sl/resq/blob/main/docs/PRIVACY_AND_SECURITY.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 underline font-medium"
+              >
+                Privacy Policy
+              </a>
+              {' '}and consent to sharing my location and report details for emergency response purposes.
+            </label>
           </div>
 
           {/* Submit Button */}

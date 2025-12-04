@@ -14,6 +14,7 @@ const CitizenSignupPage: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -28,6 +29,11 @@ const CitizenSignupPage: React.FC = () => {
     // Validation
     if (!formData.name || !formData.phone || !formData.password) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (!privacyConsent) {
+      toast.error('Please accept the Privacy Policy to continue');
       return;
     }
 
@@ -199,6 +205,29 @@ const CitizenSignupPage: React.FC = () => {
                   required
                 />
               </div>
+            </div>
+
+            {/* Privacy Consent */}
+            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <input
+                type="checkbox"
+                id="privacy-consent"
+                checked={privacyConsent}
+                onChange={(e) => setPrivacyConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="privacy-consent" className="text-sm text-gray-700">
+                I agree to the{' '}
+                <a
+                  href="https://github.com/disaster-response-sl/resq/blob/main/docs/PRIVACY_AND_SECURITY.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 underline font-medium"
+                >
+                  Privacy Policy
+                </a>
+                {' '}and consent to the collection and processing of my personal data for emergency response purposes.
+              </label>
             </div>
 
             {/* Submit Button */}

@@ -253,13 +253,17 @@ const CitizenMapPage: React.FC = () => {
         limit: 100,
       });
       
-      if (response.success && response.data) {
+      if (response.success && response.data && response.data.length > 0) {
         setExternalSOSSignals(response.data);
         console.log(`✅ Loaded ${response.data.length} SOS emergency requests from External API`);
+      } else {
+        console.log('⚠️ External SOS API returned no data or failed authentication (401)');
+        setExternalSOSSignals([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       // Silently fail - external API may not be available
-      console.log('External SOS API not available');
+      console.log('⚠️ External SOS API not available:', error.message || error);
+      setExternalSOSSignals([]);
     }
   };
 
@@ -298,7 +302,9 @@ const CitizenMapPage: React.FC = () => {
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
       ).catch((error) => {
         if (error.response?.status === 401) {
-          console.log('ℹ️ Supabase relief requests API: Authentication not available');
+          console.log('⚠️ Supabase relief requests API: 401 Authentication required (API may need configuration)');
+        } else {
+          console.log('⚠️ Supabase relief requests API error:', error.message);
         }
         return { data: { requests: [] } };
       });
@@ -310,7 +316,9 @@ const CitizenMapPage: React.FC = () => {
         `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
       ).catch((error) => {
         if (error.response?.status === 401) {
-          console.log('ℹ️ Supabase contributions API: Authentication not available');
+          console.log('⚠️ Supabase contributions API: 401 Authentication required (API may need configuration)');
+        } else {
+          console.log('⚠️ Supabase contributions API error:', error.message);
         }
         return { data: { contributions: [] } };
       });
@@ -384,10 +392,17 @@ const CitizenMapPage: React.FC = () => {
       // Merge ALL sources
       const allCamps = [...requestCamps, ...contributionCamps, ...mongoHelpAsCamps];
       setReliefCamps(allCamps);
-      console.log(`✅ HYBRID Relief Map: ${requestCamps.length} Supabase requests + ${contributionCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${allCamps.length} total`);
-    } catch (error) {
-      console.error('Relief camps fetch error:', error);
+      
+      // Detailed logging
+      if (allCamps.length === 0) {
+        console.log('⚠️ No relief data loaded from any source. External APIs may require authentication.');
+      } else {
+        console.log(`✅ HYBRID Relief Map: ${requestCamps.length} Supabase requests + ${contributionCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${allCamps.length} total`);
+      }
+    } catch (error: any) {
+      console.error('Relief camps fetch error:', error.message || error);
       // Don't show error toast - relief camps are optional
+      setReliefCamps([]);
     }
   };
 

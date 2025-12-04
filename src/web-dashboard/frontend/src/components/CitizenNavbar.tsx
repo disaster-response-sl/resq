@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, AlertTriangle, Package, Map, MessageSquare, Users, Navigation, LogIn, LogOut, UserCircle } from 'lucide-react';
+import { Menu, X, Phone, AlertTriangle, Package, Map, MessageSquare, Users, Navigation, LogIn, LogOut, UserCircle, Search, BarChart3 } from 'lucide-react';
 import { citizenAuthService, CitizenUser } from '../services/citizenAuthService';
 import toast from 'react-hot-toast';
 
@@ -17,9 +17,11 @@ const CitizenNavbar: React.FC = () => {
     { path: '/citizen/sos', label: 'SOS', icon: AlertTriangle },
     { path: '/citizen/report', label: 'Report', icon: AlertTriangle },
     { path: '/citizen/relief-tracker', label: 'Relief', icon: Package },
+    { path: '/missing-persons/search', label: 'Missing Person', icon: Search },
     { path: '/citizen/map', label: 'Map', icon: Map },
     { path: '/citizen/chat', label: 'AI Assistant', icon: MessageSquare },
     { path: '/citizen/volunteer', label: 'Volunteer', icon: Users },
+    { path: 'https://flood-support-analytics.vercel.app/', label: 'Analytics', icon: BarChart3, external: true },
   ];
 
   useEffect(() => {
@@ -63,6 +65,20 @@ const CitizenNavbar: React.FC = () => {
           <div className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
+              if ((item as any).external) {
+                return (
+                  <a
+                    key={item.path}
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-blue-100 hover:bg-blue-700 hover:text-white"
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </a>
+                );
+              }
               return (
                 <button
                   key={item.path}
@@ -81,7 +97,7 @@ const CitizenNavbar: React.FC = () => {
           </div>
 
           {/* User Auth Buttons (Desktop) */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden lg:flex items-center space-x-2">
             {user ? (
               <>
                 <div className="flex items-center space-x-2 text-blue-100 mr-2">
@@ -119,6 +135,7 @@ const CitizenNavbar: React.FC = () => {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 rounded-lg hover:bg-blue-700 transition-colors"
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
@@ -134,6 +151,21 @@ const CitizenNavbar: React.FC = () => {
             <div className="flex flex-col space-y-2 mt-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                if ((item as any).external) {
+                  return (
+                    <a
+                      key={item.path}
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors text-blue-100 hover:bg-blue-700 hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{item.label}</span>
+                    </a>
+                  );
+                }
                 return (
                   <button
                     key={item.path}
