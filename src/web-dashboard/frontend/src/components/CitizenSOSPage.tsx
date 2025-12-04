@@ -47,6 +47,7 @@ const CitizenSOSPage: React.FC = () => {
   const [hasWater, setHasWater] = useState(false);
   const [hasPower, setHasPower] = useState(false);
   const [batteryPercent, setBatteryPercent] = useState('');
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   const districts = [
     'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -86,6 +87,11 @@ const CitizenSOSPage: React.FC = () => {
     if (!location) {
       toast.error('Unable to get your location. Please try again.');
       return;
+    }
+
+    if (!privacyConsent) {
+      toast.error('Please accept the Privacy Policy. Your emergency signal will still be sent, but consent helps us serve you better.');
+      // Allow submission anyway for emergency purposes
     }
 
     setSending(true);
@@ -541,6 +547,32 @@ const CitizenSOSPage: React.FC = () => {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Privacy Consent */}
+          <div className="flex items-start space-x-3 p-4 bg-yellow-50 rounded-lg border border-yellow-300 mb-6">
+            <input
+              type="checkbox"
+              id="privacy-consent"
+              checked={privacyConsent}
+              onChange={(e) => setPrivacyConsent(e.target.checked)}
+              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="privacy-consent" className="text-sm text-gray-700">
+              I agree to the{' '}
+              <a
+                href="https://github.com/disaster-response-sl/resq/blob/main/docs/PRIVACY_AND_SECURITY.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 underline font-medium"
+              >
+                Privacy Policy
+              </a>
+              {' '}and consent to sharing my location and emergency details for response purposes.
+              <span className="block mt-2 text-xs text-yellow-700 font-medium">
+                ⚠️ Note: Your SOS signal will be sent regardless to ensure your safety, but providing consent helps us serve you better and comply with regulations.
+              </span>
+            </label>
           </div>
 
           {/* SOS Button */}
