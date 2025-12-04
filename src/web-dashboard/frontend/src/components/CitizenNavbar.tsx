@@ -97,7 +97,7 @@ const CitizenNavbar: React.FC = () => {
           </div>
 
           {/* User Auth Buttons (Desktop) */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden lg:flex items-center space-x-2">
             {user ? (
               <>
                 <div className="flex items-center space-x-2 text-blue-100 mr-2">
@@ -135,6 +135,7 @@ const CitizenNavbar: React.FC = () => {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 rounded-lg hover:bg-blue-700 transition-colors"
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
