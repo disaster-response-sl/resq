@@ -80,9 +80,10 @@ const SOSEmergencyTrackerPage: React.FC = () => {
       if (statusFilter) params.status = statusFilter;
       if (searchText) params.search = searchText;
 
+      // Try to fetch from external API
       const response = await externalDataService.getPublicSOSEmergencyRequests(params);
 
-      if (response.success) {
+      if (response.success && response.data && response.data.length > 0) {
         const newRequests = response.data || [];
         
         if (loadMore) {
@@ -100,12 +101,23 @@ const SOSEmergencyTrackerPage: React.FC = () => {
         setLastUpdated(new Date());
         
         if (!loadMore) {
-          toast.success(`Loaded ${newRequests.length} emergency requests`);
+          toast.success(`Loaded ${newRequests.length} emergency requests from API`);
         }
+      } else {
+        // If external API fails or returns no data, show message
+        if (!loadMore) {
+          toast('No emergency requests available. External API may be unavailable.', { icon: 'ℹ️' });
+        }
+        setRequests([]);
+        setAllRequests([]);
       }
     } catch (error) {
       console.error('Failed to fetch SOS emergency requests:', error);
-      toast.error('Failed to load emergency requests');
+      if (!loadMore) {
+        toast.error('External API unavailable. Please check your connection.');
+      }
+      setRequests([]);
+      setAllRequests([]);
     } finally {
       setLoading(false);
     }

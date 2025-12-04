@@ -86,7 +86,9 @@ const CitizenDashboard: React.FC = () => {
     // Try direct fetch first (often faster and avoids double-hop)
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 8000); // Reduced timeout
       
       const directResponse = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&addressdetails=1`,
@@ -138,8 +140,11 @@ const CitizenDashboard: React.FC = () => {
           return;
         }
       }
-    } catch (directError) {
-      console.log('Direct geocoding failed, trying backend proxy...', directError);
+    } catch (directError: any) {
+      // Only log non-abort errors to avoid console spam
+      if (directError.name !== 'AbortError') {
+        console.log('Direct geocoding failed, trying backend proxy...', directError.message || directError);
+      }
     }
     
     // Fallback to backend proxy
