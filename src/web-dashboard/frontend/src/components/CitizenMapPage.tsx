@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Map as MapIcon, ArrowLeft, Droplets, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Map as MapIcon, ArrowLeft } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { sriLankaFloodDataService, type WaterLevelReading } from '../services/sriLankaFloodDataService';
+import { EnhancedMapCard } from './EnhancedMapCard';
 
 // Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -630,33 +631,24 @@ const CitizenMapPage: React.FC = () => {
                     position={[disaster.location.lat, disaster.location.lng]}
                     icon={disasterIcon(disaster.type)}
                   >
-                    <Popup>
-                      <div className="min-w-[200px]">
-                        <h3 className="font-bold text-red-600 mb-2">{disaster.name}</h3>
-                        <div className="space-y-1 text-sm">
-                          <p>
-                            <span className="font-semibold">Type:</span> {disaster.type}
-                          </p>
-                          <p>
-                            <span className="font-semibold">Severity:</span>{' '}
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs font-bold ${
-                                disaster.severity === 'critical'
-                                  ? 'bg-red-100 text-red-800'
-                                  : disaster.severity === 'high'
-                                  ? 'bg-orange-100 text-orange-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}
-                            >
-                              {disaster.severity}
-                            </span>
-                          </p>
-                          <p>
-                            <span className="font-semibold">Radius:</span>{' '}
-                            {((disaster.affected_radius || 1000) / 1000).toFixed(1)} km
-                          </p>
-                        </div>
-                      </div>
+                    <Popup maxWidth={400} minWidth={280} closeButton={false}>
+                      <EnhancedMapCard
+                        type="disaster"
+                        priority={disaster.severity?.toUpperCase() as any}
+                        title={disaster.name}
+                        reference={disaster._id}
+                        location={{
+                          lat: disaster.location.lat,
+                          lng: disaster.location.lng,
+                          address: `Affected radius: ${((disaster.affected_radius || 1000) / 1000).toFixed(1)} km`,
+                        }}
+                        data={{
+                          type: disaster.type,
+                          severity: disaster.severity,
+                          status: disaster.status,
+                          affected_radius: disaster.affected_radius,
+                        }}
+                      />
                     </Popup>
                   </Marker>
                 </React.Fragment>
@@ -670,52 +662,25 @@ const CitizenMapPage: React.FC = () => {
                   position={[flood.lat, flood.lng]}
                   icon={floodIcon(flood.severity)}
                 >
-                  <Popup>
-                    <div className="min-w-[200px]">
-                      <h3 className="font-bold text-blue-600 mb-2 flex items-center">
-                        <Droplets className="h-4 w-4 mr-2" />
-                        Flood Alert - DMC
-                      </h3>
-                      <div className="space-y-1 text-sm">
-                        <p>
-                          <span className="font-semibold">Station:</span> {flood.location}
-                        </p>
-                        <p>
-                          <span className="font-semibold">Status:</span>{' '}
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              flood.severity === 'critical'
-                                ? 'bg-red-100 text-red-800'
-                                : flood.severity === 'high'
-                                ? 'bg-orange-100 text-orange-800'
-                                : flood.severity === 'medium'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}
-                          >
-                            {flood.alert_status || flood.severity}
-                          </span>
-                        </p>
-                        <p>
-                          <span className="font-semibold">Water Level:</span> {flood.water_level}m
-                          {flood.rising_or_falling && <span className="ml-1 text-gray-600">({flood.rising_or_falling})</span>}
-                        </p>
-                        {flood.remarks && (
-                          <p className="text-xs italic text-gray-600">{flood.remarks}</p>
-                        )}
-                        {flood.timestamp && (
-                          <p className="text-xs text-gray-500 mt-2">
-                            {new Date(flood.timestamp).toLocaleString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                  <Popup maxWidth={400} minWidth={280} closeButton={false}>
+                    <EnhancedMapCard
+                      type="flood"
+                      priority={flood.severity?.toUpperCase() as any}
+                      title={flood.location || 'Flood Alert'}
+                      reference={flood.id}
+                      location={{
+                        lat: flood.lat,
+                        lng: flood.lng,
+                        address: flood.location,
+                      }}
+                      data={{
+                        waterLevel: `${flood.water_level}m ${flood.rising_or_falling ? `(${flood.rising_or_falling})` : ''}`,
+                        alert_status: flood.alert_status || flood.severity,
+                        severity: flood.severity,
+                        remarks: flood.remarks,
+                        timestamp: flood.timestamp,
+                      }}
+                    />
                   </Popup>
                 </Marker>
               ))}
@@ -745,52 +710,24 @@ const CitizenMapPage: React.FC = () => {
                     position={[sos.location.lat, sos.location.lng]}
                     icon={createCustomIcon('#ef4444', '🚨')}
                   >
-                  <Popup>
-                    <div className="min-w-[200px]">
-                      <h3 className="font-bold text-red-600 mb-2 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-2" />
-                        SOS Signal (Local)
-                      </h3>
-                      <div className="space-y-1 text-sm">
-                        <p>
-                          <span className="font-semibold">Priority:</span>{' '}
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              sos.priority === 'critical'
-                                ? 'bg-red-100 text-red-800'
-                                : sos.priority === 'high'
-                                ? 'bg-orange-100 text-orange-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {sos.priority}
-                          </span>
-                        </p>
-                        <p>
-                          <span className="font-semibold">Status:</span>{' '}
-                          <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
-                            {sos.status}
-                          </span>
-                        </p>
-                        <p>
-                          <span className="font-semibold">Message:</span> {sos.message}
-                        </p>
-                        {sos.timestamp && (
-                          <p className="text-xs text-gray-500 mt-2">
-                            {new Date(sos.timestamp).toLocaleString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        )}
-                        <div className="mt-2 pt-2 border-t border-gray-200">
-                          <span className="text-xs text-blue-600 font-medium">📡 User Submitted</span>
-                        </div>
-                      </div>
-                    </div>
+                  <Popup maxWidth={400} minWidth={280} closeButton={false}>
+                    <EnhancedMapCard
+                      type="sos"
+                      priority={(sos.priority?.toUpperCase() as any) || 'HIGH'}
+                      title="SOS Signal"
+                      reference={sos._id}
+                      location={{
+                        lat: sos.location.lat,
+                        lng: sos.location.lng,
+                        address: 'User location',
+                      }}
+                      data={{
+                        ...sos,
+                        description: sos.message,
+                        status: sos.status,
+                        timestamp: sos.timestamp,
+                      }}
+                    />
                   </Popup>
                 </Marker>
                   ))}
@@ -807,76 +744,19 @@ const CitizenMapPage: React.FC = () => {
                     position={[req.latitude, req.longitude]}
                     icon={createCustomIcon('#dc2626', '⚠️')}
                   >
-                    <Popup>
-                      <div className="min-w-[250px]">
-                        <h3 className="font-bold text-red-700 mb-2 flex items-center">
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          SOS Emergency (External)
-                        </h3>
-                        <div className="space-y-1 text-sm">
-                          <p>
-                            <span className="font-semibold">Name:</span> {req.fullName}
-                          </p>
-                          <p>
-                            <span className="font-semibold">Phone:</span> {req.phoneNumber}
-                          </p>
-                          {req.emergencyType && (
-                            <p>
-                              <span className="font-semibold">Type:</span>{' '}
-                              <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800">
-                                {req.emergencyType.replace(/_/g, ' ')}
-                              </span>
-                            </p>
-                          )}
-                          {req.priority && (
-                            <p>
-                              <span className="font-semibold">Priority:</span>{' '}
-                              <span
-                                className={`px-2 py-0.5 rounded text-xs font-bold ${
-                                  req.priority === 'HIGHLY_CRITICAL' || req.priority === 'CRITICAL'
-                                    ? 'bg-red-100 text-red-800'
-                                    : req.priority === 'HIGH'
-                                    ? 'bg-orange-100 text-orange-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                                }`}
-                              >
-                                {req.priority}
-                              </span>
-                            </p>
-                          )}
-                          {req.numberOfPeople && (
-                            <p>
-                              <span className="font-semibold">People:</span> {req.numberOfPeople}
-                            </p>
-                          )}
-                          {req.waterLevel && (
-                            <p>
-                              <span className="font-semibold">Water Level:</span>{' '}
-                              <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
-                                {req.waterLevel}
-                              </span>
-                            </p>
-                          )}
-                          {req.district && (
-                            <p>
-                              <span className="font-semibold">District:</span> {req.district}
-                            </p>
-                          )}
-                          {req.description && (
-                            <p className="mt-2 text-xs text-gray-700 border-t pt-2">
-                              {req.description}
-                            </p>
-                          )}
-                          {req.referenceNumber && (
-                            <p className="text-xs text-gray-500 mt-2">Ref: {req.referenceNumber}</p>
-                          )}
-                          <div className="mt-2 pt-2 border-t border-gray-200">
-                            <span className="text-xs text-red-600 font-medium">
-                              🌐 FloodSupport.org API
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                    <Popup maxWidth={400} minWidth={280} closeButton={false}>
+                      <EnhancedMapCard
+                        type="sos"
+                        priority={req.priority as any}
+                        title={req.fullName || 'Emergency'}
+                        reference={req.referenceNumber}
+                        location={{
+                          lat: req.latitude,
+                          lng: req.longitude,
+                          address: req.address || req.district || 'Location unavailable',
+                        }}
+                        data={req}
+                      />
                     </Popup>
                   </Marker>
                 ))}
@@ -946,52 +826,29 @@ const CitizenMapPage: React.FC = () => {
                   position={[camp.latitude, camp.longitude]}
                   icon={reliefIcon(camp.urgency)}
                 >
-                  <Popup>
-                    <div className="min-w-[200px]">
-                      <h3 className="font-bold text-green-600 mb-2">⛺ Relief Camp</h3>
-                      <div className="space-y-1 text-sm">
-                        <p>
-                          <span className="font-semibold">Contact:</span> {camp.full_name}
-                        </p>
-                        <p>
-                          <span className="font-semibold">Type:</span> {camp.establishment_type}
-                        </p>
-                        <p className="text-xs text-gray-600">{camp.address}</p>
-                        <p>
-                          <span className="font-semibold">Urgency:</span>{' '}
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              camp.urgency === 'emergency'
-                                ? 'bg-red-100 text-red-800'
-                                : camp.urgency === 'high'
-                                ? 'bg-orange-100 text-orange-800'
-                                : camp.urgency === 'medium'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
-                          >
-                            {camp.urgency}
-                          </span>
-                        </p>
-                        {(camp.num_men || camp.num_women || camp.num_children) && (
-                          <p>
-                            <span className="font-semibold">People:</span>{' '}
-                            {camp.num_men || 0} men, {camp.num_women || 0} women, {camp.num_children || 0} children
-                          </p>
-                        )}
-                        {camp.assistance_types && camp.assistance_types.length > 0 && (
-                          <p>
-                            <span className="font-semibold">Needs:</span>{' '}
-                            <span className="text-xs">{camp.assistance_types.join(', ')}</span>
-                          </p>
-                        )}
-                        {camp.distance_km && (
-                          <p className="text-xs text-blue-600 font-medium mt-2">
-                            📍 {camp.distance_km.toFixed(1)} km away
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                  <Popup maxWidth={400} minWidth={280} closeButton={false}>
+                    <EnhancedMapCard
+                      type="relief"
+                      priority={camp.urgency?.toUpperCase() as any}
+                      title={camp.full_name || 'Relief Camp'}
+                      reference={camp.id}
+                      location={{
+                        lat: camp.latitude,
+                        lng: camp.longitude,
+                        address: camp.address,
+                      }}
+                      data={{
+                        establishment_type: camp.establishment_type,
+                        urgency: camp.urgency,
+                        numberOfPeople: (camp.num_men || 0) + (camp.num_women || 0) + (camp.num_children || 0),
+                        num_men: camp.num_men,
+                        num_women: camp.num_women,
+                        num_children: camp.num_children,
+                        assistance_types: camp.assistance_types?.join(', '),
+                        distance_km: camp.distance_km,
+                        status: camp.status,
+                      }}
+                    />
                   </Popup>
                 </Marker>
               ))}

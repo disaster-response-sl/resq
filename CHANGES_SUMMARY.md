@@ -1,5 +1,18 @@
 # Changes Summary - December 4, 2025
 
+## v1.1 — December 5, 2025
+
+### Highlights
+- **OAuth2 Automatic Token Refresh**: Backend-managed client credentials flow with safe secret handling; frontend requests use secure token endpoint. Token lifetime configured to 7 days with a one-hour refresh buffer.
+- **Enhanced Map Cards**: New `EnhancedMapCard` component with mobile-first design, Call/Nav/Details action buttons, priority badges, condition tags and a detailed modal view.
+
+### Files Added / Updated
+- `src/web-dashboard/frontend/src/components/EnhancedMapCard.tsx` (new)
+- `src/web-dashboard/frontend/src/components/CitizenMapPage.tsx` (updated to use card)
+- `src/web-dashboard/frontend/src/utils/tokenManager.ts` (token handling)
+- `backend/services/tokenRefreshService.js` (server-side token refresh)
+
+
 ## ✅ Completed Changes
 
 ### 1. Reduced Clustering in SOS Emergency Tracker Map
