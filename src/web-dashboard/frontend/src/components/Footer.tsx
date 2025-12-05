@@ -46,6 +46,11 @@ const Footer: React.FC = () => {
                 <p className="font-medium text-gray-200">Pavith</p>
                 <p className="text-xs text-gray-400">Web Dashboard Development</p>
               </div>
+              <div>
+                <p className="font-medium text-gray-200">Chanupa Athsara</p>
+                <p className="text-xs text-gray-400">AI Powered Analytics (External)</p>
+              </div>
+              
             </div>
           </div>
 
@@ -77,7 +82,7 @@ const Footer: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-400">Data Sources:</p>
-                <p className="text-xs text-gray-500">DMC Flood API • Supabase Relief API</p>
+                <p className="text-xs text-gray-500">DMC Flood API • Flood Support Public Data API</p>
               </div>
             </div>
           </div>
@@ -107,7 +112,7 @@ const Footer: React.FC = () => {
         <div className="bg-green-900/10 border border-green-800/20 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-200">
-              ResQ is now fully open-source — we welcome contributions (frontend, backend, mobile, docs, UI/UX and more). 
+              ResQ is now fully open-source we welcome contributions (frontend, backend, mobile, docs, UI/UX and more). 
               <a
                 href="https://github.com/disaster-response-sl/resq"
                 target="_blank"
@@ -124,7 +129,8 @@ const Footer: React.FC = () => {
           <div className="flex items-center space-x-2 text-sm">
             <span>Made with</span>
             <Heart className="w-4 h-4 text-red-500 fill-current" />
-            <span>by Shalon Fernando and Development Team</span>
+            <span>by Development Team | </span>
+            <span>Contact: <a href="mailto:shalonfernando52@gmail.com">shalonfernando52@gmail.com</a></span>
           </div>
           
           <div className="text-sm text-gray-400">
