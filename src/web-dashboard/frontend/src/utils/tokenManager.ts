@@ -141,10 +141,11 @@ class TokenManager {
    * Get token status
    */
   getStatus() {
-    if (!this.tokenCache.accessToken) {
-      return { cached: false, expiresIn: 0 };
+    if (!this.tokenCache.accessToken || this.tokenCache.expiresAt == null) {
+      return { cached: false, expiresIn: 0, valid: false };
     }
 
+    // At this point expiresAt is non-null
     const expiresIn = Math.floor((this.tokenCache.expiresAt - Date.now()) / 1000);
     return {
       cached: true,
