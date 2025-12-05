@@ -112,14 +112,14 @@ const response = await tokenManager.makeAuthenticatedRequest(
 );
 
 // 2. Token Manager checks cache
-// - If valid token exists (< 6 hours old) → Use cached token
-// - If expired or missing → Fetch from backend
+// - If valid token exists (< 7 days old, > 1 hour remaining) → Use cached token
+// - If expired or expiring soon → Fetch from backend
 
 // 3. Backend OAuth2 Flow (automatic)
 // - Backend calls Choreo OAuth2 token endpoint
 // - Uses consumer key/secret from .env
 // - Returns fresh access token
-// - Caches token for 6 hours
+// - Caches token for 7 days
 
 // 4. Frontend receives token
 // - Adds Authorization: Bearer <token> header
@@ -183,8 +183,8 @@ For issues:
 
 ## 🔄 Token Lifecycle
 
-- **Expiry**: 6 hours (21600 seconds)
-- **Refresh**: 5 minutes before expiry
+- **Expiry**: 7 days (604800 seconds)
+- **Refresh**: 1 hour before expiry
 - **Cache**: In-memory only (server + client)
 - **Security**: Consumer secrets never leave backend
 

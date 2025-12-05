@@ -40,7 +40,7 @@ class TokenManager {
     // Check if we have a valid cached token
     if (this.tokenCache.accessToken && this.tokenCache.expiresAt) {
       const now = Date.now();
-      const bufferTime = 5 * 60 * 1000; // Refresh 5 minutes before expiry
+      const bufferTime = 60 * 60 * 1000; // Refresh 1 hour before expiry (for 7-day tokens)
       
       if (now < (this.tokenCache.expiresAt - bufferTime)) {
         return this.tokenCache.accessToken;
@@ -61,11 +61,12 @@ class TokenManager {
       if (response.data.success && response.data.accessToken) {
         const accessToken = response.data.accessToken;
         
-        // Cache token for 6 hours (21600 seconds)
+        // Cache token for 7 days (604800 seconds)
+        // Token expiry is now 1 week - will auto-refresh 1 hour before expiry
         this.tokenCache.accessToken = accessToken;
-        this.tokenCache.expiresAt = Date.now() + (21600 * 1000);
+        this.tokenCache.expiresAt = Date.now() + (604800 * 1000);
 
-        console.log('✅ FloodSupport access token obtained from backend');
+        console.log('✅ FloodSupport access token obtained from backend (valid for 7 days)');
         return accessToken;
       }
 

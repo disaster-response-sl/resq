@@ -35,10 +35,11 @@ class TokenRefreshService {
     // Check if we have a valid cached token
     if (this.tokenCache.accessToken && this.tokenCache.expiresAt) {
       const now = Date.now();
-      const bufferTime = 5 * 60 * 1000; // Refresh 5 minutes before expiry
+      const bufferTime = 60 * 60 * 1000; // Refresh 1 hour before expiry (for 7-day tokens)
       
       if (now < (this.tokenCache.expiresAt - bufferTime)) {
-        console.log('✅ Using cached FloodSupport access token');
+        const expiresIn = Math.floor((this.tokenCache.expiresAt - now) / 1000);
+        console.log(`✅ Using cached FloodSupport access token (expires in ${Math.floor(expiresIn / 3600)} hours)`);
         return this.tokenCache.accessToken;
       }
     }
