@@ -3,6 +3,16 @@
 [![Production Status](https://img.shields.io/badge/status-production%20deployed-brightgreen)](https://resq-five.vercel.app)
 [![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka-red)](https://www.dmc.gov.lk)
 
+**ResQ Hub — Version 1.1** (Released: 2025-12-05)
+
+## What's New (v1.1)
+
+- OAuth2 Automatic Token Refresh for external FloodSupport APIs (secure, backend-managed; 7-day token lifetime).
+- Enhanced map popup cards across the Citizen Map: modern mobile-first card UI with Call, Nav (directions), and Details buttons for SOS, Flood, Disaster, and Relief markers.
+- Improved UX for SOS/recovery workflows: better priority badges, condition tags, and a detailed modal view for emergency information.
+- Updated documentation and changelog entries for v1.1.
+
+
 ResQ (Rescue) is a production disaster-response platform for Sri Lanka — live flood monitoring, SOS reporting, relief coordination and admin dashboards. This repository contains the web frontend, mobile app, and backend services.
 
 Live deployment (primary):
