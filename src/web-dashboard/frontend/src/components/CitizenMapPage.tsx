@@ -284,7 +284,7 @@ const CitizenMapPage: React.FC = () => {
 
   const fetchReliefCamps = async () => {
     try {
-      // HYBRID DATA MODEL: Fetch Supabase (requests + contributions) AND MongoDB help requests
+      // HYBRID DATA MODEL: Fetch FloodSupport API (requests + contributions) AND MongoDB help requests
       const baseParams = new URLSearchParams();
       baseParams.append('limit', '500');
       
@@ -295,30 +295,35 @@ const CitizenMapPage: React.FC = () => {
         baseParams.append('sort', 'distance');
       }
 
-      // Fetch Supabase REQUESTS from public API
+      const apiUrl = import.meta.env.VITE_PUBLIC_DATA_API_URL || 'https://api.floodsupport.org/default/sri-lanka-flood-relief-jm/v1.0';
+
+      // Import tokenManager dynamically
+      const { default: tokenManager } = await import('../utils/tokenManager');
+
+      // Fetch REQUESTS from FloodSupport Public Data API
       const requestParams = new URLSearchParams(baseParams);
       requestParams.append('type', 'requests');
-      const requestsResponse = await axios.get(
-        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${requestParams.toString()}`
+      const requestsResponse = await tokenManager.makeAuthenticatedRequest(
+        `${apiUrl}/public-data-api?${requestParams.toString()}`
       ).catch((error) => {
         if (error.response?.status === 401) {
-          console.log('⚠️ Supabase relief requests API: 401 Authentication required (API may need configuration)');
+          console.log('⚠️ FloodSupport relief requests API: 401 Authentication required');
         } else {
-          console.log('⚠️ Supabase relief requests API error:', error.message);
+          console.log('⚠️ FloodSupport relief requests API error:', error.message);
         }
         return { data: { requests: [] } };
       });
 
-      // Fetch Supabase CONTRIBUTIONS from public API
+      // Fetch CONTRIBUTIONS from FloodSupport Public Data API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
-      const contributionsResponse = await axios.get(
-        `https://cynwvkagfmhlpsvkparv.supabase.co/functions/v1/public-data-api?${contributionParams.toString()}`
+      const contributionsResponse = await tokenManager.makeAuthenticatedRequest(
+        `${apiUrl}/public-data-api?${contributionParams.toString()}`
       ).catch((error) => {
         if (error.response?.status === 401) {
-          console.log('⚠️ Supabase contributions API: 401 Authentication required (API may need configuration)');
+          console.log('⚠️ FloodSupport contributions API: 401 Authentication required');
         } else {
-          console.log('⚠️ Supabase contributions API error:', error.message);
+          console.log('⚠️ FloodSupport contributions API error:', error.message);
         }
         return { data: { contributions: [] } };
       });
@@ -328,13 +333,13 @@ const CitizenMapPage: React.FC = () => {
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/public/user-reports?status=pending&limit=100`
       ).catch(() => ({ data: { success: false, data: [] } }));
 
-      // Direct Supabase API response: { requests: [...], contributions: [...], meta: {...} }
-      const supabaseRequests = requestsResponse.data.requests || [];
-      const supabaseContributions = contributionsResponse.data.contributions || [];
+      // FloodSupport API response: { requests: [...], contributions: [...], meta: {...} }
+      const floodSupportRequests = requestsResponse.data.requests || [];
+      const floodSupportContributions = contributionsResponse.data.contributions || [];
       const mongoHelp = mongoResponse.data.success ? mongoResponse.data.data : [];
 
-      // Map Supabase help requests (relief camps)
-      const requestCamps = supabaseRequests.map((item: any) => ({
+      // Map FloodSupport help requests (relief camps)
+      const requestCamps = floodSupportRequests.map((item: any) => ({
         id: item.id,
         full_name: item.full_name,
         address: item.address,
@@ -348,11 +353,11 @@ const CitizenMapPage: React.FC = () => {
         status: item.status,
         assistance_types: item.assistance_types || [],
         distance_km: item.distance_km,
-        source: 'supabase_request'
+        source: 'floodsupport_request'
       }));
 
-      // Map Supabase contributions (volunteers offering help)
-      const contributionCamps = supabaseContributions.map((contrib: any) => ({
+      // Map FloodSupport contributions (volunteers offering help)
+      const contributionCamps = floodSupportContributions.map((contrib: any) => ({
         id: contrib.id,
         full_name: `💚 ${contrib.full_name} (Volunteer)`,
         address: contrib.address,
@@ -363,7 +368,7 @@ const CitizenMapPage: React.FC = () => {
         status: contrib.status || 'available',
         assistance_types: [...(contrib.goods_types || []), ...(contrib.services_types || []), ...(contrib.labor_types || [])],
         distance_km: contrib.distance_km,
-        source: 'supabase_contribution'
+        source: 'floodsupport_contribution'
       }));
 
       // Map MongoDB help requests to relief camp format
@@ -397,7 +402,7 @@ const CitizenMapPage: React.FC = () => {
       if (allCamps.length === 0) {
         console.log('⚠️ No relief data loaded from any source. External APIs may require authentication.');
       } else {
-        console.log(`✅ HYBRID Relief Map: ${requestCamps.length} Supabase requests + ${contributionCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${allCamps.length} total`);
+        console.log(`✅ HYBRID Relief Map: ${requestCamps.length} FloodSupport requests + ${contributionCamps.length} contributions + ${mongoHelpAsCamps.length} MongoDB help = ${allCamps.length} total`);
       }
     } catch (error: any) {
       console.error('Relief camps fetch error:', error.message || error);
@@ -719,7 +724,7 @@ const CitizenMapPage: React.FC = () => {
             {showSOSSignals && (
               <MarkerClusterGroup
                 chunkedLoading
-                maxClusterRadius={50}
+                maxClusterRadius={70}
                 spiderfyOnMaxZoom={true}
                 showCoverageOnHover={true}
                 zoomToBoundsOnClick={true}
