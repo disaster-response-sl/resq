@@ -1,8 +1,8 @@
 import axios from 'axios';
+import tokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const PUBLIC_DATA_API_URL = 'https://api.floodsupport.org/default/sos-emergency-api/v1.0';
-const PUBLIC_DATA_API_KEY = import.meta.env.VITE_PUBLIC_DATA_API_KEY || '';
 
 export interface SOSSignal {
   id: string;
@@ -210,12 +210,12 @@ export const externalDataService = {
   
   // Submit new emergency request to external API
   submitSOSEmergency: async (data: Omit<SOSEmergencyRequest, 'id' | 'referenceNumber' | 'status' | 'createdAt'>) => {
-    const response = await axios.post(
+    const response = await tokenManager.makeAuthenticatedRequest(
       `${PUBLIC_DATA_API_URL}/sos/public`,
-      data,
       {
+        method: 'POST',
+        data,
         headers: {
-          'Authorization': `Bearer ${PUBLIC_DATA_API_KEY}`,
           'Content-Type': 'application/json',
         },
       }
@@ -237,19 +237,14 @@ export const externalDataService = {
     source?: 'WEB' | 'PUBLIC';
     status?: string;
   }) => {
-    const response = await axios.get(
+    const response = await tokenManager.makeAuthenticatedRequest(
       `${PUBLIC_DATA_API_URL}/sos`,
-      {
-        headers: {
-          'Authorization': `Bearer ${PUBLIC_DATA_API_KEY}`,
-        },
-        params,
-      }
+      { params }
     );
     return response.data;
   },
 
-  // Get SOS emergency requests for public viewing (no auth required)
+  // Get SOS emergency requests for public viewing
   getPublicSOSEmergencyRequests: async (params?: {
     district?: string;
     emergencyType?: string;
@@ -259,13 +254,10 @@ export const externalDataService = {
     status?: string;
   }) => {
     try {
-      const config: any = { params: { limit: 100, ...params } };
-      // Only add Authorization header if an API key is provided
-      if (PUBLIC_DATA_API_KEY && PUBLIC_DATA_API_KEY.trim().length > 0) {
-        config.headers = { Authorization: `Bearer ${PUBLIC_DATA_API_KEY}` };
-      }
-
-      const response = await axios.get(`${PUBLIC_DATA_API_URL}/sos`, config);
+      const response = await tokenManager.makeAuthenticatedRequest(
+        `${PUBLIC_DATA_API_URL}/sos`,
+        { params: { limit: 100, ...params } }
+      );
       // Normalize to expected shape
       return response.data || { success: true, data: [] };
     } catch (error: any) {

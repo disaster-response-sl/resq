@@ -199,16 +199,15 @@ const ReliefTrackerPage: React.FC = () => {
 
       // Fetch data from Sri Lanka Flood Relief Public Data API
       const apiUrl = import.meta.env.VITE_PUBLIC_DATA_API_URL || 'https://api.floodsupport.org/default/sri-lanka-flood-relief-jm/v1.0';
-      const apiKey = import.meta.env.VITE_PUBLIC_DATA_API_KEY;
 
-      const apiHeaders = apiKey ? { 'api-key': apiKey } : {};
+      // Import tokenManager dynamically
+      const { default: tokenManager } = await import('../utils/tokenManager');
 
       // Fetch REQUESTS from public API
       const requestParams = new URLSearchParams(baseParams);
       requestParams.append('type', 'requests');
-      const requestsResponse = await axios.get(
-        `${apiUrl}/public-data-api?${requestParams.toString()}`,
-        { headers: apiHeaders }
+      const requestsResponse = await tokenManager.makeAuthenticatedRequest(
+        `${apiUrl}/public-data-api?${requestParams.toString()}`
       ).catch((err) => {
         console.error('❌ Public Data API requests error:', err.message);
         return { data: { requests: [], meta: {} } };
@@ -217,9 +216,8 @@ const ReliefTrackerPage: React.FC = () => {
       // Fetch CONTRIBUTIONS from public API
       const contributionParams = new URLSearchParams(baseParams);
       contributionParams.append('type', 'contributions');
-      const contributionsResponse = await axios.get(
-        `${apiUrl}/public-data-api?${contributionParams.toString()}`,
-        { headers: apiHeaders }
+      const contributionsResponse = await tokenManager.makeAuthenticatedRequest(
+        `${apiUrl}/public-data-api?${contributionParams.toString()}`
       ).catch((err) => {
         console.error('❌ Public Data API contributions error:', err.message);
         return { data: { contributions: [], meta: {} } };
