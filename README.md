@@ -1,4 +1,4 @@
-# 🚨 ResQ - National Disaster Response Platform
+#  ResQ - National Disaster Response Platform
 
 [![Production Status](https://img.shields.io/badge/status-production%20deployed-brightgreen)](https://resq-five.vercel.app)
 [![Built For](https://img.shields.io/badge/built%20for-Sri%20Lanka-red)](https://www.dmc.gov.lk)
@@ -205,33 +205,33 @@ For more details (architecture, API docs, deployment), see the `docs/` folder.
 ### Recent Updates (November 2025 - Production Deployment)
 
 #### LankaRouteWatch Features
-- ✅ **Location Search** - Nominatim autocomplete for start/end locations (replacing district dropdowns)
-- ✅ **Road Hazard Display** - Shows detailed reports when no safe routes available
-- ✅ **Distance Calculation** - Displays hazard distance from route with severity indicators
-- ✅ **Backend Geocoding Proxy** - `/api/geocode/reverse` endpoint to avoid CORS issues
+-  **Location Search** - Nominatim autocomplete for start/end locations (replacing district dropdowns)
+-  **Road Hazard Display** - Shows detailed reports when no safe routes available
+-  **Distance Calculation** - Displays hazard distance from route with severity indicators
+-  **Backend Geocoding Proxy** - `/api/geocode/reverse` endpoint to avoid CORS issues
 
 #### Production Fixes
-- ✅ **CORS Configuration** - Supports all Vercel preview deployments (*.vercel.app)
-- ✅ **JWT Authentication** - Environment variable validation with clear error messages
-- ✅ **Supabase Fallback** - Graceful handling when external API unavailable
-- ✅ **Error Logging** - Comprehensive console logging for debugging production issues
-- ✅ **Environment Setup** - Complete guide in `RENDER_ENV_SETUP.md`
+-  **CORS Configuration** - Supports all Vercel preview deployments (*.vercel.app)
+-  **JWT Authentication** - Environment variable validation with clear error messages
+-  **Supabase Fallback** - Graceful handling when external API unavailable
+-  **Error Logging** - Comprehensive console logging for debugging production issues
+-  **Environment Setup** - Complete guide in `RENDER_ENV_SETUP.md`
 
 #### Deployment Infrastructure
-- ✅ **Frontend Deployed** - Vercel with automatic preview deployments
-- ✅ **Backend Deployed** - Render with MongoDB Atlas (Singapore region)
-- ✅ **CI/CD Pipeline** - GitHub integration with auto-deploy on push
-- ✅ **Environment Variables** - Secure secret management on both platforms
-- ✅ **Deployment Guides** - `QUICK_DEPLOY.md`, `DEPLOYMENT_GUIDE.md`, `RENDER_ENV_SETUP.md`
+-  **Frontend Deployed** - Vercel with automatic preview deployments
+-  **Backend Deployed** - Render with MongoDB Atlas (Singapore region)
+-  **CI/CD Pipeline** - GitHub integration with auto-deploy on push
+-  **Environment Variables** - Secure secret management on both platforms
+-  **Deployment Guides** - `QUICK_DEPLOY.md`, `DEPLOYMENT_GUIDE.md`, `RENDER_ENV_SETUP.md`
 
 #### Code Quality & Maintenance
-- ✅ **Removed Payment System** - Streamlined to core disaster response features
-- ✅ **Fixed Map Display** - Explicit height (600px) resolves Leaflet rendering
-- ✅ **DMC Timestamp Clarity** - "Last DMC Update" badge shows batch update time
-- ✅ **Volunteer System** - Complete CRUD workflow for relief contributions
-- ✅ **Admin Map Fix** - Uses live DMC flood data instead of MongoDB
+-  **Removed Payment System** - Streamlined to core disaster response features
+-  **Fixed Map Display** - Explicit height (600px) resolves Leaflet rendering
+-  **DMC Timestamp Clarity** - "Last DMC Update" badge shows batch update time
+-  **Volunteer System** - Complete CRUD workflow for relief contributions
+-  **Admin Map Fix** - Uses live DMC flood data instead of MongoDB
 
-## 🔐 Authentication & Messaging System
+##  Authentication & Messaging System
 
 ### Dual Authentication Architecture
 
